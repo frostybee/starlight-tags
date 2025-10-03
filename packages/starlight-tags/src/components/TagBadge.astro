@@ -1,0 +1,103 @@
+---
+import type { ProcessedTag } from '../schemas/tags.js';
+
+interface Props {
+  tag: ProcessedTag;
+  size?: 'small' | 'medium' | 'large';
+  variant?: 'solid' | 'outline' | 'ghost';
+  showCount?: boolean;
+  clickable?: boolean;
+}
+
+const { 
+  tag, 
+  size = 'medium', 
+  variant = 'solid', 
+  showCount = false, 
+  clickable = true 
+} = Astro.props;
+
+const tagStyle = tag.color ? `--tag-color: ${tag.color}` : '';
+const TagElement = clickable ? 'a' : 'span';
+const href = clickable ? tag.url : undefined;
+---
+
+<TagElement 
+  class:list={[
+    'sl-tag',
+    `sl-tag--${size}`,
+    `sl-tag--${variant}`,
+    { 'sl-tag--clickable': clickable }
+  ]}
+  href={href}
+  style={tagStyle}
+  title={tag.description || tag.label}
+>
+  <span class="sl-tag__label">{tag.label}</span>
+  {showCount && (
+    <span class="sl-tag__count">({tag.count})</span>
+  )}
+</TagElement>
+
+<style>
+  .sl-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    border-radius: var(--sl-border-radius);
+    font-size: var(--sl-text-sm);
+    font-weight: 500;
+    line-height: 1.2;
+    text-decoration: none;
+    transition: all 0.2s ease;
+    
+    /* Size variants */
+    &.sl-tag--small {
+      padding: 0.125rem 0.375rem;
+      font-size: var(--sl-text-xs);
+    }
+    
+    &.sl-tag--medium {
+      padding: 0.25rem 0.5rem;
+    }
+    
+    &.sl-tag--large {
+      padding: 0.375rem 0.75rem;
+      font-size: var(--sl-text-base);
+    }
+    
+    /* Style variants */
+    &.sl-tag--solid {
+      background: var(--tag-color, var(--sl-color-accent));
+      color: white;
+      border: 1px solid var(--tag-color, var(--sl-color-accent));
+    }
+    
+    &.sl-tag--outline {
+      background: transparent;
+      color: var(--tag-color, var(--sl-color-accent));
+      border: 1px solid var(--tag-color, var(--sl-color-accent));
+    }
+    
+    &.sl-tag--ghost {
+      background: color-mix(in srgb, var(--tag-color, var(--sl-color-accent)) 10%, transparent);
+      color: var(--tag-color, var(--sl-color-accent));
+      border: 1px solid transparent;
+    }
+    
+    /* Interactive states */
+    &.sl-tag--clickable:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 2px 8px color-mix(in srgb, var(--tag-color, var(--sl-color-accent)) 25%, transparent);
+    }
+    
+    &.sl-tag--clickable:active {
+      transform: translateY(0);
+    }
+  }
+  
+  .sl-tag__count {
+    opacity: 0.8;
+    font-size: 0.9em;
+  }
+</style>

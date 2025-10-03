@@ -1,0 +1,142 @@
+---
+import StarlightPage from '@astrojs/starlight/components/StarlightPage.astro';
+import TagsList from '../components/TagsList.astro';
+import { getCollection } from 'astro:content';
+import { TagsProcessor } from '../utils/tags-processor.js';
+import { pluginConfigSchema } from '../schemas/config.js';
+
+// Get all docs entries first
+const docsEntries = await getCollection('docs');
+
+// Debug: Log sample entries to see their structure
+if (docsEntries.length > 0) {
+  console.log('[tags-index] Sample entry:', JSON.stringify({
+    id: docsEntries[0].id,
+    slug: docsEntries[0].slug,
+    hasTags: 'tags' in docsEntries[0].data,
+    tags: docsEntries[0].data.tags,
+    dataKeys: Object.keys(docsEntries[0].data)
+  }, null, 2));
+}
+
+// Create default configuration that matches the plugin setup
+const defaultConfig = {
+  configPath: 'tags.yml',
+  tagsPagesPrefix: 'tags',
+  tagsIndexSlug: 'tags',
+  onInlineTagsNotFound: 'warn',
+  tagUrlPattern: '/tags/[tag]',
+  enableFrontmatterTags: true,
+  excludeTags: []
+};
+
+// Create a minimal logger for build-time usage
+const buildLogger = {
+  info: (msg: string) => console.info(`[starlight-tags] ${msg}`),
+  warn: (msg: string) => console.warn(`[starlight-tags] ${msg}`),
+  error: (msg: string) => console.error(`[starlight-tags] ${msg}`),
+  options: {},
+  label: 'starlight-tags',
+  fork: () => buildLogger,
+  debug: (msg: string) => console.debug(`[starlight-tags] ${msg}`)
+} as any;
+
+const config = pluginConfigSchema.parse(defaultConfig);
+const tagsProcessor = new TagsProcessor(config, buildLogger, docsEntries);
+await tagsProcessor.initialize();
+
+const allTags = tagsProcessor.getAllTagsSorted();
+const totalPages = allTags.reduce((sum, tag) => sum + tag.count, 0);
+---
+
+<StarlightPage
+  frontmatter={{
+    title: "All Tags",
+    description: `Browse all ${allTags.length} tags used across ${totalPages} pages.`,
+    sidebar: {
+      label: "Tags",
+      order: 999
+    }
+  }}
+  hasSidebar={true}
+>
+  <div class="tags-index">
+    <div class="tags-stats">
+      <p>
+        <strong>{allTags.length}</strong> tags found across 
+        <strong>{totalPages}</strong> pages
+      </p>
+    </div>
+
+    <TagsList 
+      tags={allTags} 
+      showCount={true} 
+      layout="grid" 
+      sortBy="count"
+    />
+
+    <div class="tags-alphabetical">
+      <h2>Alphabetical Index</h2>
+      <div class="alphabet-grid">
+        {allTags.map((tag: any) => (
+          <a href={tag.url} class="alphabet-item">
+            <strong>{tag.label}</strong>
+            <span class="tag-count">({tag.count})</span>
+            {tag.description && (
+              <p class="tag-description">{tag.description}</p>
+            )}
+          </a>
+        ))}
+      </div>
+    </div>
+  </div>
+</StarlightPage>
+
+<style>
+  .tags-index {
+    container-type: inline-size;
+  }
+  
+  .tags-stats {
+    margin-bottom: 2rem;
+    padding: 1rem;
+    background: var(--sl-color-bg-sidebar);
+    border-radius: var(--sl-border-radius);
+    border: 1px solid var(--sl-color-hairline);
+  }
+  
+  .alphabet-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 1rem;
+    margin-top: 1rem;
+  }
+  
+  .alphabet-item {
+    display: block;
+    padding: 1rem;
+    background: var(--sl-color-bg-nav);
+    border-radius: var(--sl-border-radius);
+    border: 1px solid var(--sl-color-hairline);
+    text-decoration: none;
+    transition: all 0.2s ease;
+    
+    &:hover {
+      background: var(--sl-color-bg-sidebar);
+      border-color: var(--sl-color-accent);
+    }
+  }
+  
+  .tag-count {
+    color: var(--sl-color-gray-3);
+    font-size: var(--sl-text-sm);
+    margin-left: 0.5rem;
+  }
+  
+  .tag-description {
+    margin-top: 0.5rem;
+    font-size: var(--sl-text-sm);
+    color: var(--sl-color-gray-2);
+    line-height: 1.4;
+  }
+</style>

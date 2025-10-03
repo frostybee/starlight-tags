@@ -1,3 +1,6 @@
+docs/src/content/docs/php/
+plan/
+
 # build output
 dist/
 # generated types

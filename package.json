@@ -1,5 +1,5 @@
 {
-  "name": "starlight-tagging-monorepo",
+  "name": "starlight-tags-monorepo",
   "version": "0.0.1",
   "license": "MIT",
   "description": "A plugin to add tags to your Starlight docs.",
@@ -10,10 +10,10 @@
   },
   "packageManager": "pnpm@9.6.0",
   "private": true,
-  "homepage": "https://github.com/frostybee/starlight-tagging",
+  "homepage": "https://github.com/frostybee/starlight-tags",
   "repository": {
     "type": "git",
-    "url": "https://github.com/frostybee/starlight-tagging.git"
+    "url": "https://github.com/frostybee/starlight-tags.git"
   },
-  "bugs": "https://github.com/frostybee/starlight-tagging/issues"
+  "bugs": "https://github.com/frostybee/starlight-tags/issues"
 }

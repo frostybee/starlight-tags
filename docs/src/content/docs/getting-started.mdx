@@ -15,14 +15,14 @@ import { Steps, Tabs, TabItem } from '@astrojs/starlight/components'
 
 <Steps>
 
-1. `starlight-tagging` is a Starlight [plugin](https://starlight.astro.build/reference/plugins/). Install it by running the following command in your terminal:
+1. `starlight-tags` is a Starlight [plugin](https://starlight.astro.build/reference/plugins/). Install it by running the following command in your terminal:
 
    <Tabs syncKey="pkg">
 
    <TabItem label="npm">
 
    ```sh
-   npm install starlight-tagging
+   npm install starlight-tags
    ```
 
    </TabItem>
@@ -30,7 +30,7 @@ import { Steps, Tabs, TabItem } from '@astrojs/starlight/components'
    <TabItem label="pnpm">
 
    ```sh
-   pnpm add starlight-tagging
+   pnpm add starlight-tags
    ```
 
    </TabItem>
@@ -38,7 +38,7 @@ import { Steps, Tabs, TabItem } from '@astrojs/starlight/components'
    <TabItem label="Yarn">
 
    ```sh
-   yarn add starlight-tagging
+   yarn add starlight-tags
    ```
 
    </TabItem>
@@ -51,12 +51,12 @@ import { Steps, Tabs, TabItem } from '@astrojs/starlight/components'
    // astro.config.mjs
    import starlight from '@astrojs/starlight'
    import { defineConfig } from 'astro/config'
-   +import starlightTagging from 'starlight-tagging'
+   +import starlightTags from 'starlight-tags'
 
    export default defineConfig({
      integrations: [
        starlight({
-   +      plugins: [starlightTagging()],
+   +      plugins: [starlightTags()],
          title: 'My Docs',
        }),
      ],

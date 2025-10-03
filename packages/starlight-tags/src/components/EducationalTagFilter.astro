@@ -1,0 +1,510 @@
+---
+import type { ProcessedTag } from '../schemas/tags.js';
+import TagBadge from './TagBadge.astro';
+
+interface Props {
+  allTags: ProcessedTag[];
+  currentFilters?: {
+    difficulty?: string;
+    subject?: string;
+    contentType?: string;
+    learningObjective?: string;
+  };
+  showCounts?: boolean;
+}
+
+const { 
+  allTags, 
+  currentFilters = {},
+  showCounts = true
+} = Astro.props;
+
+// Extract unique values for filtering
+const subjects = [...new Set(allTags.map(tag => tag.subject).filter(Boolean))].sort();
+const difficulties = ['beginner', 'intermediate', 'advanced'];
+const contentTypes = ['lecture', 'tutorial', 'exercise', 'reference', 'assessment'];
+const learningObjectives = ['conceptual', 'practical', 'problem-solving', 'analytical'];
+
+// Count tags for each filter option
+const getCounts = (filterType: string, value: string) => {
+  if (!showCounts) return 0;
+  
+  switch (filterType) {
+    case 'difficulty':
+      return allTags.filter(tag => tag.difficulty === value).length;
+    case 'subject':
+      return allTags.filter(tag => tag.subject === value).length;
+    case 'contentType':
+      return allTags.filter(tag => tag.contentType === value).length;
+    case 'learningObjective':
+      return allTags.filter(tag => tag.learningObjectives?.includes(value as any)).length;
+    default:
+      return 0;
+  }
+};
+
+// Filter tags based on current filters
+let filteredTags = allTags;
+
+if (currentFilters.difficulty) {
+  filteredTags = filteredTags.filter(tag => tag.difficulty === currentFilters.difficulty);
+}
+if (currentFilters.subject) {
+  filteredTags = filteredTags.filter(tag => tag.subject === currentFilters.subject);
+}
+if (currentFilters.contentType) {
+  filteredTags = filteredTags.filter(tag => tag.contentType === currentFilters.contentType);
+}
+if (currentFilters.learningObjective) {
+  filteredTags = filteredTags.filter(tag => 
+    tag.learningObjectives?.includes(currentFilters.learningObjective as any)
+  );
+}
+
+// Sort filtered tags
+filteredTags.sort((a, b) => {
+  // Sort by difficulty first, then by skill level, then by count
+  const difficultyOrder = ['beginner', 'intermediate', 'advanced'];
+  const aDiff = a.difficulty ? difficultyOrder.indexOf(a.difficulty) : -1;
+  const bDiff = b.difficulty ? difficultyOrder.indexOf(b.difficulty) : -1;
+  
+  if (aDiff !== bDiff) return aDiff - bDiff;
+  
+  if (a.skillLevel && b.skillLevel) {
+    return a.skillLevel - b.skillLevel;
+  }
+  
+  return b.count - a.count;
+});
+
+const hasActiveFilters = Object.values(currentFilters).some(Boolean);
+---
+
+<div class="educational-filter">
+  <div class="educational-filter__header">
+    <h3 class="educational-filter__title">📚 Browse Educational Content</h3>
+    <p class="educational-filter__description">
+      Filter and discover learning materials by topic, difficulty, and learning goals
+    </p>
+  </div>
+  
+  <div class="educational-filter__controls">
+    <!-- Difficulty Filter -->
+    <div class="educational-filter__group">
+      <label class="educational-filter__label">
+        🎯 Difficulty Level
+      </label>
+      <div class="educational-filter__options">
+        <a 
+          href="?difficulty=" 
+          class={`educational-filter__option ${!currentFilters.difficulty ? 'active' : ''}`}
+        >
+          All Levels
+          {showCounts && (
+            <span class="educational-filter__count">({allTags.length})</span>
+          )}
+        </a>
+        {difficulties.map(difficulty => {
+          const count = getCounts('difficulty', difficulty);
+          const isActive = currentFilters.difficulty === difficulty;
+          
+          return (
+            <a 
+              href={`?difficulty=${difficulty}`}
+              class={`educational-filter__option ${isActive ? 'active' : ''}`}
+              key={difficulty}
+            >
+              {difficulty === 'beginner' && '🌱'} 
+              {difficulty === 'intermediate' && '🌿'}
+              {difficulty === 'advanced' && '🌳'}
+              {difficulty.charAt(0).toUpperCase() + difficulty.slice(1)}
+              {showCounts && count > 0 && (
+                <span class="educational-filter__count">({count})</span>
+              )}
+            </a>
+          );
+        })}
+      </div>
+    </div>
+    
+    <!-- Subject Filter -->
+    {subjects.length > 0 && (
+      <div class="educational-filter__group">
+        <label class="educational-filter__label">
+          📖 Subject Area
+        </label>
+        <div class="educational-filter__options">
+          <a 
+            href="?subject=" 
+            class={`educational-filter__option ${!currentFilters.subject ? 'active' : ''}`}
+          >
+            All Subjects
+          </a>
+          {subjects.map(subject => {
+            const count = getCounts('subject', subject);
+            const isActive = currentFilters.subject === subject;
+            
+            return (
+              <a 
+                href={`?subject=${encodeURIComponent(subject)}`}
+                class={`educational-filter__option ${isActive ? 'active' : ''}`}
+                key={subject}
+              >
+                {subject.charAt(0).toUpperCase() + subject.slice(1)}
+                {showCounts && count > 0 && (
+                  <span class="educational-filter__count">({count})</span>
+                )}
+              </a>
+            );
+          })}
+        </div>
+      </div>
+    )}
+    
+    <!-- Content Type Filter -->
+    <div class="educational-filter__group">
+      <label class="educational-filter__label">
+        📝 Content Type
+      </label>
+      <div class="educational-filter__options">
+        <a 
+          href="?contentType=" 
+          class={`educational-filter__option ${!currentFilters.contentType ? 'active' : ''}`}
+        >
+          All Types
+        </a>
+        {contentTypes.map(contentType => {
+          const count = getCounts('contentType', contentType);
+          const isActive = currentFilters.contentType === contentType;
+          
+          if (count === 0 && !isActive) return null;
+          
+          return (
+            <a 
+              href={`?contentType=${contentType}`}
+              class={`educational-filter__option ${isActive ? 'active' : ''}`}
+              key={contentType}
+            >
+              {contentType === 'lecture' && '📖'}
+              {contentType === 'tutorial' && '💻'}
+              {contentType === 'exercise' && '✏️'}
+              {contentType === 'reference' && '📚'}
+              {contentType === 'assessment' && '📝'}
+              {contentType.charAt(0).toUpperCase() + contentType.slice(1)}
+              {showCounts && count > 0 && (
+                <span class="educational-filter__count">({count})</span>
+              )}
+            </a>
+          );
+        })}
+      </div>
+    </div>
+    
+    <!-- Learning Objective Filter -->
+    <div class="educational-filter__group">
+      <label class="educational-filter__label">
+        🎯 Learning Focus
+      </label>
+      <div class="educational-filter__options">
+        <a 
+          href="?learningObjective=" 
+          class={`educational-filter__option ${!currentFilters.learningObjective ? 'active' : ''}`}
+        >
+          All Objectives
+        </a>
+        {learningObjectives.map(objective => {
+          const count = getCounts('learningObjective', objective);
+          const isActive = currentFilters.learningObjective === objective;
+          
+          if (count === 0 && !isActive) return null;
+          
+          return (
+            <a 
+              href={`?learningObjective=${objective}`}
+              class={`educational-filter__option ${isActive ? 'active' : ''}`}
+              key={objective}
+            >
+              {objective === 'conceptual' && '💡'}
+              {objective === 'practical' && '🔧'}
+              {objective === 'problem-solving' && '🧩'}
+              {objective === 'analytical' && '📊'}
+              {objective.charAt(0).toUpperCase() + objective.slice(1).replace('-', ' ')}
+              {showCounts && count > 0 && (
+                <span class="educational-filter__count">({count})</span>
+              )}
+            </a>
+          );
+        })}
+      </div>
+    </div>
+    
+    {hasActiveFilters && (
+      <div class="educational-filter__clear">
+        <a href="?" class="educational-filter__clear-button">
+          🔄 Clear All Filters
+        </a>
+      </div>
+    )}
+  </div>
+  
+  <div class="educational-filter__results">
+    <div class="educational-filter__results-header">
+      <h4 class="educational-filter__results-title">
+        {hasActiveFilters ? 'Filtered Results' : 'All Content'}
+        <span class="educational-filter__results-count">
+          ({filteredTags.length} {filteredTags.length === 1 ? 'item' : 'items'})
+        </span>
+      </h4>
+    </div>
+    
+    {filteredTags.length > 0 ? (
+      <div class="educational-filter__results-grid">
+        {filteredTags.map((tag) => (
+          <div class="educational-filter__result-item" key={tag.id}>
+            <TagBadge 
+              tag={tag} 
+              size="large" 
+              variant="outline"
+              showCount={true}
+            />
+            {tag.description && (
+              <p class="educational-filter__result-description">
+                {tag.description}
+              </p>
+            )}
+            <div class="educational-filter__result-meta">
+              {tag.difficulty && (
+                <span class="educational-filter__meta-item">
+                  {tag.difficulty === 'beginner' && '🌱'}
+                  {tag.difficulty === 'intermediate' && '🌿'}
+                  {tag.difficulty === 'advanced' && '🌳'}
+                  {tag.difficulty}
+                </span>
+              )}
+              {tag.estimatedTime && (
+                <span class="educational-filter__meta-item">
+                  ⏱️ {tag.estimatedTime}min
+                </span>
+              )}
+              {tag.skillLevel && (
+                <span class="educational-filter__meta-item">
+                  Level {tag.skillLevel}/10
+                </span>
+              )}
+            </div>
+          </div>
+        ))}
+      </div>
+    ) : (
+      <div class="educational-filter__empty">
+        <p class="educational-filter__empty-text">
+          No content matches your current filters. Try adjusting your selection.
+        </p>
+      </div>
+    )}
+  </div>
+</div>
+
+<style>
+  .educational-filter {
+    background: var(--sl-color-bg);
+    border: 1px solid var(--sl-color-hairline-light);
+    border-radius: var(--sl-border-radius-lg);
+    padding: 1.5rem;
+    margin: 1.5rem 0;
+  }
+  
+  .educational-filter__header {
+    margin-bottom: 1.5rem;
+  }
+  
+  .educational-filter__title {
+    margin: 0 0 0.5rem 0;
+    font-size: var(--sl-text-lg);
+    font-weight: 700;
+    color: var(--sl-color-text);
+  }
+  
+  .educational-filter__description {
+    margin: 0;
+    font-size: var(--sl-text-sm);
+    color: var(--sl-color-text-accent);
+    line-height: 1.4;
+  }
+  
+  .educational-filter__controls {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 1px solid var(--sl-color-hairline-shade);
+  }
+  
+  .educational-filter__group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+  
+  .educational-filter__label {
+    font-size: var(--sl-text-sm);
+    font-weight: 600;
+    color: var(--sl-color-text);
+    margin: 0;
+  }
+  
+  .educational-filter__options {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+  
+  .educational-filter__option {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+    padding: 0.375rem 0.75rem;
+    background: var(--sl-color-bg-nav);
+    border: 1px solid var(--sl-color-hairline-shade);
+    border-radius: var(--sl-border-radius);
+    color: var(--sl-color-text);
+    text-decoration: none;
+    font-size: var(--sl-text-sm);
+    font-weight: 500;
+    transition: all 0.2s ease;
+  }
+  
+  .educational-filter__option:hover {
+    border-color: var(--sl-color-accent-light);
+    background: var(--sl-color-bg-sidebar);
+  }
+  
+  .educational-filter__option.active {
+    background: var(--sl-color-accent);
+    border-color: var(--sl-color-accent);
+    color: white;
+  }
+  
+  .educational-filter__count {
+    opacity: 0.8;
+    font-size: 0.9em;
+  }
+  
+  .educational-filter__clear {
+    margin-top: 0.5rem;
+  }
+  
+  .educational-filter__clear-button {
+    padding: 0.5rem 1rem;
+    background: var(--sl-color-bg-sidebar);
+    border: 1px solid var(--sl-color-hairline-shade);
+    border-radius: var(--sl-border-radius);
+    color: var(--sl-color-text-accent);
+    text-decoration: none;
+    font-size: var(--sl-text-sm);
+    font-weight: 500;
+    transition: all 0.2s ease;
+  }
+  
+  .educational-filter__clear-button:hover {
+    border-color: var(--sl-color-accent-light);
+    color: var(--sl-color-accent);
+  }
+  
+  .educational-filter__results-header {
+    margin-bottom: 1rem;
+  }
+  
+  .educational-filter__results-title {
+    margin: 0;
+    font-size: var(--sl-text-base);
+    font-weight: 600;
+    color: var(--sl-color-text);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  
+  .educational-filter__results-count {
+    font-weight: 400;
+    color: var(--sl-color-text-accent);
+  }
+  
+  .educational-filter__results-grid {
+    display: grid;
+    gap: 1rem;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  }
+  
+  .educational-filter__result-item {
+    padding: 1rem;
+    background: var(--sl-color-bg-nav);
+    border: 1px solid var(--sl-color-hairline-shade);
+    border-radius: var(--sl-border-radius);
+    transition: all 0.2s ease;
+  }
+  
+  .educational-filter__result-item:hover {
+    border-color: var(--sl-color-accent-light);
+    box-shadow: 0 2px 8px color-mix(in srgb, var(--sl-color-accent) 10%, transparent);
+  }
+  
+  .educational-filter__result-description {
+    margin: 0.5rem 0;
+    font-size: var(--sl-text-sm);
+    color: var(--sl-color-text-accent);
+    line-height: 1.4;
+  }
+  
+  .educational-filter__result-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-top: 0.75rem;
+  }
+  
+  .educational-filter__meta-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 0.125rem 0.375rem;
+    background: var(--sl-color-bg);
+    border: 1px solid var(--sl-color-hairline-shade);
+    border-radius: var(--sl-border-radius);
+    font-size: var(--sl-text-xs);
+    color: var(--sl-color-text-accent);
+    font-weight: 500;
+  }
+  
+  .educational-filter__empty {
+    text-align: center;
+    padding: 2rem;
+  }
+  
+  .educational-filter__empty-text {
+    margin: 0;
+    font-size: var(--sl-text-base);
+    color: var(--sl-color-text-accent);
+    font-style: italic;
+  }
+  
+  @media (max-width: 768px) {
+    .educational-filter__controls {
+      gap: 1rem;
+    }
+    
+    .educational-filter__results-grid {
+      grid-template-columns: 1fr;
+    }
+    
+    .educational-filter__options {
+      gap: 0.375rem;
+    }
+    
+    .educational-filter__option {
+      padding: 0.25rem 0.5rem;
+      font-size: var(--sl-text-xs);
+    }
+  }
+</style>

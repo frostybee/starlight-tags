@@ -1,0 +1,81 @@
+---
+import TagBadge from './TagBadge.astro';
+import type { ProcessedTag } from '../schemas/tags.js';
+
+interface Props {
+  tags: ProcessedTag[];
+  title?: string;
+  showCount?: boolean;
+  layout?: 'inline' | 'grid' | 'list';
+  variant?: 'solid' | 'outline' | 'ghost';
+  sortBy?: 'name' | 'count' | 'recent';
+}
+
+const {
+  tags,
+  title,
+  showCount = false,
+  layout = 'inline',
+  variant = 'solid',
+  sortBy = 'name'
+} = Astro.props;
+
+// Sort tags based on sortBy prop
+const sortedTags = [...tags].sort((a, b) => {
+  switch (sortBy) {
+    case 'count':
+      return b.count - a.count || a.label.localeCompare(b.label);
+    case 'name':
+      return a.label.localeCompare(b.label);
+    default:
+      return 0;
+  }
+});
+---
+
+{title && <h3 class="sl-tags-title">{title}</h3>}
+
+<div class:list={[
+  'sl-tags-list',
+  `sl-tags-list--${layout}`
+]}>
+  {sortedTags.map(tag => (
+    <TagBadge
+      tag={tag}
+      showCount={showCount}
+      variant={variant}
+    />
+  ))}
+</div>
+
+<style>
+  .sl-tags-title {
+    margin-bottom: 1rem;
+    font-size: var(--sl-text-lg);
+    font-weight: 600;
+    color: var(--sl-color-white);
+  }
+
+  .sl-tags-list {
+    /* Inline layout (default) */
+    &.sl-tags-list--inline {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+    }
+
+    /* Grid layout */
+    &.sl-tags-list--grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+      gap: 1rem;
+    }
+
+    /* List layout */
+    &.sl-tags-list--list {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+  }
+</style>

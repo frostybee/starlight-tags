@@ -1,4 +1,4 @@
-# `starlight-tagging`
+# `starlight-tags`
 
 A plugin to add tags to your Starlight docs.
 

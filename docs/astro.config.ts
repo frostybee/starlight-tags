@@ -1,24 +1,38 @@
 import starlight from '@astrojs/starlight'
 import { defineConfig } from 'astro/config'
-import starlightTagging from 'starlight-tagging'
+import starlightTags from 'starlight-tags'
 
 export default defineConfig({
   integrations: [
     starlight({
       editLink: {
-        baseUrl: 'https://github.com/frostybee/starlight-tagging/edit/main/docs/',
+        baseUrl: 'https://github.com/frostybee/starlight-tags/edit/main/docs/',
       },
-      plugins: [starlightTagging()],
+      plugins: [
+        starlightTags({
+          configPath: 'tags.yml',
+          tagsPagesPrefix: 'tags',
+          tagsIndexSlug: 'tags',
+          onInlineTagsNotFound: 'warn',
+          enableFrontmatterTags: true
+        }),
+      ],
       sidebar: [
         {
           label: 'Start Here',
           items: ['getting-started'],
         },
+        {
+          label: 'Tagged Pages',
+          autogenerate: {
+            directory: 'php/',
+          },
+        },
       ],
       social: [
-        { href: 'https://github.com/frostybee/starlight-tagging', icon: 'github', label: 'GitHub' },
+        { href: 'https://github.com/frostybee/starlight-tags', icon: 'github', label: 'GitHub' },
       ],
-      title: 'starlight-tagging',
+      title: 'starlight-tags',
     }),
   ],
 })

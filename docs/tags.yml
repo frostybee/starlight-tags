@@ -1,0 +1,149 @@
+# Tags configuration for PHP Web Development Course
+defaults:
+  color: "#8892BF"  # PHP blue color
+  showInSidebar: true
+
+tags:
+  php-basics:
+    label: "PHP Basics"
+    description: "Fundamental PHP concepts, syntax, and introduction"
+    color: "#8892BF"
+    subject: "php"
+    difficulty: "beginner"
+    contentType: "tutorial"
+    learningObjectives: ["conceptual", "practical"]
+    estimatedTime: 120
+    skillLevel: 2
+
+  data-types:
+    label: "Data Types"
+    description: "PHP data types, variables, constants, and type safety"
+    color: "#4CAF50"
+    subject: "php"
+    difficulty: "beginner"
+    contentType: "lecture"
+    prerequisites: ["php-basics"]
+    learningObjectives: ["conceptual", "practical"]
+    estimatedTime: 90
+    skillLevel: 3
+
+  arrays:
+    label: "Arrays"
+    description: "PHP arrays, array functions, and data manipulation"
+    color: "#FF9800"
+    subject: "php"
+    difficulty: "intermediate"
+    contentType: "tutorial"
+    prerequisites: ["data-types"]
+    learningObjectives: ["practical", "problem-solving"]
+    estimatedTime: 150
+    skillLevel: 4
+
+  functions:
+    label: "Functions"
+    description: "PHP functions, parameters, return values, and scope"
+    color: "#2196F3"
+    subject: "php"
+    difficulty: "intermediate"
+    contentType: "tutorial"
+    prerequisites: ["arrays"]
+    learningObjectives: ["practical", "conceptual"]
+    estimatedTime: 180
+    skillLevel: 5
+
+  strings:
+    label: "Strings"
+    description: "String manipulation, functions, and regular expressions"
+    color: "#9C27B0"
+
+  forms:
+    label: "Forms & Input"
+    description: "Form handling, user input, GET/POST methods"
+    color: "#607D8B"
+
+  sessions:
+    label: "Sessions"
+    description: "Session management, cookies, and state handling"
+    color: "#795548"
+
+  database:
+    label: "Database"
+    description: "PDO, database operations, and SQL integration"
+    color: "#3F51B5"
+
+  security:
+    label: "Security"
+    description: "Security best practices, validation, and protection"
+    color: "#F44336"
+    subject: "php"
+    difficulty: "advanced"
+    contentType: "lecture"
+    prerequisites: ["pdo", "validation"]
+    learningObjectives: ["practical", "analytical"]
+    estimatedTime: 180
+    skillLevel: 9
+
+  pdo:
+    label: "PDO"
+    description: "PHP Data Objects for database connectivity"
+    color: "#009688"
+    subject: "php"
+    difficulty: "advanced"
+    contentType: "tutorial"
+    prerequisites: ["functions", "database"]
+    learningObjectives: ["practical", "problem-solving"]
+    estimatedTime: 200
+    skillLevel: 7
+
+  validation:
+    label: "Validation"
+    description: "Input validation and data sanitization"
+    color: "#CDDC39"
+
+  authentication:
+    label: "Authentication"
+    description: "Login systems, user authentication, and authorization"
+    color: "#FF5722"
+
+  sql-injection:
+    label: "SQL Injection"
+    description: "SQL injection prevention and security measures"
+    color: "#E91E63"
+
+  regex:
+    label: "Regular Expressions"
+    description: "Pattern matching and text processing with regex"
+    color: "#00BCD4"
+
+  server-side:
+    label: "Server-Side"
+    description: "Server-side processing and web server concepts"
+    color: "#FFC107"
+
+  http:
+    label: "HTTP"
+    description: "HTTP protocol, request/response cycle, and web fundamentals"
+    color: "#9E9E9E"
+
+  syntax:
+    label: "Syntax"
+    description: "PHP syntax rules, structure, and conventions"
+    color: "#6D4C41"
+
+  beginner:
+    label: "Beginner"
+    description: "Beginner-friendly content and introductory topics"
+    color: "#4CAF50"
+    difficulty: "beginner"
+
+  intermediate:
+    label: "Intermediate"
+    description: "Intermediate level concepts and techniques"
+    color: "#FF9800"
+    difficulty: "intermediate"
+
+  advanced:
+    label: "Advanced"
+    description: "Advanced PHP topics and techniques"
+    color: "#F44336"
+    difficulty: "advanced"

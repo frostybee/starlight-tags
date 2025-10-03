@@ -1,0 +1,182 @@
+---
+import type { ProcessedTag } from '../schemas/tags.js';
+import TagBadge from './TagBadge.astro';
+
+interface Props {
+  tag: ProcessedTag;
+  tagsMap: Map<string, ProcessedTag>;
+  showDescription?: boolean;
+  maxChainLength?: number;
+}
+
+const { 
+  tag, 
+  tagsMap, 
+  showDescription = true, 
+  maxChainLength = 5 
+} = Astro.props;
+
+// Get prerequisite chain with tag objects
+const prerequisiteChain = (tag.prerequisiteChain || [])
+  .slice(0, maxChainLength)
+  .map(tagId => tagsMap.get(tagId))
+  .filter(Boolean) as ProcessedTag[];
+
+const hasPrerequisites = prerequisiteChain.length > 0;
+---
+
+{hasPrerequisites && (
+  <div class="prerequisite-chain">
+    <div class="prerequisite-chain__header">
+      <h4 class="prerequisite-chain__title">
+        📚 Prerequisites
+      </h4>
+      {showDescription && (
+        <p class="prerequisite-chain__description">
+          Complete these topics before starting this content
+        </p>
+      )}
+    </div>
+    
+    <div class="prerequisite-chain__content">
+      <div class="prerequisite-chain__flow">
+        {prerequisiteChain.map((prereqTag, index) => (
+          <div class="prerequisite-chain__item" key={prereqTag.id}>
+            <TagBadge 
+              tag={prereqTag} 
+              size="medium" 
+              variant="outline"
+              showCount={false}
+            />
+            {index < prerequisiteChain.length - 1 && (
+              <div class="prerequisite-chain__arrow">→</div>
+            )}
+          </div>
+        ))}
+        {prerequisiteChain.length > 0 && (
+          <>
+            <div class="prerequisite-chain__arrow prerequisite-chain__arrow--final">→</div>
+            <div class="prerequisite-chain__current">
+              <TagBadge 
+                tag={tag} 
+                size="medium" 
+                variant="solid"
+                showCount={false}
+                clickable={false}
+              />
+            </div>
+          </>
+        )}
+      </div>
+      
+      {tag.prerequisiteChain && tag.prerequisiteChain.length > maxChainLength && (
+        <p class="prerequisite-chain__more">
+          ... and {tag.prerequisiteChain.length - maxChainLength} more prerequisites
+        </p>
+      )}
+    </div>
+  </div>
+)}
+
+<style>
+  .prerequisite-chain {
+    background: var(--sl-color-bg-sidebar);
+    border: 1px solid var(--sl-color-hairline-shade);
+    border-radius: var(--sl-border-radius);
+    padding: 1rem;
+    margin: 1rem 0;
+  }
+  
+  .prerequisite-chain__header {
+    margin-bottom: 0.75rem;
+  }
+  
+  .prerequisite-chain__title {
+    margin: 0 0 0.25rem 0;
+    font-size: var(--sl-text-base);
+    font-weight: 600;
+    color: var(--sl-color-text);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  
+  .prerequisite-chain__description {
+    margin: 0;
+    font-size: var(--sl-text-sm);
+    color: var(--sl-color-text-accent);
+    line-height: 1.4;
+  }
+  
+  .prerequisite-chain__content {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+  
+  .prerequisite-chain__flow {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  
+  .prerequisite-chain__item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  
+  .prerequisite-chain__arrow {
+    color: var(--sl-color-text-accent);
+    font-weight: bold;
+    font-size: 1.1em;
+    user-select: none;
+  }
+  
+  .prerequisite-chain__arrow--final {
+    color: var(--sl-color-accent);
+  }
+  
+  .prerequisite-chain__current {
+    position: relative;
+  }
+  
+  .prerequisite-chain__current::before {
+    content: "You are here";
+    position: absolute;
+    top: -1.5rem;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: var(--sl-text-xs);
+    color: var(--sl-color-text-accent);
+    white-space: nowrap;
+  }
+  
+  .prerequisite-chain__more {
+    margin: 0;
+    font-size: var(--sl-text-sm);
+    color: var(--sl-color-text-accent);
+    font-style: italic;
+  }
+  
+  @media (max-width: 768px) {
+    .prerequisite-chain__flow {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+    
+    .prerequisite-chain__arrow {
+      transform: rotate(90deg);
+    }
+    
+    .prerequisite-chain__current::before {
+      position: relative;
+      top: auto;
+      left: auto;
+      transform: none;
+      display: block;
+      margin-bottom: 0.25rem;
+    }
+  }
+</style>

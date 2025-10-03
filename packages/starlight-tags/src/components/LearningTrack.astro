@@ -1,0 +1,431 @@
+---
+import type { ProcessedTag } from '../schemas/tags.js';
+import TagBadge from './TagBadge.astro';
+
+interface Props {
+  subject: string;
+  tagsMap: Map<string, ProcessedTag>;
+  showProgress?: boolean;
+  currentTagId?: string;
+  maxItemsPerLevel?: number;
+}
+
+const { 
+  subject, 
+  tagsMap, 
+  showProgress = true, 
+  currentTagId,
+  maxItemsPerLevel = 5
+} = Astro.props;
+
+// Get all tags for this subject
+const subjectTags = Array.from(tagsMap.values())
+  .filter(tag => tag.subject === subject);
+
+// Group by difficulty level
+const difficultyLevels = ['beginner', 'intermediate', 'advanced'] as const;
+const tagsByDifficulty = difficultyLevels.reduce((groups, level) => {
+  groups[level] = subjectTags
+    .filter(tag => tag.difficulty === level)
+    .sort((a, b) => {
+      // Sort by skill level, then by count
+      if (a.skillLevel && b.skillLevel) {
+        return a.skillLevel - b.skillLevel;
+      }
+      return b.count - a.count;
+    })
+    .slice(0, maxItemsPerLevel);
+  return groups;
+}, {} as Record<typeof difficultyLevels[number], ProcessedTag[]>);
+
+// Calculate progress if current tag is provided
+let progressInfo = null;
+if (currentTagId && showProgress) {
+  const currentTag = tagsMap.get(currentTagId);
+  if (currentTag && currentTag.subject === subject) {
+    const currentDifficulty = currentTag.difficulty;
+    const allSubjectTags = Object.values(tagsByDifficulty).flat();
+    const currentIndex = allSubjectTags.findIndex(tag => tag.id === currentTagId);
+    
+    progressInfo = {
+      currentDifficulty,
+      progress: currentIndex >= 0 ? Math.round(((currentIndex + 1) / allSubjectTags.length) * 100) : 0,
+      completed: currentIndex + 1,
+      total: allSubjectTags.length
+    };
+  }
+}
+
+const totalEstimatedTime = Object.values(tagsByDifficulty)
+  .flat()
+  .filter(tag => tag.estimatedTime)
+  .reduce((total, tag) => total + (tag.estimatedTime || 0), 0);
+
+const hasContent = Object.values(tagsByDifficulty).some(tags => tags.length > 0);
+---
+
+{hasContent && (
+  <div class="learning-track">
+    <div class="learning-track__header">
+      <h3 class="learning-track__title">
+        📚 {subject.charAt(0).toUpperCase() + subject.slice(1)} Learning Track
+      </h3>
+      
+      <div class="learning-track__meta">
+        {totalEstimatedTime > 0 && (
+          <span class="learning-track__time">
+            ⏱️ {Math.round(totalEstimatedTime / 60)}h {totalEstimatedTime % 60}m total
+          </span>
+        )}
+        {progressInfo && (
+          <div class="learning-track__progress">
+            <span class="learning-track__progress-text">
+              Progress: {progressInfo.completed}/{progressInfo.total}
+            </span>
+            <div class="learning-track__progress-bar">
+              <div 
+                class="learning-track__progress-fill" 
+                style={`width: ${progressInfo.progress}%`}
+              />
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+    
+    <div class="learning-track__content">
+      {difficultyLevels.map((level) => {
+        const levelTags = tagsByDifficulty[level];
+        if (levelTags.length === 0) return null;
+        
+        const isCurrentLevel = progressInfo?.currentDifficulty === level;
+        
+        return (
+          <div 
+            class={`learning-track__level ${isCurrentLevel ? 'learning-track__level--current' : ''}`}
+            key={level}
+          >
+            <div class="learning-track__level-header">
+              <h4 class="learning-track__level-title">
+                {level === 'beginner' && '🌱 Beginner'}
+                {level === 'intermediate' && '🌿 Intermediate'}
+                {level === 'advanced' && '🌳 Advanced'}
+              </h4>
+              <span class="learning-track__level-count">
+                {levelTags.length} topic{levelTags.length !== 1 ? 's' : ''}
+              </span>
+            </div>
+            
+            <div class="learning-track__level-content">
+              {levelTags.map((tag, index) => {
+                const isCurrent = tag.id === currentTagId;
+                const isCompleted = progressInfo && 
+                  Object.values(tagsByDifficulty).flat().indexOf(tag) < 
+                  Object.values(tagsByDifficulty).flat().findIndex(t => t.id === currentTagId);
+                
+                return (
+                  <div 
+                    class={`learning-track__item ${isCurrent ? 'learning-track__item--current' : ''} ${isCompleted ? 'learning-track__item--completed' : ''}`}
+                    key={tag.id}
+                  >
+                    {isCurrent && (
+                      <div class="learning-track__current-indicator">
+                        📍 You are here
+                      </div>
+                    )}
+                    
+                    <div class="learning-track__item-main">
+                      <TagBadge 
+                        tag={tag} 
+                        size="medium" 
+                        variant={isCurrent ? "solid" : isCompleted ? "ghost" : "outline"}
+                        showCount={false}
+                      />
+                      
+                      <div class="learning-track__item-meta">
+                        {tag.estimatedTime && (
+                          <span class="learning-track__item-time">
+                            {tag.estimatedTime}min
+                          </span>
+                        )}
+                        {tag.skillLevel && (
+                          <div class="learning-track__item-skill">
+                            Level {tag.skillLevel}/10
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                    
+                    {tag.description && (
+                      <p class="learning-track__item-description">
+                        {tag.description}
+                      </p>
+                    )}
+                    
+                    {tag.prerequisites && tag.prerequisites.length > 0 && (
+                      <div class="learning-track__item-prereqs">
+                        <span class="learning-track__prereqs-label">Requires:</span>
+                        {tag.prerequisites.slice(0, 3).map(prereqId => {
+                          const prereqTag = tagsMap.get(prereqId);
+                          return prereqTag ? (
+                            <TagBadge 
+                              key={prereqId}
+                              tag={prereqTag} 
+                              size="small" 
+                              variant="ghost"
+                              showCount={false}
+                            />
+                          ) : null;
+                        })}
+                        {tag.prerequisites.length > 3 && (
+                          <span class="learning-track__prereqs-more">
+                            +{tag.prerequisites.length - 3} more
+                          </span>
+                        )}
+                      </div>
+                    )}
+                    
+                    {index < levelTags.length - 1 && (
+                      <div class="learning-track__connector" />
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        );
+      })}
+    </div>
+    
+    <div class="learning-track__footer">
+      <p class="learning-track__footer-text">
+        💡 Complete topics in order for the best learning experience
+      </p>
+    </div>
+  </div>
+)}
+
+<style>
+  .learning-track {
+    background: var(--sl-color-bg);
+    border: 2px solid var(--sl-color-hairline-light);
+    border-radius: var(--sl-border-radius-lg);
+    padding: 1.5rem;
+    margin: 1.5rem 0;
+  }
+  
+  .learning-track__header {
+    margin-bottom: 1.5rem;
+  }
+  
+  .learning-track__title {
+    margin: 0 0 1rem 0;
+    font-size: var(--sl-text-lg);
+    font-weight: 700;
+    color: var(--sl-color-text);
+  }
+  
+  .learning-track__meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    align-items: center;
+  }
+  
+  .learning-track__time {
+    font-size: var(--sl-text-sm);
+    color: var(--sl-color-text-accent);
+    font-weight: 500;
+  }
+  
+  .learning-track__progress {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  
+  .learning-track__progress-text {
+    font-size: var(--sl-text-sm);
+    color: var(--sl-color-text-accent);
+    font-weight: 500;
+  }
+  
+  .learning-track__progress-bar {
+    width: 100px;
+    height: 6px;
+    background: var(--sl-color-bg-sidebar);
+    border-radius: 3px;
+    overflow: hidden;
+  }
+  
+  .learning-track__progress-fill {
+    height: 100%;
+    background: var(--sl-color-accent);
+    transition: width 0.3s ease;
+  }
+  
+  .learning-track__content {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+  }
+  
+  .learning-track__level {
+    position: relative;
+  }
+  
+  .learning-track__level--current {
+    background: color-mix(in srgb, var(--sl-color-accent) 5%, transparent);
+    border-radius: var(--sl-border-radius);
+    padding: 1rem;
+    margin: -1rem;
+  }
+  
+  .learning-track__level-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1rem;
+  }
+  
+  .learning-track__level-title {
+    margin: 0;
+    font-size: var(--sl-text-base);
+    font-weight: 600;
+    color: var(--sl-color-text);
+  }
+  
+  .learning-track__level-count {
+    font-size: var(--sl-text-sm);
+    color: var(--sl-color-text-accent);
+    background: var(--sl-color-bg-sidebar);
+    padding: 0.25rem 0.5rem;
+    border-radius: var(--sl-border-radius);
+  }
+  
+  .learning-track__level-content {
+    position: relative;
+  }
+  
+  .learning-track__item {
+    position: relative;
+    margin-bottom: 1.5rem;
+    padding: 1rem;
+    border: 1px solid var(--sl-color-hairline-shade);
+    border-radius: var(--sl-border-radius);
+    background: var(--sl-color-bg-nav);
+    transition: all 0.2s ease;
+  }
+  
+  .learning-track__item--current {
+    border-color: var(--sl-color-accent);
+    box-shadow: 0 0 0 2px color-mix(in srgb, var(--sl-color-accent) 20%, transparent);
+  }
+  
+  .learning-track__item--completed {
+    opacity: 0.7;
+    background: var(--sl-color-bg-sidebar);
+  }
+  
+  .learning-track__current-indicator {
+    position: absolute;
+    top: -0.5rem;
+    left: 1rem;
+    background: var(--sl-color-accent);
+    color: white;
+    padding: 0.25rem 0.5rem;
+    border-radius: var(--sl-border-radius);
+    font-size: var(--sl-text-xs);
+    font-weight: 500;
+  }
+  
+  .learning-track__item-main {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 0.5rem;
+  }
+  
+  .learning-track__item-meta {
+    display: flex;
+    gap: 0.75rem;
+    align-items: center;
+  }
+  
+  .learning-track__item-time,
+  .learning-track__item-skill {
+    font-size: var(--sl-text-xs);
+    color: var(--sl-color-text-accent);
+    background: var(--sl-color-bg);
+    padding: 0.125rem 0.375rem;
+    border-radius: var(--sl-border-radius);
+    font-weight: 500;
+  }
+  
+  .learning-track__item-description {
+    margin: 0 0 0.75rem 0;
+    font-size: var(--sl-text-sm);
+    color: var(--sl-color-text-accent);
+    line-height: 1.4;
+  }
+  
+  .learning-track__item-prereqs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    align-items: center;
+  }
+  
+  .learning-track__prereqs-label {
+    font-size: var(--sl-text-xs);
+    color: var(--sl-color-text-accent);
+    font-weight: 500;
+  }
+  
+  .learning-track__prereqs-more {
+    font-size: var(--sl-text-xs);
+    color: var(--sl-color-text-accent);
+    font-style: italic;
+  }
+  
+  .learning-track__connector {
+    position: absolute;
+    bottom: -1.5rem;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 2px;
+    height: 1rem;
+    background: var(--sl-color-hairline-shade);
+  }
+  
+  .learning-track__item:last-child .learning-track__connector {
+    display: none;
+  }
+  
+  .learning-track__footer {
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--sl-color-hairline-shade);
+    text-align: center;
+  }
+  
+  .learning-track__footer-text {
+    margin: 0;
+    font-size: var(--sl-text-sm);
+    color: var(--sl-color-text-accent);
+    font-style: italic;
+  }
+  
+  @media (max-width: 768px) {
+    .learning-track__meta {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+    
+    .learning-track__item-main {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 0.5rem;
+    }
+  }
+</style>

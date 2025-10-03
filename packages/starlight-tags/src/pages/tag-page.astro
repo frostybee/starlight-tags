@@ -1,0 +1,244 @@
+---
+import StarlightPage from '@astrojs/starlight/components/StarlightPage.astro';
+import { getCollection } from 'astro:content';
+import TagBadge from '../components/TagBadge.astro';
+import { TagsProcessor } from '../utils/tags-processor.js';
+import { pluginConfigSchema } from '../schemas/config.js';
+
+export async function getStaticPaths() {
+  // Get all docs entries first
+  const docsEntries = await getCollection('docs');
+
+  const config = pluginConfigSchema.parse({
+    configPath: 'tags.yml',
+    tagsPagesPrefix: 'tags',
+    tagsIndexSlug: 'tags',
+    onInlineTagsNotFound: 'warn',
+    tagUrlPattern: '/tags/[tag]',
+    enableFrontmatterTags: true,
+    excludeTags: []
+  });
+
+  // Create a minimal logger for build-time usage
+  const buildLogger = {
+    info: (msg: string) => console.info(`[starlight-tags] ${msg}`),
+    warn: (msg: string) => console.warn(`[starlight-tags] ${msg}`),
+    error: (msg: string) => console.error(`[starlight-tags] ${msg}`),
+    options: {},
+    label: 'starlight-tags',
+    fork: () => buildLogger,
+    debug: (msg: string) => console.debug(`[starlight-tags] ${msg}`)
+  } as any;
+
+  const tagsProcessor = new TagsProcessor(config, buildLogger, docsEntries);
+  await tagsProcessor.initialize();
+
+  const tags = tagsProcessor.getAllTagsSorted();
+
+  return tags.map(tag => ({
+    params: { tag: tag.slug },
+    props: {
+      tag,
+      pages: tag.pages
+    }
+  }));
+}
+
+const { tag, pages } = Astro.props;
+const { tag: tagSlug } = Astro.params;
+
+// Type assertion to ensure we have the correct tag structure
+const tagData = tag as any;
+
+// Get all docs to find related tags
+const allDocs = await getCollection('docs');
+const relatedTags = new Set<string>();
+
+pages.forEach(page => {
+  const doc = allDocs.find((d: any) => d.slug === page.slug);
+  if (doc?.data.tags) {
+    doc.data.tags.forEach((t: any) => {
+      if (t !== tag.id) relatedTags.add(t);
+    });
+  }
+});
+
+// Recreate configuration for related tags processing
+const relatedConfig = pluginConfigSchema.parse({
+  configPath: 'tags.yml',
+  tagsPagesPrefix: 'tags',
+  tagsIndexSlug: 'tags',
+  onInlineTagsNotFound: 'warn',
+  tagUrlPattern: '/tags/[tag]',
+  enableFrontmatterTags: true,
+  excludeTags: []
+});
+const relatedLogger = {
+  info: (msg: string) => console.info(`[starlight-tags] ${msg}`),
+  warn: (msg: string) => console.warn(`[starlight-tags] ${msg}`),
+  error: (msg: string) => console.error(`[starlight-tags] ${msg}`),
+  options: {},
+  label: 'starlight-tags',
+  fork: () => relatedLogger,
+  debug: (msg: string) => console.debug(`[starlight-tags] ${msg}`)
+} as any;
+
+const tagsProcessorForRelated = new TagsProcessor(relatedConfig, relatedLogger, allDocs);
+await tagsProcessorForRelated.initialize();
+const relatedTagsData = Array.from(relatedTags)
+  .map(tagId => tagsProcessorForRelated.getTag(tagId))
+  .filter((tag): tag is NonNullable<typeof tag> => Boolean(tag));
+---
+
+<StarlightPage
+  frontmatter={{
+    title: `Tagged: ${tagData.label}`,
+    description: tagData.description || `All pages tagged with "${tagData.label}". Found ${pages.length} ${pages.length === 1 ? 'page' : 'pages'}.`,
+    sidebar: {
+      label: tagData.label,
+      order: 999
+    }
+  }}
+  hasSidebar={true}
+>
+  <div class="tag-page">
+    <header class="tag-header">
+      <div class="tag-info">
+        <TagBadge tag={tagData} size="large" clickable={false} />
+        {tagData.description && (
+          <p class="tag-description">{tagData.description}</p>
+        )}
+        <p class="tag-stats">
+          <strong>{pages.length}</strong> {pages.length === 1 ? 'page' : 'pages'}
+          tagged with <strong>{tagData.label}</strong>
+        </p>
+      </div>
+    </header>
+
+    <section class="tagged-pages">
+      <h2>Pages</h2>
+      <div class="pages-grid">
+        {pages.map(page => (
+          <article class="page-card">
+            <h3>
+              <a href={`/${page.slug}/`}>{page.title}</a>
+            </h3>
+            {page.description && (
+              <p class="page-description">{page.description}</p>
+            )}
+            <div class="page-meta">
+              <span class="page-slug">/{page.slug}/</span>
+            </div>
+          </article>
+        ))}
+      </div>
+    </section>
+
+    {relatedTagsData.length > 0 && (
+      <aside class="related-tags">
+        <h2>Related Tags</h2>
+        <div class="tags-list">
+          {relatedTagsData.map((relatedTag: any) => (
+            <TagBadge tag={relatedTag} variant="outline" showCount={true} />
+          ))}
+        </div>
+      </aside>
+    )}
+  </div>
+</StarlightPage>
+
+<style>
+  .tag-page {
+    container-type: inline-size;
+  }
+
+  .tag-header {
+    margin-bottom: 3rem;
+    padding-bottom: 2rem;
+    border-bottom: 1px solid var(--sl-color-hairline);
+  }
+
+  .tag-info {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .tag-description {
+    font-size: var(--sl-text-lg);
+    color: var(--sl-color-gray-2);
+    line-height: 1.6;
+  }
+
+  .tag-stats {
+    font-size: var(--sl-text-sm);
+    color: var(--sl-color-gray-3);
+  }
+
+  .pages-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1.5rem;
+    margin-top: 1rem;
+  }
+
+  .page-card {
+    padding: 1.5rem;
+    background: var(--sl-color-bg-nav);
+    border-radius: var(--sl-border-radius);
+    border: 1px solid var(--sl-color-hairline);
+    transition: all 0.2s ease;
+
+    &:hover {
+      background: var(--sl-color-bg-sidebar);
+      border-color: var(--sl-color-accent);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 16px color-mix(in srgb, var(--sl-color-accent) 10%, transparent);
+    }
+
+    h3 {
+      margin: 0 0 0.5rem 0;
+
+      a {
+        color: var(--sl-color-white);
+        text-decoration: none;
+
+        &:hover {
+          color: var(--sl-color-accent);
+        }
+      }
+    }
+
+    .page-description {
+      color: var(--sl-color-gray-2);
+      font-size: var(--sl-text-sm);
+      line-height: 1.5;
+      margin: 0.5rem 0 1rem 0;
+    }
+
+    .page-meta {
+      font-size: var(--sl-text-xs);
+      color: var(--sl-color-gray-3);
+      font-family: var(--sl-font-mono);
+    }
+  }
+
+  .related-tags {
+    margin-top: 3rem;
+    padding-top: 2rem;
+    border-top: 1px solid var(--sl-color-hairline);
+
+    .tags-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      margin-top: 1rem;
+    }
+  }
+
+  @container (max-width: 640px) {
+    .pages-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

@@ -1,0 +1,59 @@
+---
+import TagsList from './TagsList.astro';
+import type { ProcessedTag } from '../schemas/tags.js';
+
+interface Props {
+  tags: ProcessedTag[];
+  position?: 'top' | 'bottom' | 'both';
+  showTitle?: boolean;
+}
+
+const { 
+  tags, 
+  position = 'bottom',
+  showTitle = true 
+} = Astro.props;
+
+const shouldShowTop = position === 'top' || position === 'both';
+const shouldShowBottom = position === 'bottom' || position === 'both';
+---
+
+{shouldShowTop && tags.length > 0 && (
+  <div class="page-tags page-tags--top">
+    <TagsList 
+      tags={tags} 
+      layout="inline" 
+      variant="outline" 
+    />
+  </div>
+)}
+
+<slot />
+
+{shouldShowBottom && tags.length > 0 && (
+  <div class="page-tags page-tags--bottom">
+    <TagsList 
+      tags={tags} 
+      title={showTitle ? "Tags" : undefined}
+      layout="inline" 
+    />
+  </div>
+)}
+
+<style>
+  .page-tags {
+    margin: 2rem 0;
+    
+    &.page-tags--top {
+      margin-bottom: 2rem;
+      margin-top: 0;
+    }
+    
+    &.page-tags--bottom {
+      margin-top: 2rem;
+      margin-bottom: 0;
+      padding-top: 2rem;
+      border-top: 1px solid var(--sl-color-hairline);
+    }
+  }
+</style>
