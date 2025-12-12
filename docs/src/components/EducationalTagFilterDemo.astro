@@ -1,0 +1,48 @@
+---
+/**
+ * MDX-compatible wrapper for EducationalTagFilter component
+ */
+import { EducationalTagFilter } from 'starlight-tags/components';
+import { TagsProcessor } from 'starlight-tags';
+import { config } from 'virtual:starlight-tagging/config';
+
+interface Props {
+  /** Pre-set difficulty filter */
+  difficulty?: string;
+  /** Pre-set subject filter */
+  subject?: string;
+  /** Pre-set content type filter */
+  contentType?: string;
+  /** Pre-set learning objective filter */
+  learningObjective?: string;
+  /** Show count badges */
+  showCounts?: boolean;
+}
+
+const {
+  difficulty,
+  subject,
+  contentType,
+  learningObjective,
+  showCounts = true
+} = Astro.props;
+
+const processor = new TagsProcessor(config, console);
+await processor.initialize();
+
+const tagsMap = processor.getTags();
+const allTags = Array.from(tagsMap.values());
+
+const currentFilters = {
+  difficulty,
+  subject,
+  contentType,
+  learningObjective
+};
+---
+
+<EducationalTagFilter
+  allTags={allTags}
+  currentFilters={currentFilters}
+  showCounts={showCounts}
+/>

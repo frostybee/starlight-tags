@@ -1,0 +1,53 @@
+---
+/**
+ * MDX-compatible wrapper for PrerequisiteChain component
+ */
+import { PrerequisiteChain } from 'starlight-tags/components';
+import { TagsProcessor } from 'starlight-tags';
+import { config } from 'virtual:starlight-tagging/config';
+
+interface Props {
+  /** Tag ID to show prerequisites for */
+  tagId: string;
+  /** Show description text */
+  showDescription?: boolean;
+  /** Maximum chain length to display */
+  maxChainLength?: number;
+}
+
+const {
+  tagId,
+  showDescription = true,
+  maxChainLength = 5
+} = Astro.props;
+
+const processor = new TagsProcessor(config, console);
+await processor.initialize();
+
+const tag = processor.getTag(tagId);
+const tagsMap = processor.getTags();
+---
+
+{tag ? (
+  <PrerequisiteChain
+    tag={tag}
+    tagsMap={tagsMap}
+    showDescription={showDescription}
+    maxChainLength={maxChainLength}
+  />
+) : (
+  <div class="error-message">
+    Tag "{tagId}" not found. Make sure it exists in your tags.yml configuration.
+  </div>
+)}
+
+<style>
+  .error-message {
+    padding: 0.75rem 1rem;
+    background: color-mix(in srgb, #ef4444 15%, transparent);
+    border: 1px solid #ef4444;
+    border-radius: var(--sl-border-radius);
+    color: #ef4444;
+    font-size: var(--sl-text-sm);
+  }
+</style>

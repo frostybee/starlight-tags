@@ -1,0 +1,57 @@
+---
+/**
+ * MDX-compatible wrapper for NextSteps component
+ */
+import { NextSteps } from 'starlight-tags/components';
+import { TagsProcessor } from 'starlight-tags';
+import { config } from 'virtual:starlight-tagging/config';
+
+interface Props {
+  /** Tag ID to show next steps for */
+  tagId: string;
+  /** Show description text */
+  showDescription?: boolean;
+  /** Maximum number of steps to display */
+  maxSteps?: number;
+  /** Show estimated time */
+  showEstimatedTime?: boolean;
+}
+
+const {
+  tagId,
+  showDescription = true,
+  maxSteps = 6,
+  showEstimatedTime = true
+} = Astro.props;
+
+const processor = new TagsProcessor(config, console);
+await processor.initialize();
+
+const tag = processor.getTag(tagId);
+const tagsMap = processor.getTags();
+---
+
+{tag ? (
+  <NextSteps
+    tag={tag}
+    tagsMap={tagsMap}
+    showDescription={showDescription}
+    maxSteps={maxSteps}
+    showEstimatedTime={showEstimatedTime}
+  />
+) : (
+  <div class="error-message">
+    Tag "{tagId}" not found. Make sure it exists in your tags.yml configuration.
+  </div>
+)}
+
+<style>
+  .error-message {
+    padding: 0.75rem 1rem;
+    background: color-mix(in srgb, #ef4444 15%, transparent);
+    border: 1px solid #ef4444;
+    border-radius: var(--sl-border-radius);
+    color: #ef4444;
+    font-size: var(--sl-text-sm);
+  }
+</style>
