@@ -2,25 +2,25 @@
   "compilerOptions": {
     "target": "ES2022",
     "module": "ESNext",
-    "moduleResolution": "node",
-    "declaration": true,
-    "outDir": "./dist",
-    "rootDir": "./",
+    "moduleResolution": "bundler",
     "strict": true,
     "esModuleInterop": true,
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
     "allowSyntheticDefaultImports": true,
     "resolveJsonModule": true,
-    "types": ["node"]
+    "types": ["node"],
+    "noEmit": true
   },
   "include": [
     "index.ts",
-    "src/**/*"
+    "src/**/*.ts"
   ],
   "exclude": [
     "node_modules",
     "dist",
-    "tests"
+    "tests",
+    "**/*.astro",
+    "src/components/index.ts"
   ]
 }

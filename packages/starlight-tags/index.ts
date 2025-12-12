@@ -1,8 +1,8 @@
 import type { StarlightPlugin, StarlightUserConfig } from '@astrojs/starlight/types';
-import type { AstroIntegration } from 'astro';
+import type { AstroIntegration, AstroIntegrationLogger } from 'astro';
 import { fileURLToPath } from 'node:url';
+import path from 'node:path';
 import { TagsProcessor } from './src/utils/tags-processor.js';
-import { generateTagRoutes } from './src/utils/route-generator.js';
 import { pluginConfigSchema, type PluginConfig } from './src/schemas/config.js';
 
 export interface StarlightTagsConfig {
@@ -76,14 +76,31 @@ export default function starlightTagsPlugin(
 
 function createTagsIntegration(
   config: PluginConfig,
-  logger: any
+  logger: AstroIntegrationLogger
 ): AstroIntegration {
+  // Store resolved config path for later use
+  let resolvedConfig: PluginConfig = config;
+
   return {
     name: 'starlight-tags-routes',
     hooks: {
-      'astro:config:setup': ({ injectRoute, addWatchFile }) => {
+      'astro:config:setup': ({ injectRoute, addWatchFile, updateConfig, config: astroConfig }) => {
+        // Resolve configPath relative to Astro root directory
+        const astroRoot = fileURLToPath(astroConfig.root);
+        const absoluteConfigPath = path.isAbsolute(config.configPath)
+          ? config.configPath
+          : path.resolve(astroRoot, config.configPath);
+
+        // Create resolved config with absolute path
+        resolvedConfig = {
+          ...config,
+          configPath: absoluteConfigPath
+        };
+
+        logger.info(`Resolved tags config path: ${absoluteConfigPath}`);
+
         // Watch tags configuration file
-        addWatchFile(config.configPath);
+        addWatchFile(absoluteConfigPath);
 
         // Inject virtual routes for tags using absolute paths
         const tagsIndexPath = fileURLToPath(new URL('./src/pages/tags-index.astro', import.meta.url));
@@ -98,12 +115,33 @@ function createTagsIntegration(
           pattern: `/${config.tagsPagesPrefix}/[tag]`,
           entrypoint: tagPagePath
         });
+
+        // Inject virtual module for config with resolved absolute path
+        updateConfig({
+          vite: {
+            plugins: [
+              {
+                name: 'vite-plugin-starlight-tagging-config',
+                resolveId(id) {
+                  if (id === 'virtual:starlight-tagging/config') {
+                    return '\0' + id;
+                  }
+                },
+                load(id) {
+                  if (id === '\0virtual:starlight-tagging/config') {
+                    return `export const config = ${JSON.stringify(resolvedConfig)};`;
+                  }
+                }
+              }
+            ]
+          }
+        });
       },
       
       'astro:config:done': async ({ config: astroConfig }) => {
         // Validate educational prerequisites during build
         try {
-          const processor = new TagsProcessor(config, logger);
+          const processor = new TagsProcessor(resolvedConfig, logger);
           await processor.initialize();
           processor.setAstroConfig(astroConfig);
           

@@ -1,52 +1,50 @@
 ---
 import StarlightPage from '@astrojs/starlight/components/StarlightPage.astro';
 import TagsList from '../components/TagsList.astro';
+import { TagsProcessor, type MinimalLogger } from '../utils/tags-processor.js';
 import { getCollection } from 'astro:content';
-import { TagsProcessor } from '../utils/tags-processor.js';
-import { pluginConfigSchema } from '../schemas/config.js';
-
-// Get all docs entries first
-const docsEntries = await getCollection('docs');
-
-// Debug: Log sample entries to see their structure
-if (docsEntries.length > 0) {
-  console.log('[tags-index] Sample entry:', JSON.stringify({
-    id: docsEntries[0].id,
-    slug: docsEntries[0].slug,
-    hasTags: 'tags' in docsEntries[0].data,
-    tags: docsEntries[0].data.tags,
-    dataKeys: Object.keys(docsEntries[0].data)
-  }, null, 2));
-}
-
-// Create default configuration that matches the plugin setup
-const defaultConfig = {
-  configPath: 'tags.yml',
-  tagsPagesPrefix: 'tags',
-  tagsIndexSlug: 'tags',
-  onInlineTagsNotFound: 'warn',
-  tagUrlPattern: '/tags/[tag]',
-  enableFrontmatterTags: true,
-  excludeTags: []
-};
+import { config } from 'virtual:starlight-tagging/config';
 
 // Create a minimal logger for build-time usage
-const buildLogger = {
+const buildLogger: MinimalLogger = {
   info: (msg: string) => console.info(`[starlight-tags] ${msg}`),
   warn: (msg: string) => console.warn(`[starlight-tags] ${msg}`),
-  error: (msg: string) => console.error(`[starlight-tags] ${msg}`),
-  options: {},
-  label: 'starlight-tags',
-  fork: () => buildLogger,
-  debug: (msg: string) => console.debug(`[starlight-tags] ${msg}`)
-} as any;
+  error: (msg: string) => console.error(`[starlight-tags] ${msg}`)
+};
 
-const config = pluginConfigSchema.parse(defaultConfig);
+// Fetch docs collection to pass to TagsProcessor
+const docsEntries = await getCollection('docs');
+
 const tagsProcessor = new TagsProcessor(config, buildLogger, docsEntries);
 await tagsProcessor.initialize();
 
 const allTags = tagsProcessor.getAllTagsSorted();
 const totalPages = allTags.reduce((sum, tag) => sum + tag.count, 0);
+
+// Calculate tag popularity tiers for tag cloud effect
+const maxCount = Math.max(...allTags.map(t => t.count), 1);
+const minCount = Math.min(...allTags.map(t => t.count), 1);
+
+function getPopularityTier(count: number): 'tier-1' | 'tier-2' | 'tier-3' | 'tier-4' | 'tier-5' {
+  const range = maxCount - minCount;
+  if (range === 0) return 'tier-3';
+  const normalized = (count - minCount) / range;
+  if (normalized >= 0.8) return 'tier-5';
+  if (normalized >= 0.6) return 'tier-4';
+  if (normalized >= 0.4) return 'tier-3';
+  if (normalized >= 0.2) return 'tier-2';
+  return 'tier-1';
+}
+
+// Group tags alphabetically
+const tagsByLetter = allTags.reduce((acc, tag) => {
+  const letter = tag.label.charAt(0).toUpperCase();
+  if (!acc[letter]) acc[letter] = [];
+  acc[letter].push(tag);
+  return acc;
+}, {} as Record<string, typeof allTags>);
+
+const sortedLetters = Object.keys(tagsByLetter).sort();
 ---
 
 <StarlightPage
@@ -61,82 +59,550 @@ const totalPages = allTags.reduce((sum, tag) => sum + tag.count, 0);
   hasSidebar={true}
 >
   <div class="tags-index">
+    <!-- Stats Card -->
     <div class="tags-stats">
-      <p>
-        <strong>{allTags.length}</strong> tags found across 
-        <strong>{totalPages}</strong> pages
-      </p>
+      <div class="stats-content">
+        <div class="stat-item">
+          <span class="stat-number">{allTags.length}</span>
+          <span class="stat-label">Total Tags</span>
+        </div>
+        <div class="stat-divider"></div>
+        <div class="stat-item">
+          <span class="stat-number">{totalPages}</span>
+          <span class="stat-label">Tagged Pages</span>
+        </div>
+      </div>
     </div>
 
-    <TagsList 
-      tags={allTags} 
-      showCount={true} 
-      layout="grid" 
-      sortBy="count"
-    />
-
-    <div class="tags-alphabetical">
-      <h2>Alphabetical Index</h2>
-      <div class="alphabet-grid">
-        {allTags.map((tag: any) => (
-          <a href={tag.url} class="alphabet-item">
-            <strong>{tag.label}</strong>
-            <span class="tag-count">({tag.count})</span>
-            {tag.description && (
-              <p class="tag-description">{tag.description}</p>
-            )}
+    <!-- Tag Cloud Section -->
+    <section class="tag-cloud-section">
+      <h2 class="section-title">
+        <svg class="title-icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z"/></svg>
+        Tag Cloud
+      </h2>
+      <div class="tag-cloud">
+        {allTags.map(tag => (
+          <a
+            href={tag.url}
+            class={`cloud-tag ${getPopularityTier(tag.count)}`}
+            title={`${tag.label}: ${tag.count} ${tag.count === 1 ? 'page' : 'pages'}`}
+          >
+            <span class="tag-name">{tag.label}</span>
+            <span class="tag-badge">{tag.count}</span>
           </a>
         ))}
       </div>
-    </div>
+    </section>
+
+    <!-- Alphabetical Index Section -->
+    <section class="alphabetical-section">
+      <h2 class="section-title">
+        <svg class="title-icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M3 12h18"/><path d="M3 18h18"/></svg>
+        Alphabetical Index
+      </h2>
+
+      <!-- Letter Navigation -->
+      <nav class="letter-nav" aria-label="Jump to letter">
+        {sortedLetters.map(letter => (
+          <a href={`#letter-${letter}`} class="letter-link">{letter}</a>
+        ))}
+      </nav>
+
+      <!-- Tags by Letter -->
+      <div class="tags-by-letter">
+        {sortedLetters.map(letter => (
+          <div class="letter-group" id={`letter-${letter}`}>
+            <h3 class="letter-header">
+              <span class="letter">{letter}</span>
+              <span class="letter-count">{tagsByLetter[letter].length}</span>
+            </h3>
+            <div class="letter-tags">
+              {tagsByLetter[letter].map(tag => (
+                <a href={tag.url} class={`tag-card ${getPopularityTier(tag.count)}`}>
+                  <div class="tag-card-header">
+                    <strong class="tag-card-name">{tag.label}</strong>
+                    <span class="tag-card-count">{tag.count}</span>
+                  </div>
+                  {tag.description && (
+                    <p class="tag-card-description">{tag.description}</p>
+                  )}
+                  <div class="tag-card-bar">
+                    <div class="tag-card-bar-fill" style={`width: ${(tag.count / maxCount) * 100}%`}></div>
+                  </div>
+                </a>
+              ))}
+            </div>
+          </div>
+        ))}
+      </div>
+    </section>
   </div>
 </StarlightPage>
 
 <style>
+  /* ===== Base Container ===== */
   .tags-index {
     container-type: inline-size;
+    display: flex;
+    flex-direction: column;
+    gap: 2.5rem;
   }
-  
+
+  /* ===== Stats Card ===== */
   .tags-stats {
-    margin-bottom: 2rem;
-    padding: 1rem;
-    background: var(--sl-color-bg-sidebar);
-    border-radius: var(--sl-border-radius);
+    background: linear-gradient(135deg, var(--sl-color-bg-sidebar) 0%, var(--sl-color-bg-nav) 100%);
+    border-radius: 1rem;
+    border: 1px solid var(--sl-color-hairline);
+    padding: 1.5rem 2rem;
+    box-shadow:
+      0 4px 6px -1px rgba(0, 0, 0, 0.1),
+      0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  }
+
+  .stats-content {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 2rem;
+  }
+
+  .stat-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.25rem;
+  }
+
+  .stat-number {
+    font-size: 2.5rem;
+    font-weight: 700;
+    background: linear-gradient(135deg, var(--sl-color-accent) 0%, var(--sl-color-accent-high) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    line-height: 1;
+  }
+
+  .stat-label {
+    font-size: var(--sl-text-sm);
+    color: var(--sl-color-gray-2);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    font-weight: 500;
+  }
+
+  .stat-divider {
+    width: 1px;
+    height: 3rem;
+    background: linear-gradient(180deg, transparent 0%, var(--sl-color-hairline) 50%, transparent 100%);
+  }
+
+  /* ===== Section Titles ===== */
+  .section-title {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: var(--sl-color-white);
+    margin-bottom: 1.5rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 2px solid var(--sl-color-hairline);
+  }
+
+  .title-icon {
+    width: 1.25rem;
+    height: 1.25rem;
+    opacity: 0.7;
+    flex-shrink: 0;
+  }
+
+  /* ===== Tag Cloud Section ===== */
+  .tag-cloud-section {
+    padding: 1.5rem;
+    background: var(--sl-color-bg-nav);
+    border-radius: 1rem;
     border: 1px solid var(--sl-color-hairline);
   }
-  
-  .alphabet-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-    gap: 1rem;
-    margin-top: 1rem;
-  }
-  
-  .alphabet-item {
-    display: block;
+
+  .tag-cloud {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    justify-content: center;
+    align-items: center;
     padding: 1rem;
+  }
+
+  .cloud-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    background: var(--sl-color-bg-sidebar);
+    border-radius: 2rem;
+    border: 1px solid var(--sl-color-hairline);
+    text-decoration: none;
+    color: var(--sl-color-text);
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  }
+
+  .cloud-tag:hover {
+    transform: translateY(-3px) scale(1.05);
+    box-shadow:
+      0 10px 20px -5px rgba(0, 0, 0, 0.15),
+      0 4px 6px -2px rgba(0, 0, 0, 0.1);
+    border-color: var(--sl-color-accent);
+    background: var(--sl-color-bg-sidebar);
+  }
+
+  .cloud-tag:focus {
+    outline: 2px solid var(--sl-color-accent);
+    outline-offset: 2px;
+  }
+
+  .cloud-tag:active {
+    transform: translateY(-1px) scale(1.02);
+  }
+
+  /* Tag Cloud - Popularity Tiers (size variation) */
+  .cloud-tag.tier-1 {
+    font-size: 0.8rem;
+    padding: 0.35rem 0.75rem;
+  }
+
+  .cloud-tag.tier-2 {
+    font-size: 0.9rem;
+    padding: 0.4rem 0.85rem;
+  }
+
+  .cloud-tag.tier-3 {
+    font-size: 1rem;
+    padding: 0.5rem 1rem;
+  }
+
+  .cloud-tag.tier-4 {
+    font-size: 1.1rem;
+    padding: 0.55rem 1.1rem;
+    font-weight: 500;
+  }
+
+  .cloud-tag.tier-5 {
+    font-size: 1.25rem;
+    padding: 0.6rem 1.25rem;
+    font-weight: 600;
+  }
+
+  /* Tag Cloud - Color coding by frequency */
+  .cloud-tag.tier-1 { --tag-accent: #6b7280; }
+  .cloud-tag.tier-2 { --tag-accent: #3b82f6; }
+  .cloud-tag.tier-3 { --tag-accent: #8b5cf6; }
+  .cloud-tag.tier-4 { --tag-accent: #ec4899; }
+  .cloud-tag.tier-5 { --tag-accent: #f59e0b; }
+
+  .cloud-tag:hover {
+    border-color: var(--tag-accent);
+    box-shadow:
+      0 10px 20px -5px rgba(0, 0, 0, 0.15),
+      0 0 0 1px var(--tag-accent);
+  }
+
+  .tag-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 1.5em;
+    padding: 0.15em 0.5em;
+    font-size: 0.75em;
+    font-weight: 600;
+    background: var(--tag-accent, var(--sl-color-accent));
+    color: white;
+    border-radius: 1rem;
+    line-height: 1;
+  }
+
+  /* ===== Alphabetical Section ===== */
+  .alphabetical-section {
+    padding: 1.5rem;
     background: var(--sl-color-bg-nav);
-    border-radius: var(--sl-border-radius);
+    border-radius: 1rem;
+    border: 1px solid var(--sl-color-hairline);
+  }
+
+  /* Letter Navigation */
+  .letter-nav {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    justify-content: center;
+    padding: 1rem;
+    margin-bottom: 1.5rem;
+    background: var(--sl-color-bg-sidebar);
+    border-radius: 0.75rem;
+    border: 1px solid var(--sl-color-hairline);
+  }
+
+  .letter-link {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.25rem;
+    height: 2.25rem;
+    font-weight: 600;
+    font-size: 0.9rem;
+    color: var(--sl-color-text);
+    background: var(--sl-color-bg-nav);
+    border-radius: 0.5rem;
     border: 1px solid var(--sl-color-hairline);
     text-decoration: none;
     transition: all 0.2s ease;
-    
-    &:hover {
-      background: var(--sl-color-bg-sidebar);
-      border-color: var(--sl-color-accent);
-    }
   }
-  
-  .tag-count {
-    color: var(--sl-color-gray-3);
+
+  .letter-link:hover {
+    background: var(--sl-color-accent);
+    color: white;
+    border-color: var(--sl-color-accent);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+  }
+
+  .letter-link:focus {
+    outline: 2px solid var(--sl-color-accent);
+    outline-offset: 2px;
+  }
+
+  /* Tags by Letter */
+  .tags-by-letter {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+  }
+
+  .letter-group {
+    scroll-margin-top: 2rem;
+  }
+
+  .letter-header {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid var(--sl-color-hairline);
+  }
+
+  .letter {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.5rem;
+    height: 2.5rem;
+    font-size: 1.25rem;
+    font-weight: 700;
+    background: var(--sl-color-accent);
+    color: white;
+    border-radius: 0.5rem;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+
+  .letter-count {
     font-size: var(--sl-text-sm);
-    margin-left: 0.5rem;
+    color: var(--sl-color-gray-3);
+    font-weight: 500;
   }
-  
-  .tag-description {
-    margin-top: 0.5rem;
+
+  .letter-tags {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1rem;
+  }
+
+  /* Tag Cards */
+  .tag-card {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    padding: 1rem 1.25rem;
+    background: var(--sl-color-bg-sidebar);
+    border-radius: 0.75rem;
+    border: 1px solid var(--sl-color-hairline);
+    text-decoration: none;
+    color: var(--sl-color-text);
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .tag-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 4px;
+    height: 100%;
+    background: var(--tag-accent, var(--sl-color-accent));
+    opacity: 0;
+    transition: opacity 0.2s ease;
+  }
+
+  .tag-card:hover {
+    transform: translateY(-4px) translateX(2px);
+    box-shadow:
+      0 12px 24px -8px rgba(0, 0, 0, 0.15),
+      0 4px 8px -2px rgba(0, 0, 0, 0.1);
+    border-color: var(--tag-accent, var(--sl-color-accent));
+  }
+
+  .tag-card:hover::before {
+    opacity: 1;
+  }
+
+  .tag-card:focus {
+    outline: 2px solid var(--sl-color-accent);
+    outline-offset: 2px;
+  }
+
+  .tag-card:active {
+    transform: translateY(-2px) translateX(1px);
+  }
+
+  .tag-card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+  }
+
+  .tag-card-name {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--sl-color-white);
+  }
+
+  .tag-card-count {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 1.75rem;
+    padding: 0.2rem 0.6rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    background: var(--tag-accent, var(--sl-color-accent));
+    color: white;
+    border-radius: 1rem;
+  }
+
+  .tag-card-description {
     font-size: var(--sl-text-sm);
     color: var(--sl-color-gray-2);
-    line-height: 1.4;
+    line-height: 1.5;
+    margin: 0;
+  }
+
+  /* Progress bar showing relative popularity */
+  .tag-card-bar {
+    height: 3px;
+    background: var(--sl-color-hairline);
+    border-radius: 2px;
+    overflow: hidden;
+    margin-top: auto;
+  }
+
+  .tag-card-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--tag-accent, var(--sl-color-accent)) 0%, var(--sl-color-accent-high) 100%);
+    border-radius: 2px;
+    transition: width 0.3s ease;
+  }
+
+  /* Tag card tier colors */
+  .tag-card.tier-1 { --tag-accent: #6b7280; }
+  .tag-card.tier-2 { --tag-accent: #3b82f6; }
+  .tag-card.tier-3 { --tag-accent: #8b5cf6; }
+  .tag-card.tier-4 { --tag-accent: #ec4899; }
+  .tag-card.tier-5 { --tag-accent: #f59e0b; }
+
+  /* ===== Responsive Adjustments ===== */
+  @container (max-width: 600px) {
+    .stats-content {
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .stat-divider {
+      width: 4rem;
+      height: 1px;
+      background: linear-gradient(90deg, transparent 0%, var(--sl-color-hairline) 50%, transparent 100%);
+    }
+
+    .stat-number {
+      font-size: 2rem;
+    }
+
+    .letter-tags {
+      grid-template-columns: 1fr;
+    }
+
+    .tag-cloud {
+      gap: 0.5rem;
+      padding: 0.5rem;
+    }
+
+    .letter-nav {
+      gap: 0.35rem;
+    }
+
+    .letter-link {
+      width: 2rem;
+      height: 2rem;
+      font-size: 0.8rem;
+    }
+  }
+
+  /* ===== Dark Mode Refinements ===== */
+  :global([data-theme='dark']) .tags-stats {
+    background: linear-gradient(135deg, rgba(30, 30, 40, 0.8) 0%, rgba(20, 20, 30, 0.9) 100%);
+  }
+
+  :global([data-theme='dark']) .cloud-tag,
+  :global([data-theme='dark']) .tag-card {
+    background: rgba(30, 30, 40, 0.6);
+  }
+
+  :global([data-theme='dark']) .cloud-tag:hover,
+  :global([data-theme='dark']) .tag-card:hover {
+    background: rgba(40, 40, 55, 0.8);
+  }
+
+  :global([data-theme='dark']) .letter-nav {
+    background: rgba(20, 20, 30, 0.6);
+  }
+
+  :global([data-theme='dark']) .letter-link {
+    background: rgba(30, 30, 40, 0.8);
+  }
+
+  /* ===== Smooth Scroll ===== */
+  @media (prefers-reduced-motion: no-preference) {
+    .tags-index {
+      scroll-behavior: smooth;
+    }
+  }
+
+  /* ===== Accessibility: Reduced Motion ===== */
+  @media (prefers-reduced-motion: reduce) {
+    .cloud-tag,
+    .tag-card,
+    .letter-link {
+      transition: none;
+    }
+
+    .cloud-tag:hover,
+    .tag-card:hover,
+    .letter-link:hover {
+      transform: none;
+    }
   }
 </style>

@@ -3,32 +3,17 @@ import StarlightPage from '@astrojs/starlight/components/StarlightPage.astro';
 import { getCollection } from 'astro:content';
 import TagBadge from '../components/TagBadge.astro';
 import { TagsProcessor } from '../utils/tags-processor.js';
-import { pluginConfigSchema } from '../schemas/config.js';
+import { config } from 'virtual:starlight-tagging/config';
 
 export async function getStaticPaths() {
-  // Get all docs entries first
-  const docsEntries = await getCollection('docs');
-
-  const config = pluginConfigSchema.parse({
-    configPath: 'tags.yml',
-    tagsPagesPrefix: 'tags',
-    tagsIndexSlug: 'tags',
-    onInlineTagsNotFound: 'warn',
-    tagUrlPattern: '/tags/[tag]',
-    enableFrontmatterTags: true,
-    excludeTags: []
-  });
-
-  // Create a minimal logger for build-time usage
   const buildLogger = {
     info: (msg: string) => console.info(`[starlight-tags] ${msg}`),
     warn: (msg: string) => console.warn(`[starlight-tags] ${msg}`),
-    error: (msg: string) => console.error(`[starlight-tags] ${msg}`),
-    options: {},
-    label: 'starlight-tags',
-    fork: () => buildLogger,
-    debug: (msg: string) => console.debug(`[starlight-tags] ${msg}`)
-  } as any;
+    error: (msg: string) => console.error(`[starlight-tags] ${msg}`)
+  };
+
+  // Fetch docs collection to pass to TagsProcessor
+  const docsEntries = await getCollection('docs');
 
   const tagsProcessor = new TagsProcessor(config, buildLogger, docsEntries);
   await tagsProcessor.initialize();
@@ -45,101 +30,128 @@ export async function getStaticPaths() {
 }
 
 const { tag, pages } = Astro.props;
-const { tag: tagSlug } = Astro.params;
-
-// Type assertion to ensure we have the correct tag structure
-const tagData = tag as any;
 
 // Get all docs to find related tags
 const allDocs = await getCollection('docs');
 const relatedTags = new Set<string>();
 
-pages.forEach(page => {
-  const doc = allDocs.find((d: any) => d.slug === page.slug);
+pages.forEach((page: { id: string; slug?: string }) => {
+  // Use id for lookup since Astro 5 doesn't have slug on entries
+  const doc = allDocs.find(d => d.id === page.id);
   if (doc?.data.tags) {
-    doc.data.tags.forEach((t: any) => {
+    (doc.data.tags as string[]).forEach((t: string) => {
       if (t !== tag.id) relatedTags.add(t);
     });
   }
 });
 
-// Recreate configuration for related tags processing
-const relatedConfig = pluginConfigSchema.parse({
-  configPath: 'tags.yml',
-  tagsPagesPrefix: 'tags',
-  tagsIndexSlug: 'tags',
-  onInlineTagsNotFound: 'warn',
-  tagUrlPattern: '/tags/[tag]',
-  enableFrontmatterTags: true,
-  excludeTags: []
-});
 const relatedLogger = {
   info: (msg: string) => console.info(`[starlight-tags] ${msg}`),
   warn: (msg: string) => console.warn(`[starlight-tags] ${msg}`),
-  error: (msg: string) => console.error(`[starlight-tags] ${msg}`),
-  options: {},
-  label: 'starlight-tags',
-  fork: () => relatedLogger,
-  debug: (msg: string) => console.debug(`[starlight-tags] ${msg}`)
-} as any;
+  error: (msg: string) => console.error(`[starlight-tags] ${msg}`)
+};
 
-const tagsProcessorForRelated = new TagsProcessor(relatedConfig, relatedLogger, allDocs);
+const tagsProcessorForRelated = new TagsProcessor(config, relatedLogger, allDocs);
 await tagsProcessorForRelated.initialize();
 const relatedTagsData = Array.from(relatedTags)
   .map(tagId => tagsProcessorForRelated.getTag(tagId))
-  .filter((tag): tag is NonNullable<typeof tag> => Boolean(tag));
+  .filter((t): t is NonNullable<typeof t> => t !== undefined)
+  .sort((a, b) => b.count - a.count);
+
+// Calculate popularity tiers for related tags
+const maxRelatedCount = Math.max(...relatedTagsData.map(t => t.count), 1);
+const minRelatedCount = Math.min(...relatedTagsData.map(t => t.count), 1);
+
+function getPopularityTier(count: number): 'tier-1' | 'tier-2' | 'tier-3' | 'tier-4' | 'tier-5' {
+  const range = maxRelatedCount - minRelatedCount;
+  if (range === 0) return 'tier-3';
+  const normalized = (count - minRelatedCount) / range;
+  if (normalized >= 0.8) return 'tier-5';
+  if (normalized >= 0.6) return 'tier-4';
+  if (normalized >= 0.4) return 'tier-3';
+  if (normalized >= 0.2) return 'tier-2';
+  return 'tier-1';
+}
 ---
 
 <StarlightPage
   frontmatter={{
-    title: `Tagged: ${tagData.label}`,
-    description: tagData.description || `All pages tagged with "${tagData.label}". Found ${pages.length} ${pages.length === 1 ? 'page' : 'pages'}.`,
+    title: `Tagged: ${tag.label}`,
+    description: tag.description || `All pages tagged with "${tag.label}". Found ${pages.length} ${pages.length === 1 ? 'page' : 'pages'}.`,
     sidebar: {
-      label: tagData.label,
+      label: tag.label,
       order: 999
     }
   }}
   hasSidebar={true}
 >
   <div class="tag-page">
+    <!-- Tag Header Card -->
     <header class="tag-header">
-      <div class="tag-info">
-        <TagBadge tag={tagData} size="large" clickable={false} />
-        {tagData.description && (
-          <p class="tag-description">{tagData.description}</p>
+      <div class="tag-header-content">
+        <TagBadge tag={tag} size="large" clickable={false} />
+        <div class="tag-stats">
+          <div class="stat-pill">
+            <svg class="stat-icon" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/></svg>
+            <span class="stat-number">{pages.length}</span>
+            <span class="stat-label">{pages.length === 1 ? 'page' : 'pages'}</span>
+          </div>
+          {relatedTagsData.length > 0 && (
+            <div class="stat-pill">
+              <svg class="stat-icon" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2H2v10l9.29 9.29c.94.94 2.48.94 3.42 0l6.58-6.58c.94-.94.94-2.48 0-3.42L12 2Z"/><path d="M7 7h.01"/></svg>
+              <span class="stat-number">{relatedTagsData.length}</span>
+              <span class="stat-label">related</span>
+            </div>
+          )}
+        </div>
+        {tag.description && (
+          <p class="tag-description">{tag.description}</p>
         )}
-        <p class="tag-stats">
-          <strong>{pages.length}</strong> {pages.length === 1 ? 'page' : 'pages'}
-          tagged with <strong>{tagData.label}</strong>
-        </p>
       </div>
     </header>
 
+    <!-- Pages Section -->
     <section class="tagged-pages">
-      <h2>Pages</h2>
+      <h2 class="section-title">
+        <svg class="title-icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="M10 9H8"/><path d="M16 13H8"/><path d="M16 17H8"/></svg>
+        Pages with this tag
+      </h2>
       <div class="pages-grid">
-        {pages.map(page => (
-          <article class="page-card">
-            <h3>
-              <a href={`/${page.slug}/`}>{page.title}</a>
-            </h3>
-            {page.description && (
-              <p class="page-description">{page.description}</p>
-            )}
-            <div class="page-meta">
-              <span class="page-slug">/{page.slug}/</span>
+        {pages.map((page, index) => (
+          <a href={`/${page.slug || page.id}/`} class="page-card">
+            <div class="page-card-header">
+              <h3 class="page-card-title">{page.title}</h3>
+              <span class="page-card-index">{index + 1}</span>
             </div>
-          </article>
+            {page.description && (
+              <p class="page-card-description">{page.description}</p>
+            )}
+            <div class="page-card-footer">
+              <span class="page-card-slug"><span class="slug-label">Path:</span> /{page.slug || page.id}/</span>
+              <svg class="page-card-arrow" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+            </div>
+          </a>
         ))}
       </div>
     </section>
 
+    <!-- Related Tags Section -->
     {relatedTagsData.length > 0 && (
       <aside class="related-tags">
-        <h2>Related Tags</h2>
-        <div class="tags-list">
-          {relatedTagsData.map((relatedTag: any) => (
-            <TagBadge tag={relatedTag} variant="outline" showCount={true} />
+        <h2 class="section-title">
+          <svg class="title-icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2H2v10l9.29 9.29c.94.94 2.48.94 3.42 0l6.58-6.58c.94-.94.94-2.48 0-3.42L12 2Z"/><path d="M7 7h.01"/></svg>
+          Related Tags
+        </h2>
+        <div class="related-tags-cloud">
+          {relatedTagsData.map(relatedTag => (
+            <a
+              href={relatedTag.url}
+              class={`cloud-tag ${getPopularityTier(relatedTag.count)}`}
+              title={`${relatedTag.label}: ${relatedTag.count} ${relatedTag.count === 1 ? 'page' : 'pages'}`}
+            >
+              <span class="tag-name">{relatedTag.label}</span>
+              <span class="tag-badge">{relatedTag.count}</span>
+            </a>
           ))}
         </div>
       </aside>
@@ -148,97 +160,411 @@ const relatedTagsData = Array.from(relatedTags)
 </StarlightPage>
 
 <style>
+  /* ===== Base Container ===== */
   .tag-page {
     container-type: inline-size;
-  }
-
-  .tag-header {
-    margin-bottom: 3rem;
-    padding-bottom: 2rem;
-    border-bottom: 1px solid var(--sl-color-hairline);
-  }
-
-  .tag-info {
     display: flex;
     flex-direction: column;
+    gap: 2.5rem;
+  }
+
+  /* ===== Tag Header Card ===== */
+  .tag-header {
+    background: var(--sl-color-bg-nav);
+    border-radius: 0.75rem;
+    border: 1px solid var(--sl-color-hairline);
+    padding: 1rem 1.25rem;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  }
+
+  .tag-header-content {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
     gap: 1rem;
   }
 
   .tag-description {
-    font-size: var(--sl-text-lg);
+    flex-basis: 100%;
+    font-size: var(--sl-text-sm);
     color: var(--sl-color-gray-2);
-    line-height: 1.6;
+    line-height: 1.5;
+    margin: 0;
+    padding-top: 0.5rem;
+    border-top: 1px solid var(--sl-color-hairline);
   }
 
   .tag-stats {
-    font-size: var(--sl-text-sm);
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-left: auto;
+  }
+
+  .stat-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.3rem 0.75rem;
+    background: var(--sl-color-bg-sidebar);
+    border-radius: 2rem;
+    border: 1px solid var(--sl-color-hairline);
+  }
+
+  .stat-icon {
+    width: 0.85rem;
+    height: 0.85rem;
+    flex-shrink: 0;
     color: var(--sl-color-gray-3);
+  }
+
+  .stat-number {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--sl-color-accent);
+  }
+
+  .stat-label {
+    font-size: var(--sl-text-xs);
+    color: var(--sl-color-gray-3);
+  }
+
+  /* ===== Section Titles ===== */
+  .section-title {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    font-size: 1.35rem;
+    font-weight: 600;
+    color: var(--sl-color-white);
+    margin: 0 0 1.5rem 0;
+    padding-bottom: 0.75rem;
+    border-bottom: 2px solid var(--sl-color-hairline);
+  }
+
+  .title-icon {
+    width: 1.25rem;
+    height: 1.25rem;
+    opacity: 0.7;
+    flex-shrink: 0;
+  }
+
+  /* ===== Pages Section ===== */
+  .tagged-pages {
+    padding: 1.5rem;
+    background: var(--sl-color-bg-nav);
+    border-radius: 1rem;
+    border: 1px solid var(--sl-color-hairline);
   }
 
   .pages-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-    gap: 1.5rem;
-    margin-top: 1rem;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1rem;
   }
 
+  /* Page Cards - matching tag-card style */
   .page-card {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    padding: 1rem 1.25rem;
+    background: var(--sl-color-bg-sidebar);
+    border-radius: 0.75rem;
+    border: 1px solid var(--sl-color-hairline);
+    text-decoration: none !important;
+    color: var(--sl-color-text);
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .page-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 4px;
+    height: 100%;
+    background: var(--sl-color-accent);
+    opacity: 0;
+    transition: opacity 0.2s ease;
+  }
+
+  .page-card:hover {
+    transform: translateY(-4px) translateX(2px);
+    box-shadow:
+      0 12px 24px -8px rgba(0, 0, 0, 0.15),
+      0 4px 8px -2px rgba(0, 0, 0, 0.1);
+    border-color: var(--sl-color-accent);
+    text-decoration: none !important;
+  }
+
+  .page-card:hover::before {
+    opacity: 1;
+  }
+
+  .page-card:focus {
+    outline: 2px solid var(--sl-color-accent);
+    outline-offset: 2px;
+  }
+
+  .page-card:active {
+    transform: translateY(-2px) translateX(1px);
+  }
+
+  .page-card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+  }
+
+  .page-card-title {
+    margin: 0;
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--sl-color-white);
+    transition: color 0.2s ease;
+    flex: 1;
+    min-width: 0;
+  }
+
+  .page-card:hover .page-card-title {
+    color: var(--sl-color-accent);
+  }
+
+  .page-card-index {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 1.75rem;
+    padding: 0.2rem 0.6rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    background: var(--sl-color-accent);
+    color: white;
+    border-radius: 1rem;
+    flex-shrink: 0;
+  }
+
+  .page-card-description {
+    font-size: var(--sl-text-sm);
+    color: var(--sl-color-gray-2);
+    line-height: 1.5;
+    margin: 0;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .page-card-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    margin-top: auto;
+    padding-top: 0.5rem;
+    border-top: 1px solid var(--sl-color-hairline);
+  }
+
+  .page-card-slug {
+    font-size: var(--sl-text-xs);
+    color: var(--sl-color-gray-3);
+    font-family: var(--sl-font-mono);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .slug-label {
+    font-family: var(--sl-font);
+    font-weight: 500;
+    color: var(--sl-color-gray-4);
+  }
+
+  .page-card-arrow {
+    width: 1rem;
+    height: 1rem;
+    color: var(--sl-color-gray-4);
+    transition: all 0.2s ease;
+    opacity: 0;
+    transform: translateX(-0.5rem);
+    flex-shrink: 0;
+  }
+
+  .page-card:hover .page-card-arrow {
+    opacity: 1;
+    transform: translateX(0);
+    color: var(--sl-color-accent);
+  }
+
+  /* ===== Related Tags Section ===== */
+  .related-tags {
     padding: 1.5rem;
     background: var(--sl-color-bg-nav);
-    border-radius: var(--sl-border-radius);
+    border-radius: 1rem;
     border: 1px solid var(--sl-color-hairline);
-    transition: all 0.2s ease;
-
-    &:hover {
-      background: var(--sl-color-bg-sidebar);
-      border-color: var(--sl-color-accent);
-      transform: translateY(-2px);
-      box-shadow: 0 4px 16px color-mix(in srgb, var(--sl-color-accent) 10%, transparent);
-    }
-
-    h3 {
-      margin: 0 0 0.5rem 0;
-
-      a {
-        color: var(--sl-color-white);
-        text-decoration: none;
-
-        &:hover {
-          color: var(--sl-color-accent);
-        }
-      }
-    }
-
-    .page-description {
-      color: var(--sl-color-gray-2);
-      font-size: var(--sl-text-sm);
-      line-height: 1.5;
-      margin: 0.5rem 0 1rem 0;
-    }
-
-    .page-meta {
-      font-size: var(--sl-text-xs);
-      color: var(--sl-color-gray-3);
-      font-family: var(--sl-font-mono);
-    }
   }
 
-  .related-tags {
-    margin-top: 3rem;
-    padding-top: 2rem;
-    border-top: 1px solid var(--sl-color-hairline);
-
-    .tags-list {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 0.5rem;
-      margin-top: 1rem;
-    }
+  .related-tags-cloud {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    justify-content: flex-start;
+    align-items: center;
   }
 
+  /* Cloud Tag Styles */
+  .cloud-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    background: var(--sl-color-bg-sidebar);
+    border-radius: 2rem;
+    border: 1px solid var(--sl-color-hairline);
+    text-decoration: none !important;
+    color: var(--sl-color-text);
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  }
+
+  .cloud-tag:hover {
+    transform: translateY(-3px) scale(1.05);
+    box-shadow:
+      0 10px 20px -5px rgba(0, 0, 0, 0.15),
+      0 4px 6px -2px rgba(0, 0, 0, 0.1);
+    border-color: var(--tag-accent);
+    text-decoration: none !important;
+  }
+
+  .cloud-tag:focus {
+    outline: 2px solid var(--sl-color-accent);
+    outline-offset: 2px;
+  }
+
+  .cloud-tag:active {
+    transform: translateY(-1px) scale(1.02);
+  }
+
+  /* Cloud Tag - Popularity Tiers */
+  .cloud-tag.tier-1 {
+    font-size: 0.8rem;
+    padding: 0.35rem 0.75rem;
+  }
+
+  .cloud-tag.tier-2 {
+    font-size: 0.9rem;
+    padding: 0.4rem 0.85rem;
+  }
+
+  .cloud-tag.tier-3 {
+    font-size: 1rem;
+    padding: 0.5rem 1rem;
+  }
+
+  .cloud-tag.tier-4 {
+    font-size: 1.1rem;
+    padding: 0.55rem 1.1rem;
+    font-weight: 500;
+  }
+
+  .cloud-tag.tier-5 {
+    font-size: 1.25rem;
+    padding: 0.6rem 1.25rem;
+    font-weight: 600;
+  }
+
+  /* Cloud Tag - Color coding */
+  .cloud-tag.tier-1 { --tag-accent: #6b7280; }
+  .cloud-tag.tier-2 { --tag-accent: #3b82f6; }
+  .cloud-tag.tier-3 { --tag-accent: #8b5cf6; }
+  .cloud-tag.tier-4 { --tag-accent: #ec4899; }
+  .cloud-tag.tier-5 { --tag-accent: #f59e0b; }
+
+  .tag-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 1.5em;
+    padding: 0.15em 0.5em;
+    font-size: 0.75em;
+    font-weight: 600;
+    background: var(--tag-accent, var(--sl-color-accent));
+    color: white;
+    border-radius: 1rem;
+    line-height: 1;
+  }
+
+  /* ===== Responsive Adjustments ===== */
   @container (max-width: 640px) {
+    .tag-header-content {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+
+    .tag-stats {
+      margin-left: 0;
+    }
+
     .pages-grid {
       grid-template-columns: 1fr;
+    }
+
+    .related-tags-cloud {
+      gap: 0.5rem;
+    }
+  }
+
+  /* ===== Dark Mode Refinements ===== */
+  :global([data-theme='dark']) .tag-header {
+    background: rgba(20, 20, 30, 0.6);
+  }
+
+  :global([data-theme='dark']) .page-card {
+    background: rgba(30, 30, 40, 0.6);
+  }
+
+  :global([data-theme='dark']) .page-card:hover {
+    background: rgba(40, 40, 55, 0.8);
+  }
+
+  :global([data-theme='dark']) .page-card-number {
+    background: rgba(20, 20, 30, 0.8);
+  }
+
+  :global([data-theme='dark']) .tagged-pages,
+  :global([data-theme='dark']) .related-tags {
+    background: rgba(20, 20, 30, 0.5);
+  }
+
+  :global([data-theme='dark']) .cloud-tag {
+    background: rgba(30, 30, 40, 0.6);
+  }
+
+  :global([data-theme='dark']) .cloud-tag:hover {
+    background: rgba(40, 40, 55, 0.8);
+  }
+
+  /* ===== Accessibility: Reduced Motion ===== */
+  @media (prefers-reduced-motion: reduce) {
+    .page-card,
+    .page-card-arrow,
+    .page-card::before,
+    .cloud-tag {
+      transition: none;
+    }
+
+    .page-card:hover,
+    .cloud-tag:hover {
+      transform: none;
+    }
+
+    .page-card:hover .page-card-arrow {
+      transform: none;
     }
   }
 </style>

@@ -52,8 +52,9 @@ export function validateTagConfiguration(tagsConfig: any): string[] {
       errors.push(`Tag "${tagId}" must have a string "label" property`);
     }
     
-    if (definition.color && !/^#[0-9A-Fa-f]{6}$/.test(definition.color)) {
-      errors.push(`Tag "${tagId}" color must be a valid hex color (e.g., #ff0000)`);
+    // Accept 3-digit (#f00) or 6-digit (#ff0000) hex colors
+    if (definition.color && !/^#([0-9A-Fa-f]{3}|[0-9A-Fa-f]{6})$/.test(definition.color)) {
+      errors.push(`Tag "${tagId}" color must be a valid hex color (e.g., #f00 or #ff0000)`);
     }
   }
 

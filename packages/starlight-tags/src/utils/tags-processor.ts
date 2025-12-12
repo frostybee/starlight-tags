@@ -5,15 +5,39 @@ import { tagsConfigSchema, type TagsConfig, type ProcessedTag } from '../schemas
 import { validateTags } from './validation.js';
 import type { PluginConfig } from '../schemas/config.js';
 
+// Constants
+const MAX_RELATED_TAGS = 5;
+const MAX_NEXT_STEPS = 5;
+const DIFFICULTY_ORDER = ['beginner', 'intermediate', 'advanced'] as const;
+
+// Type for docs entries from Astro content collections
+interface DocsEntry {
+  id: string;
+  slug?: string;
+  data: {
+    title: string;
+    description?: string;
+    tags?: string[];
+    [key: string]: unknown;
+  };
+}
+
+// Minimal logger interface for build-time usage
+export interface MinimalLogger {
+  info: (msg: string) => void;
+  warn: (msg: string) => void;
+  error: (msg: string) => void;
+}
+
 export class TagsProcessor {
   private config: PluginConfig;
-  private logger: AstroIntegrationLogger;
+  private logger: AstroIntegrationLogger | MinimalLogger;
   private astroConfig?: AstroConfig;
   private tagsData?: TagsConfig;
   private processedTags?: Map<string, ProcessedTag>;
-  private providedDocsEntries?: any[];
+  private providedDocsEntries?: DocsEntry[];
 
-  constructor(config: PluginConfig, logger: AstroIntegrationLogger, docsEntries?: any[]) {
+  constructor(config: PluginConfig, logger: AstroIntegrationLogger | MinimalLogger, docsEntries?: DocsEntry[]) {
     this.config = config;
     this.logger = logger;
     this.providedDocsEntries = docsEntries;
@@ -25,7 +49,8 @@ export class TagsProcessor {
       await this.processTagsData();
       this.logger.info(`Loaded ${this.processedTags?.size || 0} tags from configuration`);
     } catch (error) {
-      this.logger.error(`Failed to initialize tags: ${error.message}`);
+      const message = error instanceof Error ? error.message : String(error);
+      this.logger.error(`Failed to initialize tags: ${message}`);
       throw error;
     }
   }
@@ -41,11 +66,14 @@ export class TagsProcessor {
       this.tagsData = tagsConfigSchema.parse(rawData);
 
     } catch (error) {
-      if (error.code === 'ENOENT') {
-        this.logger.warn(`Tags configuration file not found: ${this.config.configPath} (tried: ${error.path || 'unknown path'})`);
+      // Check for file not found error
+      if (error instanceof Error && 'code' in error && (error as NodeJS.ErrnoException).code === 'ENOENT') {
+        const errnoError = error as NodeJS.ErrnoException;
+        this.logger.warn(`Tags configuration file not found: ${this.config.configPath} (tried: ${errnoError.path || 'unknown path'})`);
         this.tagsData = { tags: {} };
       } else {
-        throw new Error(`Invalid tags configuration: ${error.message}`);
+        const message = error instanceof Error ? error.message : String(error);
+        throw new Error(`Invalid tags configuration: ${message}`);
       }
     }
   }
@@ -56,7 +84,7 @@ export class TagsProcessor {
     this.processedTags = new Map();
 
     // Get all docs entries to calculate tag usage
-    let docsEntries: any[] = [];
+    let docsEntries: DocsEntry[] = [];
 
     if (this.providedDocsEntries) {
       // Use provided docs entries if available
@@ -66,17 +94,28 @@ export class TagsProcessor {
       // Otherwise, try to fetch them dynamically
       try {
         // Dynamically import astro:content only when needed
+        // @ts-ignore - astro:content is a virtual module only available at runtime
         const { getCollection } = await import('astro:content');
-        docsEntries = await getCollection('docs');
+        docsEntries = await getCollection('docs') as DocsEntry[];
         this.logger.info(`Fetched ${docsEntries.length} docs entries from astro:content`);
-      } catch (error) {
+      } catch {
         // If astro:content is not available (e.g., during config phase), use empty array
         this.logger.warn('astro:content not available, skipping content collection processing');
         docsEntries = [];
       }
     }
 
-    const tagUsage = new Map<string, Array<any>>();
+    // Create a Map for O(1) lookups instead of O(n) find() calls
+    const entriesById = new Map(docsEntries.map(e => [e.id, e]));
+
+    interface PageReference {
+      id: string;
+      slug: string;
+      title: string;
+      description?: string;
+    }
+
+    const tagUsage = new Map<string, PageReference[]>();
 
     // Process frontmatter tags from all pages
     let totalTagsFound = 0;
@@ -87,9 +126,11 @@ export class TagsProcessor {
         if (!tagUsage.has(tagId)) {
           tagUsage.set(tagId, []);
         }
+        // In Astro 5+ with Starlight's docsLoader, use entry.id as the slug
+        // The id is the file path without extension (e.g., "php/basics/php-intro")
         tagUsage.get(tagId)!.push({
           id: entry.id,
-          slug: entry.slug,
+          slug: entry.id,
           title: entry.data.title,
           description: entry.data.description
         });
@@ -101,7 +142,7 @@ export class TagsProcessor {
     // Process each defined tag
     for (const [tagId, tagDef] of Object.entries(this.tagsData.tags)) {
       const pages = tagUsage.get(tagId) || [];
-      
+
       const processedTag: ProcessedTag = {
         id: tagId,
         slug: this.generateTagSlug(tagId),
@@ -119,13 +160,18 @@ export class TagsProcessor {
         estimatedTime: tagDef.estimatedTime,
         skillLevel: tagDef.skillLevel,
         count: pages.length,
-        pages: pages.map(page => ({
-          ...page,
-          tags: docsEntries.find(entry => entry.id === page.id)?.data.tags || [],
-          frontmatter: docsEntries.find(entry => entry.id === page.id)?.data
-        }))
+        pages: pages.map(page => {
+          // Use Map for O(1) lookup instead of find()
+          const entry = entriesById.get(page.id);
+          return {
+            ...page,
+            slug: page.slug || page.id, // Ensure slug is always set
+            tags: entry?.data.tags || [],
+            frontmatter: entry?.data
+          };
+        })
       };
-      
+
       this.processedTags.set(tagId, processedTag);
     }
 
@@ -221,8 +267,8 @@ export class TagsProcessor {
     for (const prereqId of tag.prerequisites) {
       if (this.processedTags?.has(prereqId)) {
         chain.push(prereqId);
-        // Recursively build chain for prerequisites
-        const subChain = this.buildPrerequisiteChain(prereqId, new Set(visited));
+        // Recursively build chain for prerequisites - pass same visited Set to detect cycles
+        const subChain = this.buildPrerequisiteChain(prereqId, visited);
         chain.push(...subChain);
       }
     }
@@ -242,14 +288,14 @@ export class TagsProcessor {
       // Tags are related if they share subject or learning objectives
       if (currentTag.subject && currentTag.subject === otherTag.subject) {
         related.push(otherId);
-      } else if (currentTag.learningObjectives?.some(obj => 
+      } else if (currentTag.learningObjectives?.some(obj =>
         otherTag.learningObjectives?.includes(obj)
       )) {
         related.push(otherId);
       }
     }
 
-    return related.slice(0, 5); // Limit to 5 most related
+    return related.slice(0, MAX_RELATED_TAGS);
   }
 
   private findNextSteps(tagId: string): string[] {
@@ -257,9 +303,8 @@ export class TagsProcessor {
     if (!currentTag) return [];
 
     const nextSteps: string[] = [];
-    const difficultyOrder = ['beginner', 'intermediate', 'advanced'];
-    const currentDifficultyIndex = currentTag.difficulty ? 
-      difficultyOrder.indexOf(currentTag.difficulty) : -1;
+    const currentDifficultyIndex = currentTag.difficulty ?
+      DIFFICULTY_ORDER.indexOf(currentTag.difficulty) : -1;
 
     for (const [otherId, otherTag] of this.processedTags!) {
       if (otherId === tagId) continue;
@@ -269,16 +314,16 @@ export class TagsProcessor {
         nextSteps.push(otherId);
       }
       // Or if it's the next difficulty level in the same subject
-      else if (currentTag.subject === otherTag.subject && 
+      else if (currentTag.subject === otherTag.subject &&
                otherTag.difficulty && currentDifficultyIndex >= 0) {
-        const otherDifficultyIndex = difficultyOrder.indexOf(otherTag.difficulty);
+        const otherDifficultyIndex = DIFFICULTY_ORDER.indexOf(otherTag.difficulty);
         if (otherDifficultyIndex === currentDifficultyIndex + 1) {
           nextSteps.push(otherId);
         }
       }
     }
 
-    return nextSteps.slice(0, 5); // Limit to 5 suggestions
+    return nextSteps.slice(0, MAX_NEXT_STEPS);
   }
 
   // Educational utility methods
@@ -292,9 +337,8 @@ export class TagsProcessor {
     return Array.from(this.getTags().values())
       .filter(tag => tag.subject === subject)
       .sort((a, b) => {
-        const difficultyOrder = ['beginner', 'intermediate', 'advanced'];
-        const aDiff = tag.difficulty ? difficultyOrder.indexOf(a.difficulty) : 0;
-        const bDiff = tag.difficulty ? difficultyOrder.indexOf(b.difficulty) : 0;
+        const aDiff = a.difficulty ? DIFFICULTY_ORDER.indexOf(a.difficulty) : 0;
+        const bDiff = b.difficulty ? DIFFICULTY_ORDER.indexOf(b.difficulty) : 0;
         return aDiff - bDiff;
       });
   }
