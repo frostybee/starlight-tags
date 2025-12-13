@@ -1,7 +1,7 @@
 ---
 import StarlightPage from '@astrojs/starlight/components/StarlightPage.astro';
 import TagsList from '../components/TagsList.astro';
-import { TagsProcessor, type MinimalLogger } from '../utils/tags-processor.js';
+import { TagsProcessor, type MinimalLogger } from '../lib/tags-processor.js';
 import { getCollection } from 'astro:content';
 import { config } from 'virtual:starlight-tagging/config';
 

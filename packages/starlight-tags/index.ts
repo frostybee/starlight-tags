@@ -2,7 +2,7 @@ import type { StarlightPlugin, StarlightUserConfig } from '@astrojs/starlight/ty
 import type { AstroIntegration, AstroIntegrationLogger } from 'astro';
 import { fileURLToPath } from 'node:url';
 import path from 'node:path';
-import { TagsProcessor } from './src/utils/tags-processor.js';
+import { TagsProcessor } from './src/lib/tags-processor.js';
 import { pluginConfigSchema, type PluginConfig } from './src/schemas/config.js';
 
 export interface StarlightTagsConfig {
@@ -177,4 +177,4 @@ export { tagsConfigSchema } from './src/schemas/tags.js';
 export { frontmatterSchema, starlightTagsExtension } from './src/schemas/frontmatter.js';
 
 // Export TagsProcessor for direct use in pages
-export { TagsProcessor } from './src/utils/tags-processor.js';
+export { TagsProcessor } from './src/lib/tags-processor.js';
