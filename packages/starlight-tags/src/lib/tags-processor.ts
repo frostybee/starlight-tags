@@ -150,7 +150,9 @@ export class TagsProcessor {
         label: tagDef.label,
         description: tagDef.description,
         color: tagDef.color || this.tagsData.defaults?.color,
+        icon: tagDef.icon,
         permalink: tagDef.permalink,
+        hidden: tagDef.hidden,
         // Educational metadata
         difficulty: tagDef.difficulty,
         contentType: tagDef.contentType,

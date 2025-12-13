@@ -4,7 +4,9 @@ export const tagDefinitionSchema = z.object({
   label: z.string(),
   description: z.string().optional(),
   color: z.string().optional(),
+  icon: z.string().optional(), // emoji or short text
   permalink: z.string().optional(),
+  hidden: z.boolean().optional(), // hide from tag index but still functional
   // Educational metadata
   difficulty: z.enum(['beginner', 'intermediate', 'advanced']).optional(),
   contentType: z.enum(['lecture', 'tutorial', 'exercise', 'reference', 'assessment']).optional(),

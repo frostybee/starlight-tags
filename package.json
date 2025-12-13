@@ -8,6 +8,9 @@
   "engines": {
     "node": "^18.17.1 || ^20.3.0 || >=21.0.0"
   },
+  "scripts": {
+    "start:docs": "pnpm --filter starlight-tags-docs start"
+  },
   "packageManager": "pnpm@9.6.0",
   "private": true,
   "homepage": "https://github.com/frostybee/starlight-tags",

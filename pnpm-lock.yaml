@@ -12,12 +12,12 @@ importers:
     dependencies:
       '@astrojs/starlight':
         specifier: ^0.35.3
-        version: 0.37.1(astro@5.16.5(@types/node@25.0.1)(rollup@4.53.3)(typescript@5.9.3))
+        version: 0.35.3(astro@5.16.5(@types/node@25.0.1)(rollup@4.53.3)(typescript@5.9.3))
       astro:
-        specifier: ^5.14.1
+        specifier: ^5.16.5
         version: 5.16.5(@types/node@25.0.1)(rollup@4.53.3)(typescript@5.9.3)
       sharp:
-        specifier: ^0.34.4
+        specifier: ^0.34.5
         version: 0.34.5
       starlight-tags:
         specifier: workspace:*
@@ -71,6 +71,11 @@ packages:
 
   '@astrojs/sitemap@3.6.0':
     resolution: {integrity: sha512-4aHkvcOZBWJigRmMIAJwRQXBS+ayoP5z40OklTXYXhUDhwusz+DyDl+nSshY6y9DvkVEavwNcFO8FD81iGhXjg==}
+
+  '@astrojs/starlight@0.35.3':
+    resolution: {integrity: sha512-z9MbODjZl/STU3PPU18iOTkLObJBw7PA8xMe5s+KPscQGL0LNZyQUYeClG+F1/em/k+2AsokGpVPta+aOTk1sg==}
+    peerDependencies:
+      astro: ^5.5.0
 
   '@astrojs/starlight@0.37.1':
     resolution: {integrity: sha512-STNsR5PaDoiW4IgcX17Fp42FfyqwuweWPts/EWEMcFPAeg9Nvpu3UvVCorasYrgfJgaJTeydsOV++0ACA1KYDA==}
@@ -2070,6 +2075,39 @@ snapshots:
       sitemap: 8.0.2
       stream-replace-string: 2.0.0
       zod: 3.25.76
+
+  '@astrojs/starlight@0.35.3(astro@5.16.5(@types/node@25.0.1)(rollup@4.53.3)(typescript@5.9.3))':
+    dependencies:
+      '@astrojs/markdown-remark': 6.3.10
+      '@astrojs/mdx': 4.3.13(astro@5.16.5(@types/node@25.0.1)(rollup@4.53.3)(typescript@5.9.3))
+      '@astrojs/sitemap': 3.6.0
+      '@pagefind/default-ui': 1.4.0
+      '@types/hast': 3.0.4
+      '@types/js-yaml': 4.0.9
+      '@types/mdast': 4.0.4
+      astro: 5.16.5(@types/node@25.0.1)(rollup@4.53.3)(typescript@5.9.3)
+      astro-expressive-code: 0.41.4(astro@5.16.5(@types/node@25.0.1)(rollup@4.53.3)(typescript@5.9.3))
+      bcp-47: 2.1.0
+      hast-util-from-html: 2.0.3
+      hast-util-select: 6.0.4
+      hast-util-to-string: 3.0.1
+      hastscript: 9.0.1
+      i18next: 23.16.8
+      js-yaml: 4.1.1
+      klona: 2.0.6
+      mdast-util-directive: 3.1.0
+      mdast-util-to-markdown: 2.1.2
+      mdast-util-to-string: 4.0.0
+      pagefind: 1.4.0
+      rehype: 13.0.2
+      rehype-format: 5.0.1
+      remark-directive: 3.0.1
+      ultrahtml: 1.6.0
+      unified: 11.0.5
+      unist-util-visit: 5.0.0
+      vfile: 6.0.3
+    transitivePeerDependencies:
+      - supports-color
 
   '@astrojs/starlight@0.37.1(astro@5.16.5(@types/node@25.0.1)(rollup@4.53.3)(typescript@5.9.3))':
     dependencies:

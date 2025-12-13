@@ -1,0 +1,121 @@
+---
+/**
+ * PageTags - Auto-displays tags for the current page
+ *
+ * Usage in MDX:
+ * ```mdx
+ * ---
+ * title: My Page
+ * tags: [php, security]
+ * ---
+ * import { PageTags } from 'starlight-plugin-tags/components';
+ *
+ * <PageTags />
+ *
+ * Your content here...
+ * ```
+ */
+import TagBadge from './TagBadge.astro';
+import { TagsProcessor } from '../lib/tags-processor.js';
+import { getCollection } from 'astro:content';
+import { config } from 'virtual:starlight-tagging/config';
+import type { ProcessedTag } from '../schemas/tags.js';
+
+interface Props {
+  /** Position of tags: 'inline' flows with text, 'block' takes full width */
+  layout?: 'inline' | 'block';
+  /** Visual style of tag badges */
+  variant?: 'solid' | 'outline' | 'ghost';
+  /** Size of tag badges */
+  size?: 'small' | 'medium' | 'large';
+  /** Show tag icons */
+  showIcon?: boolean;
+  /** Optional label before tags */
+  label?: string;
+}
+
+const {
+  layout = 'inline',
+  variant = 'outline',
+  size = 'small',
+  showIcon = true,
+  label
+} = Astro.props;
+
+// Get frontmatter tags from the current page
+const frontmatterTags: string[] = Astro.props.frontmatter?.tags ||
+  (Astro as any).locals?.starlightRoute?.entry?.data?.tags ||
+  [];
+
+// Fetch processed tags
+let pageTags: ProcessedTag[] = [];
+
+if (frontmatterTags.length > 0) {
+  const buildLogger = {
+    info: () => {},
+    warn: () => {},
+    error: () => {}
+  };
+
+  try {
+    const docsEntries = await getCollection('docs');
+    const tagsProcessor = new TagsProcessor(config, buildLogger, docsEntries);
+    await tagsProcessor.initialize();
+
+    // Get processed tag data for each frontmatter tag
+    pageTags = frontmatterTags
+      .map(tagId => tagsProcessor.getTag(tagId))
+      .filter((t): t is ProcessedTag => t !== undefined);
+  } catch (e) {
+    // Silently fail if tags can't be loaded
+  }
+}
+---
+
+{pageTags.length > 0 && (
+  <div class:list={['page-tags', `page-tags--${layout}`]}>
+    {label && <span class="page-tags__label">{label}</span>}
+    <div class="page-tags__list">
+      {pageTags.map(tag => (
+        <TagBadge
+          tag={tag}
+          variant={variant}
+          size={size}
+          showIcon={showIcon}
+        />
+      ))}
+    </div>
+  </div>
+)}
+
+<style>
+  .page-tags {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+  }
+
+  .page-tags--block {
+    margin: 1rem 0;
+    padding: 0.75rem 0;
+    border-top: 1px solid var(--sl-color-hairline);
+    border-bottom: 1px solid var(--sl-color-hairline);
+  }
+
+  .page-tags--inline {
+    display: inline-flex;
+  }
+
+  .page-tags__label {
+    font-size: var(--sl-text-sm);
+    color: var(--sl-color-gray-3);
+    font-weight: 500;
+  }
+
+  .page-tags__list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.375rem;
+  }
+</style>

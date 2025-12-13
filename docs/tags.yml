@@ -8,17 +8,20 @@ tags:
     label: "PHP Basics"
     description: "Fundamental PHP concepts, syntax, and introduction"
     color: "#8892BF"
+    icon: "🐘"
     subject: "php"
     difficulty: "beginner"
     contentType: "tutorial"
     learningObjectives: ["conceptual", "practical"]
     estimatedTime: 120
     skillLevel: 2
+    
 
   data-types:
     label: "Data Types"
     description: "PHP data types, variables, constants, and type safety"
     color: "#4CAF50"
+    icon: "🔢"
     subject: "php"
     difficulty: "beginner"
     contentType: "lecture"
@@ -31,6 +34,7 @@ tags:
     label: "Arrays"
     description: "PHP arrays, array functions, and data manipulation"
     color: "#FF9800"
+    icon: "📦"
     subject: "php"
     difficulty: "intermediate"
     contentType: "tutorial"
@@ -43,6 +47,7 @@ tags:
     label: "Functions"
     description: "PHP functions, parameters, return values, and scope"
     color: "#2196F3"
+    icon: "⚙️"
     subject: "php"
     difficulty: "intermediate"
     contentType: "tutorial"
@@ -55,26 +60,31 @@ tags:
     label: "Strings"
     description: "String manipulation, functions, and regular expressions"
     color: "#9C27B0"
+    icon: "📝"
 
   forms:
     label: "Forms & Input"
     description: "Form handling, user input, GET/POST methods"
     color: "#607D8B"
+    icon: "📋"
 
   sessions:
     label: "Sessions"
     description: "Session management, cookies, and state handling"
     color: "#795548"
+    icon: "🍪"
 
   database:
     label: "Database"
     description: "PDO, database operations, and SQL integration"
     color: "#3F51B5"
+    icon: "🗄️"
 
   security:
     label: "Security"
     description: "Security best practices, validation, and protection"
     color: "#F44336"
+    icon: "🔒"
     subject: "php"
     difficulty: "advanced"
     contentType: "lecture"
@@ -87,6 +97,7 @@ tags:
     label: "PDO"
     description: "PHP Data Objects for database connectivity"
     color: "#009688"
+    icon: "🔌"
     subject: "php"
     difficulty: "advanced"
     contentType: "tutorial"
@@ -99,51 +110,61 @@ tags:
     label: "Validation"
     description: "Input validation and data sanitization"
     color: "#CDDC39"
+    icon: "✅"
 
   authentication:
     label: "Authentication"
     description: "Login systems, user authentication, and authorization"
     color: "#FF5722"
+    icon: "🔐"
 
   sql-injection:
     label: "SQL Injection"
     description: "SQL injection prevention and security measures"
     color: "#E91E63"
+    icon: "💉"
 
   regex:
     label: "Regular Expressions"
     description: "Pattern matching and text processing with regex"
     color: "#00BCD4"
+    icon: "🔍"
 
   server-side:
     label: "Server-Side"
     description: "Server-side processing and web server concepts"
     color: "#FFC107"
+    icon: "🖥️"
 
   http:
     label: "HTTP"
     description: "HTTP protocol, request/response cycle, and web fundamentals"
     color: "#9E9E9E"
+    icon: "🌐"
 
   syntax:
     label: "Syntax"
     description: "PHP syntax rules, structure, and conventions"
     color: "#6D4C41"
+    icon: "📖"
 
   beginner:
     label: "Beginner"
     description: "Beginner-friendly content and introductory topics"
     color: "#4CAF50"
+    icon: "🌱"
     difficulty: "beginner"
 
   intermediate:
     label: "Intermediate"
     description: "Intermediate level concepts and techniques"
     color: "#FF9800"
+    icon: "📈"
     difficulty: "intermediate"
 
   advanced:
     label: "Advanced"
     description: "Advanced PHP topics and techniques"
     color: "#F44336"
+    icon: "🚀"
     difficulty: "advanced"

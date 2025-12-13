@@ -55,7 +55,7 @@ const tagsProcessorForRelated = new TagsProcessor(config, relatedLogger, allDocs
 await tagsProcessorForRelated.initialize();
 const relatedTagsData = Array.from(relatedTags)
   .map(tagId => tagsProcessorForRelated.getTag(tagId))
-  .filter((t): t is NonNullable<typeof t> => t !== undefined)
+  .filter((t): t is NonNullable<typeof t> => t !== undefined && !t.hidden)
   .sort((a, b) => b.count - a.count);
 
 // Calculate popularity tiers for related tags
@@ -110,6 +110,29 @@ function getPopularityTier(count: number): 'tier-1' | 'tier-2' | 'tier-3' | 'tie
       </div>
     </header>
 
+    <!-- Related Tags Section -->
+    {relatedTagsData.length > 0 && (
+      <aside class="related-tags">
+        <h2 class="section-title">
+          <svg class="title-icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2H2v10l9.29 9.29c.94.94 2.48.94 3.42 0l6.58-6.58c.94-.94.94-2.48 0-3.42L12 2Z"/><path d="M7 7h.01"/></svg>
+          Related Tags
+        </h2>
+        <div class="related-tags-cloud">
+          {relatedTagsData.map(relatedTag => (
+            <a
+              href={relatedTag.url}
+              class={`cloud-tag ${getPopularityTier(relatedTag.count)}`}
+              title={`${relatedTag.label}: ${relatedTag.count} ${relatedTag.count === 1 ? 'page' : 'pages'}`}
+            >
+              {relatedTag.icon && <span class="tag-icon">{relatedTag.icon}</span>}
+              <span class="tag-name">{relatedTag.label}</span>
+              <span class="tag-badge">{relatedTag.count}</span>
+            </a>
+          ))}
+        </div>
+      </aside>
+    )}
+
     <!-- Pages Section -->
     <section class="tagged-pages">
       <h2 class="section-title">
@@ -134,28 +157,6 @@ function getPopularityTier(count: number): 'tier-1' | 'tier-2' | 'tier-3' | 'tie
         ))}
       </div>
     </section>
-
-    <!-- Related Tags Section -->
-    {relatedTagsData.length > 0 && (
-      <aside class="related-tags">
-        <h2 class="section-title">
-          <svg class="title-icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2H2v10l9.29 9.29c.94.94 2.48.94 3.42 0l6.58-6.58c.94-.94.94-2.48 0-3.42L12 2Z"/><path d="M7 7h.01"/></svg>
-          Related Tags
-        </h2>
-        <div class="related-tags-cloud">
-          {relatedTagsData.map(relatedTag => (
-            <a
-              href={relatedTag.url}
-              class={`cloud-tag ${getPopularityTier(relatedTag.count)}`}
-              title={`${relatedTag.label}: ${relatedTag.count} ${relatedTag.count === 1 ? 'page' : 'pages'}`}
-            >
-              <span class="tag-name">{relatedTag.label}</span>
-              <span class="tag-badge">{relatedTag.count}</span>
-            </a>
-          ))}
-        </div>
-      </aside>
-    )}
   </div>
 </StarlightPage>
 
@@ -165,7 +166,7 @@ function getPopularityTier(count: number): 'tier-1' | 'tier-2' | 'tier-3' | 'tie
     container-type: inline-size;
     display: flex;
     flex-direction: column;
-    gap: 2.5rem;
+    gap: 1.5rem;
   }
 
   /* ===== Tag Header Card ===== */
@@ -234,11 +235,11 @@ function getPopularityTier(count: number): 'tier-1' | 'tier-2' | 'tier-3' | 'tie
     display: flex;
     align-items: center;
     gap: 0.75rem;
-    font-size: 1.35rem;
+    font-size: 1.25rem;
     font-weight: 600;
     color: var(--sl-color-white);
-    margin: 0 0 1.5rem 0;
-    padding-bottom: 0.75rem;
+    margin: 0 0 1rem 0;
+    padding-bottom: 0.5rem;
     border-bottom: 2px solid var(--sl-color-hairline);
   }
 
@@ -251,9 +252,9 @@ function getPopularityTier(count: number): 'tier-1' | 'tier-2' | 'tier-3' | 'tie
 
   /* ===== Pages Section ===== */
   .tagged-pages {
-    padding: 1.5rem;
+    padding: 1.25rem;
     background: var(--sl-color-bg-nav);
-    border-radius: 1rem;
+    border-radius: 0.75rem;
     border: 1px solid var(--sl-color-hairline);
   }
 
@@ -403,9 +404,9 @@ function getPopularityTier(count: number): 'tier-1' | 'tier-2' | 'tier-3' | 'tie
 
   /* ===== Related Tags Section ===== */
   .related-tags {
-    padding: 1.5rem;
+    padding: 1.25rem;
     background: var(--sl-color-bg-nav);
-    border-radius: 1rem;
+    border-radius: 0.75rem;
     border: 1px solid var(--sl-color-hairline);
   }
 
@@ -484,6 +485,11 @@ function getPopularityTier(count: number): 'tier-1' | 'tier-2' | 'tier-3' | 'tie
   .cloud-tag.tier-3 { --tag-accent: #8b5cf6; }
   .cloud-tag.tier-4 { --tag-accent: #ec4899; }
   .cloud-tag.tier-5 { --tag-accent: #f59e0b; }
+
+  .tag-icon {
+    font-style: normal;
+    line-height: 1;
+  }
 
   .tag-badge {
     display: inline-flex;

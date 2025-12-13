@@ -18,7 +18,8 @@ const docsEntries = await getCollection('docs');
 const tagsProcessor = new TagsProcessor(config, buildLogger, docsEntries);
 await tagsProcessor.initialize();
 
-const allTags = tagsProcessor.getAllTagsSorted();
+// Filter out hidden tags from the index
+const allTags = tagsProcessor.getAllTagsSorted().filter(tag => !tag.hidden);
 const totalPages = allTags.reduce((sum, tag) => sum + tag.count, 0);
 
 // Calculate tag popularity tiers for tag cloud effect
@@ -87,6 +88,7 @@ const sortedLetters = Object.keys(tagsByLetter).sort();
             class={`cloud-tag ${getPopularityTier(tag.count)}`}
             title={`${tag.label}: ${tag.count} ${tag.count === 1 ? 'page' : 'pages'}`}
           >
+            {tag.icon && <span class="tag-icon">{tag.icon}</span>}
             <span class="tag-name">{tag.label}</span>
             <span class="tag-badge">{tag.count}</span>
           </a>
@@ -120,7 +122,10 @@ const sortedLetters = Object.keys(tagsByLetter).sort();
               {tagsByLetter[letter].map(tag => (
                 <a href={tag.url} class={`tag-card ${getPopularityTier(tag.count)}`}>
                   <div class="tag-card-header">
-                    <strong class="tag-card-name">{tag.label}</strong>
+                    <strong class="tag-card-name">
+                      {tag.icon && <span class="tag-icon">{tag.icon}</span>}
+                      {tag.label}
+                    </strong>
                     <span class="tag-card-count">{tag.count}</span>
                   </div>
                   {tag.description && (
@@ -306,6 +311,11 @@ const sortedLetters = Object.keys(tagsByLetter).sort();
     box-shadow:
       0 10px 20px -5px rgba(0, 0, 0, 0.15),
       0 0 0 1px var(--tag-accent);
+  }
+
+  .tag-icon {
+    font-style: normal;
+    line-height: 1;
   }
 
   .tag-badge {
