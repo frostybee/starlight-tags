@@ -36,15 +36,15 @@
     "prepublishOnly": "npm run build && npm test"
   },
   "dependencies": {
-    "js-yaml": "^4.1.0"
+    "js-yaml": "^4.1.1"
   },
   "devDependencies": {
-    "@astrojs/starlight": "^0.35.3",
+    "@astrojs/starlight": "^0.37.1",
     "@types/js-yaml": "^4.0.9",
-    "@types/node": "^18.19.129",
-    "astro": "^5.14.1",
+    "@types/node": "^25.0.1",
+    "astro": "^5.16.5",
     "typescript": "^5.9.3",
-    "vitest": "^1.6.1"
+    "vitest": "^4.0.15"
   },
   "peerDependencies": {
     "@astrojs/starlight": ">=0.35",
