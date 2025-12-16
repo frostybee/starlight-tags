@@ -84,10 +84,9 @@ export function createTagsIntegration(
           if (tagsMap.size > 0) {
             const validation = processor.validatePrerequisites();
             if (!validation.isValid) {
-              validation.errors.forEach(error => logger.error(error));
-              if (config.onInlineTagsNotFound === 'error') {
-                throw new Error('Prerequisite validation failed');
-              }
+              // Log prerequisite validation errors as warnings (non-fatal)
+              validation.errors.forEach(error => logger.warn(error));
+              logger.warn(`Found ${validation.errors.length} prerequisite validation issue(s)`);
             }
             logger.info(`Processed ${tagsMap.size} tags with educational metadata`);
           } else {

@@ -145,8 +145,8 @@ export class TagsProcessor {
 
       const processedTag: ProcessedTag = {
         id: tagId,
-        slug: this.generateTagSlug(tagId),
-        url: this.generateTagUrl(tagId),
+        slug: this.generateTagSlug(tagId, tagDef.permalink),
+        url: this.generateTagUrl(tagId, tagDef.permalink),
         label: tagDef.label,
         description: tagDef.description,
         color: tagDef.color || this.tagsData.defaults?.color,
@@ -202,13 +202,14 @@ export class TagsProcessor {
     }
   }
 
-  private generateTagSlug(tagId: string): string {
+  private generateTagSlug(tagId: string, permalink?: string): string {
+    if (permalink) return permalink;
     return tagId.toLowerCase().replace(/[^a-z0-9]+/g, '-');
   }
 
-  private generateTagUrl(tagId: string): string {
-    const slug = this.generateTagSlug(tagId);
-    const basePath = this.astroConfig?.base || '';
+  private generateTagUrl(tagId: string, permalink?: string): string {
+    const slug = this.generateTagSlug(tagId, permalink);
+    const basePath = (this.astroConfig?.base || '').replace(/\/$/, ''); // Remove trailing slash
     return `${basePath}/${this.config.tagsPagesPrefix}/${slug}/`;
   }
 
@@ -286,6 +287,7 @@ export class TagsProcessor {
 
     for (const [otherId, otherTag] of this.processedTags!) {
       if (otherId === tagId) continue;
+      if (related.length >= MAX_RELATED_TAGS) break; // Early termination
 
       // Tags are related if they share subject or learning objectives
       if (currentTag.subject && currentTag.subject === otherTag.subject) {
@@ -297,7 +299,7 @@ export class TagsProcessor {
       }
     }
 
-    return related.slice(0, MAX_RELATED_TAGS);
+    return related;
   }
 
   private findNextSteps(tagId: string): string[] {
@@ -352,11 +354,15 @@ export class TagsProcessor {
   }
 
   validatePrerequisites(): { isValid: boolean; errors: string[] } {
+    if (!this.processedTags) {
+      return { isValid: false, errors: ['Tags not initialized'] };
+    }
+
     const errors: string[] = [];
 
-    for (const [tagId, tag] of this.processedTags!) {
+    for (const [tagId, tag] of this.processedTags) {
       for (const prereqId of tag.prerequisites || []) {
-        if (!this.processedTags!.has(prereqId)) {
+        if (!this.processedTags.has(prereqId)) {
           errors.push(`Tag "${tagId}" has invalid prerequisite "${prereqId}"`);
         }
       }
@@ -393,13 +399,14 @@ export class TagsProcessor {
       const current = queue.shift()!;
       
       if (current === endTagId) {
-        // Reconstruct path
-        const fullPath = [];
-        let node = endTagId;
+        // Reconstruct path from end to start
+        const fullPath: string[] = [];
+        let node: string | undefined = endTagId;
         while (node && parent.has(node)) {
           fullPath.unshift(node);
-          node = parent.get(node)!;
+          node = parent.get(node);
         }
+        fullPath.unshift(startTagId); // Add start node
         return fullPath;
       }
 

@@ -1,6 +1,6 @@
 ---
 /**
- * PageTags - Auto-displays tags for the current page
+ * PageTags: Auto-displays tags for the current page
  *
  * Usage in MDX:
  * ```mdx
@@ -67,7 +67,10 @@ if (frontmatterTags.length > 0) {
       .map(tagId => tagsProcessor.getTag(tagId))
       .filter((t): t is ProcessedTag => t !== undefined);
   } catch (e) {
-    // Silently fail if tags can't be loaded
+    // Log error in development for debugging
+    if (import.meta.env.DEV) {
+      console.error('[PageTags] Failed to load tags:', e);
+    }
   }
 }
 ---

@@ -1,4 +1,5 @@
-import type { StarlightPlugin, StarlightUserConfig } from '@astrojs/starlight/types';
+import type { StarlightPlugin, HookParameters } from '@astrojs/starlight/types';
+import { z } from 'astro/zod';
 import { pluginConfigSchema, type PluginConfig } from './src/schemas/config.js';
 import { createTagsIntegration } from './src/lib/integration.js';
 
@@ -11,12 +12,8 @@ export interface StarlightTagsConfig {
   tagsIndexSlug?: string;
   /** Validation behavior for inline tags */
   onInlineTagsNotFound?: 'ignore' | 'warn' | 'error';
-  /** Custom tag URL pattern */
-  tagUrlPattern?: string;
   /** Enable tags in frontmatter */
   enableFrontmatterTags?: boolean;
-  /** Tags to exclude from pages */
-  excludeTags?: string[];
 }
 
 const defaultConfig: Required<StarlightTagsConfig> = {
@@ -24,9 +21,7 @@ const defaultConfig: Required<StarlightTagsConfig> = {
   tagsPagesPrefix: 'tags',
   tagsIndexSlug: 'tags',
   onInlineTagsNotFound: 'warn',
-  tagUrlPattern: '/tags/[tag]',
-  enableFrontmatterTags: true,
-  excludeTags: []
+  enableFrontmatterTags: true
 };
 
 export default function starlightTagsPlugin(
@@ -34,38 +29,24 @@ export default function starlightTagsPlugin(
 ): StarlightPlugin {
   const config = { ...defaultConfig, ...userConfig };
 
-  // Validate configuration
-  const validatedConfig = pluginConfigSchema.parse(config);
+  // Validate configuration with helpful error messages
+  let validatedConfig: PluginConfig;
+  try {
+    validatedConfig = pluginConfigSchema.parse(config);
+  } catch (error) {
+    if (error instanceof z.ZodError) {
+      const issues = error.errors.map(e => `${e.path.join('.')}: ${e.message}`).join(', ');
+      throw new Error(`Invalid starlight-tags configuration: ${issues}`);
+    }
+    throw error;
+  }
 
   return {
     name: 'starlight-plugin-tags',
     hooks: {
-      'config:setup': async ({
-        config: starlightConfig,
-        updateConfig,
-        addIntegration,
-        logger
-      }: {
-        config: any;
-        updateConfig: any;
-        addIntegration: any;
-        logger: any;
-      }) => {
+      'config:setup': async ({ addIntegration, logger }: HookParameters<'config:setup'>) => {
         logger.info('Setting up Starlight Tags plugin...');
-
-        try {
-          // Update Starlight configuration
-          updateConfig({
-            // Custom CSS will be handled by the components themselves
-          } as StarlightUserConfig);
-
-          // Add Astro integration for virtual routes
-          addIntegration(createTagsIntegration(validatedConfig, logger));
-
-        } catch (error) {
-          logger.error(`Failed to initialize tags plugin: ${error instanceof Error ? error.message : String(error)}`);
-          throw error;
-        }
+        addIntegration(createTagsIntegration(validatedConfig, logger));
       }
     }
   };
