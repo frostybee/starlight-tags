@@ -1,0 +1,88 @@
+---
+title: Migrating from API v1 to v2
+description: Guide for migrating from API v1 to v2
+tags:
+  - api-v1
+  - api-v2
+  - advanced
+  - deprecated
+---
+
+:::caution[Deprecation Notice]
+API v1 is deprecated and will be removed on December 31, 2024. Please migrate to v2 as soon as possible.
+:::
+
+This guide helps you migrate from API v1 to v2.
+
+## Breaking Changes
+
+### Base URL Change
+
+```diff
+- https://api.acme.com/v1
++ https://api.acme.com/v2
+```
+
+### User Object Changes
+
+```diff
+{
+  "id": "usr_abc123",
+- "user_email": "alice@example.com",
++ "email": "alice@example.com",
+- "user_name": "Alice Smith",
++ "name": "Alice Smith",
+- "created": "2024-01-10",
++ "created_at": "2024-01-10T08:00:00Z",
+  "status": "active"
+}
+```
+
+### Pagination Changes
+
+**v1 (offset-based):**
+```json
+{
+  "users": [...],
+  "total": 150,
+  "page": 1,
+  "per_page": 20
+}
+```
+
+**v2 (cursor-based):**
+```json
+{
+  "data": [...],
+  "has_more": true,
+  "next_cursor": "cur_xyz789"
+}
+```
+
+### Authentication Header
+
+```diff
+- X-API-Key: sk_live_abc123
++ Authorization: Bearer sk_live_abc123
+```
+
+## Migration Checklist
+
+- [ ] Update base URL to `/v2`
+- [ ] Update authentication header format
+- [ ] Update field names in request/response handling
+- [ ] Switch from offset to cursor-based pagination
+- [ ] Update error handling for new error format
+- [ ] Test all API integrations thoroughly
+
+## Deprecation Timeline
+
+| Date | Action |
+|------|--------|
+| June 1, 2024 | v1 deprecation announced |
+| September 1, 2024 | v1 returns deprecation warnings |
+| December 31, 2024 | v1 endpoints disabled |
+
+## Need Help?
+
+Contact [support@acme.com](mailto:support@acme.com) for migration assistance.

@@ -1,0 +1,143 @@
+---
+title: Auto-Generated Routes
+description: Routes automatically created by the starlight-tags plugin
+---
+
+The `starlight-tags` plugin automatically generates two types of pages for your documentation site: a tags index page and individual tag pages.
+
+## Tags Index Page
+
+**Default URL:** `/tags`
+
+The tags index page displays all available tags in your documentation. It provides:
+
+- A tag cloud with all tags sized by popularity
+- Alphabetical index for easy navigation
+- Statistics showing total tags and tagged pages
+- Quick links to individual tag pages
+
+### Customizing the URL
+
+Change the index page URL using the `tagsIndexSlug` configuration option:
+
+```js
+starlightTags({
+  tagsIndexSlug: 'all-tags', // Changes URL to /all-tags
+})
+```
+
+## Individual Tag Pages
+
+**Default URL:** `/tags/[tag-slug]`
+
+Each tag defined in your `tags.yml` gets its own page showing:
+
+- Tag information (label, description, icon)
+- Statistics (number of pages, related tags)
+- List of all pages with that tag
+- Related tags section
+
+### Customizing the URL Prefix
+
+Change the tag pages URL prefix using the `tagsPagesPrefix` configuration option:
+
+```js
+starlightTags({
+  tagsPagesPrefix: 'topics', // Changes URLs to /topics/authentication, /topics/webhooks, etc.
+})
+```
+
+### Custom Tag Permalinks
+
+Override individual tag URLs using the `permalink` property in `tags.yml`:
+
+```yaml
+tags:
+  api-v2:
+    label: "API v2"
+    permalink: "api-version-2"  # Accessible at /tags/api-version-2
+```
+
+## URL Structure Examples
+
+With default configuration:
+
+| Route | Description |
+|-------|-------------|
+| `/tags` | Tags index listing all tags |
+| `/tags/authentication` | Authentication tag page |
+| `/tags/rest-api` | REST API tag page |
+
+With custom configuration:
+
+```js
+starlightTags({
+  tagsIndexSlug: 'browse',
+  tagsPagesPrefix: 'topics',
+})
+```
+
+| Route | Description |
+|-------|-------------|
+| `/browse` | Tags index listing all tags |
+| `/topics/authentication` | Authentication tag page |
+| `/topics/rest-api` | REST API tag page |
+
+## Page Features
+
+### Tags Index Page Features
+
+- **Tag Cloud:** Visual representation of all tags with sizes based on usage frequency
+- **Alphabetical Index:** Jump links for quick navigation (A, B, C, ...)
+- **Statistics Card:** Shows total number of tags and tagged pages
+- **Search-Friendly:** Tags are rendered as links for easy discovery
+
+### Tag Detail Page Features
+
+- **Tag Header:** Large badge with icon and label
+- **Description:** Tag description from `tags.yml`
+- **Stats:** Number of pages and related tags
+- **Pages List:** All documentation pages tagged with this tag
+- **Related Tags:** Other tags that frequently appear alongside this tag
+
+## Hidden Tags
+
+Tags marked as `hidden: true` in your configuration:
+
+- Will **not** appear in the tags index
+- Will **still** have their own tag page (accessible via direct URL)
+- Will **still** function normally for tagging pages
+
+```yaml
+tags:
+  deprecated:
+    label: "Deprecated"
+    hidden: true  # Won't appear in /tags index, but /tags/deprecated still works
+```
+
+## Linking to Tag Pages
+
+### In MDX Content
+
+```mdx
+Check out all [authentication guides](/tags/authentication).
+```
+
+### Using Components
+
+```mdx
+import { TagBadge } from 'starlight-tags/components';
+
+<TagBadge tagId="authentication" />
+```
+
+### Programmatic Access
+
+Tag URLs follow the pattern `/{tagsPagesPrefix}/{tag-slug}`, where:
+- `tag-slug` is either the tag ID or the custom `permalink` if specified
+
+## Next Steps
+
+- Learn about [components](/components) for displaying tags
+- Understand how to [define tags](/tags-definition) in your configuration
+- See how to [add tags to pages](/frontmatter) using frontmatter

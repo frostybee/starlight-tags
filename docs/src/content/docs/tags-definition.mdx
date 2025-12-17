@@ -1,0 +1,262 @@
+---
+title: Tags Definition
+description: Define tags in your tags.yml configuration file
+---
+
+Tags are defined in a YAML configuration file (by default `tags.yml` in your project root). This file specifies all available tags along with their metadata, styling, and optional advanced properties.
+
+## Basic Structure
+
+```yaml
+# tags.yml
+tags:
+  authentication:
+    label: "Authentication"
+    description: "API authentication and authorization"
+    color: "#10b981"
+    icon: "🔐"
+
+  rest-api:
+    label: "REST API"
+    description: "RESTful API endpoints and usage"
+    color: "#3b82f6"
+
+defaults:
+  color: "#6b7280"
+  showInSidebar: true
+```
+
+## Tag ID
+
+The tag ID is the key used to reference the tag in frontmatter. It must:
+- Contain only alphanumeric characters, hyphens, and underscores
+- Be unique within your configuration
+
+```yaml
+tags:
+  my-tag:        # Valid: lowercase with hyphens
+  my_tag:        # Valid: lowercase with underscores
+  MyTag123:      # Valid: mixed case with numbers
+  "invalid tag": # Invalid: contains space
+```
+
+## Tag Properties
+
+### Core Properties
+
+| Property | Type | Required | Description |
+|----------|------|----------|-------------|
+| `label` | `string` | Yes | Display name shown to users |
+| `description` | `string` | No | Short description of the tag |
+| `color` | `string` | No | Badge color (hex, named, rgb/hsl) |
+| `icon` | `string` | No | Emoji or short text displayed with tag |
+| `permalink` | `string` | No | Custom URL slug (overrides tag ID) |
+| `hidden` | `boolean` | No | Hide from tag index (default: `false`) |
+
+### `label`
+
+The human-readable display name for the tag.
+
+```yaml
+tags:
+  auth:
+    label: "Authentication"  # Shows as "Authentication" in the UI
+```
+
+### `description`
+
+A brief description shown on the tag's detail page and in tooltips.
+
+```yaml
+tags:
+  webhooks:
+    label: "Webhooks"
+    description: "Event-driven integrations for real-time notifications"
+```
+
+### `color`
+
+The badge color. Supports multiple formats:
+
+```yaml
+tags:
+  # Hex colors (3, 6, or 8 digits)
+  tag1:
+    label: "Red"
+    color: "#f00"
+
+  tag2:
+    label: "Blue"
+    color: "#3178c6"
+
+  # Named colors
+  tag3:
+    label: "Green"
+    color: "green"
+
+  # RGB/HSL functions
+  tag4:
+    label: "Custom"
+    color: "rgb(255, 100, 50)"
+```
+
+### `icon`
+
+An emoji or short text displayed alongside the tag label.
+
+```yaml
+tags:
+  authentication:
+    label: "Authentication"
+    icon: "🔐"
+
+  graphql:
+    label: "GraphQL"
+    icon: "GQL"
+```
+
+### `permalink`
+
+Override the default URL slug (derived from tag ID).
+
+```yaml
+tags:
+  api-v2:
+    label: "API v2"
+    permalink: "api-version-2"  # Accessible at /tags/api-version-2
+```
+
+### `hidden`
+
+Hide the tag from the tags index page. The tag remains functional and can still be used on pages.
+
+```yaml
+tags:
+  deprecated:
+    label: "Deprecated"
+    hidden: true  # Won't appear in /tags index
+```
+
+## Advanced Properties
+
+These optional properties support additional categorization and relationships:
+
+| Property | Type | Description |
+|----------|------|-------------|
+| `difficulty` | `'beginner' \| 'intermediate' \| 'advanced'` | Complexity level |
+| `contentType` | `'lecture' \| 'tutorial' \| 'exercise' \| 'reference' \| 'assessment'` | Type of content |
+| `subject` | `string` | Subject area for grouping |
+| `prerequisites` | `string[]` | Tag IDs that should be understood first |
+| `learningObjectives` | `string[]` | Content focus areas |
+| `estimatedTime` | `number` | Estimated reading time in minutes |
+| `skillLevel` | `number` | Complexity level (1-10) |
+
+### Example with Advanced Properties
+
+```yaml
+tags:
+  api-basics:
+    label: "API Basics"
+    description: "Introduction to using the API"
+    color: "#3b82f6"
+    icon: "📖"
+    difficulty: "beginner"
+    contentType: "reference"
+    subject: "api"
+    estimatedTime: 15
+    skillLevel: 2
+
+  oauth2:
+    label: "OAuth 2.0"
+    description: "OAuth 2.0 authentication flows"
+    difficulty: "intermediate"
+    subject: "authentication"
+    prerequisites:
+      - api-basics
+      - authentication
+    estimatedTime: 30
+    skillLevel: 5
+```
+
+## Defaults Section
+
+Set default values for all tags:
+
+```yaml
+tags:
+  # ... tag definitions
+
+defaults:
+  color: "#6b7280"      # Default badge color
+  showInSidebar: true   # Show in sidebar by default
+```
+
+## Complete Example
+
+:::tip[Flexible Examples]
+This example demonstrates tags for API/SDK documentation. The same structure works equally well for UI component libraries, game engine docs, framework guides, or any other documentation type. Simply replace the tag names and descriptions to fit your domain.
+:::
+
+```yaml
+# tags.yml
+tags:
+  # API feature tags
+  authentication:
+    label: "Authentication"
+    description: "API authentication and authorization methods"
+    color: "#10b981"
+    icon: "🔐"
+
+  rest-api:
+    label: "REST API"
+    description: "RESTful API endpoints and usage"
+    color: "#3b82f6"
+    icon: "REST"
+
+  webhooks:
+    label: "Webhooks"
+    description: "Event-driven integrations and callbacks"
+    color: "#8b5cf6"
+    icon: "🔔"
+
+  # Status tags
+  stable:
+    label: "Stable"
+    description: "Production-ready, fully supported features"
+    color: "#22c55e"
+    icon: "✓"
+
+  beta:
+    label: "Beta"
+    description: "Features in beta testing, may change"
+    color: "#f59e0b"
+    icon: "β"
+
+  deprecated:
+    label: "Deprecated"
+    description: "Features scheduled for removal"
+    color: "#ef4444"
+    icon: "⚠"
+    hidden: true
+
+  # SDK tags
+  sdk-python:
+    label: "Python SDK"
+    description: "Python SDK usage and examples"
+    color: "#3776ab"
+
+  sdk-node:
+    label: "Node.js SDK"
+    description: "Node.js SDK usage and examples"
+    color: "#339933"
+
+defaults:
+  color: "#6b7280"
+  showInSidebar: true
+```
+
+## Next Steps
+
+- Learn how to [add tags to pages](/frontmatter) using frontmatter
+- Explore the [auto-generated routes](/routes) for tag pages
+- See how to [extend the schema](/extending-schema) with custom fields

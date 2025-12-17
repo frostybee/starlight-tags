@@ -4,6 +4,7 @@ import { getCollection } from 'astro:content';
 import TagBadge from '../components/TagBadge.astro';
 import { TagsProcessor } from '../lib/tags-processor.js';
 import { config } from 'virtual:starlight-tagging/config';
+import { translations } from '../translations.js';
 
 export async function getStaticPaths() {
   const buildLogger = {
@@ -19,17 +20,32 @@ export async function getStaticPaths() {
   await tagsProcessor.initialize();
 
   const tags = tagsProcessor.getAllTagsSorted();
+  const locales = Object.keys(translations);
 
-  return tags.map(tag => ({
-    params: { tag: tag.slug },
-    props: {
-      tag,
-      pages: tag.pages
+  // Generate paths for each tag + locale combination
+  const paths = [];
+  for (const tag of tags) {
+    // Root path (no locale)
+    paths.push({
+      params: { tag: tag.slug, locale: undefined },
+      props: { tag, pages: tag.pages }
+    });
+    // Locale-prefixed paths
+    for (const locale of locales) {
+      paths.push({
+        params: { tag: tag.slug, locale },
+        props: { tag, pages: tag.pages }
+      });
     }
-  }));
+  }
+
+  return paths;
 }
 
 const { tag, pages } = Astro.props;
+
+// Access translations via Astro.locals.t
+const t = Astro.locals.t;
 
 // Get all docs to find related tags
 const allDocs = await getCollection('docs');
@@ -76,8 +92,8 @@ function getPopularityTier(count: number): 'tier-1' | 'tier-2' | 'tier-3' | 'tie
 
 <StarlightPage
   frontmatter={{
-    title: `Tagged: ${tag.label}`,
-    description: tag.description || `All pages tagged with "${tag.label}". Found ${pages.length} ${pages.length === 1 ? 'page' : 'pages'}.`,
+    title: `${t('starlightTags.taggedPrefix')} ${tag.label}`,
+    description: tag.description || `${pages.length} ${pages.length === 1 ? t('starlightTags.page') : t('starlightTags.pages')}`,
     sidebar: {
       label: tag.label,
       order: 999
@@ -94,13 +110,13 @@ function getPopularityTier(count: number): 'tier-1' | 'tier-2' | 'tier-3' | 'tie
           <div class="stat-pill">
             <svg class="stat-icon" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/></svg>
             <span class="stat-number">{pages.length}</span>
-            <span class="stat-label">{pages.length === 1 ? 'page' : 'pages'}</span>
+            <span class="stat-label">{pages.length === 1 ? t('starlightTags.page') : t('starlightTags.pages')}</span>
           </div>
           {relatedTagsData.length > 0 && (
             <div class="stat-pill">
               <svg class="stat-icon" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2H2v10l9.29 9.29c.94.94 2.48.94 3.42 0l6.58-6.58c.94-.94.94-2.48 0-3.42L12 2Z"/><path d="M7 7h.01"/></svg>
               <span class="stat-number">{relatedTagsData.length}</span>
-              <span class="stat-label">related</span>
+              <span class="stat-label">{t('starlightTags.related')}</span>
             </div>
           )}
         </div>
@@ -115,14 +131,14 @@ function getPopularityTier(count: number): 'tier-1' | 'tier-2' | 'tier-3' | 'tie
       <aside class="related-tags">
         <h2 class="section-title">
           <svg class="title-icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2H2v10l9.29 9.29c.94.94 2.48.94 3.42 0l6.58-6.58c.94-.94.94-2.48 0-3.42L12 2Z"/><path d="M7 7h.01"/></svg>
-          Related Tags
+          {t('starlightTags.relatedTags')}
         </h2>
         <div class="related-tags-cloud">
           {relatedTagsData.map(relatedTag => (
             <a
               href={relatedTag.url}
               class={`cloud-tag ${getPopularityTier(relatedTag.count)}`}
-              title={`${relatedTag.label}: ${relatedTag.count} ${relatedTag.count === 1 ? 'page' : 'pages'}`}
+              title={`${relatedTag.label}: ${relatedTag.count} ${relatedTag.count === 1 ? t('starlightTags.page') : t('starlightTags.pages')}`}
             >
               {relatedTag.icon && <span class="tag-icon">{relatedTag.icon}</span>}
               <span class="tag-name">{relatedTag.label}</span>
@@ -137,7 +153,7 @@ function getPopularityTier(count: number): 'tier-1' | 'tier-2' | 'tier-3' | 'tie
     <section class="tagged-pages">
       <h2 class="section-title">
         <svg class="title-icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="M10 9H8"/><path d="M16 13H8"/><path d="M16 17H8"/></svg>
-        Pages with this tag
+        {t('starlightTags.pagesWithTag')}
       </h2>
       <div class="pages-grid">
         {pages.map((page, index) => (
@@ -150,7 +166,7 @@ function getPopularityTier(count: number): 'tier-1' | 'tier-2' | 'tier-3' | 'tie
               <p class="page-card-description">{page.description}</p>
             )}
             <div class="page-card-footer">
-              <span class="page-card-slug"><span class="slug-label">Path:</span> /{page.slug || page.id}/</span>
+              <span class="page-card-slug"><span class="slug-label">{t('starlightTags.path')}</span> /{page.slug || page.id}/</span>
               <svg class="page-card-arrow" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
             </div>
           </a>

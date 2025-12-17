@@ -1,0 +1,235 @@
+---
+title: Configuration
+description: Configure the starlight-tags plugin options
+---
+
+The `starlight-tags` plugin can be configured with the following options when added to your Starlight configuration.
+
+## Basic Configuration
+
+```js
+// astro.config.mjs
+import starlight from '@astrojs/starlight'
+import { defineConfig } from 'astro/config'
+import starlightTags from 'starlight-tags'
+
+export default defineConfig({
+  integrations: [
+    starlight({
+      plugins: [
+        starlightTags({
+          configPath: 'tags.yml',
+          tagsPagesPrefix: 'tags',
+          tagsIndexSlug: 'tags',
+          onInlineTagsNotFound: 'warn',
+          enableFrontmatterTags: true
+        }),
+      ],
+      title: 'My Docs',
+    }),
+  ],
+})
+```
+
+## Configuration Options
+
+### `configPath`
+
+- **Type:** `string`
+- **Default:** `'tags.yml'`
+
+Path to the tags configuration file relative to your Astro project root. This file defines all available tags and their metadata.
+
+```js
+starlightTags({
+  configPath: 'config/tags.yml', // Custom path
+})
+```
+
+### `tagsPagesPrefix`
+
+- **Type:** `string`
+- **Default:** `'tags'`
+
+The URL prefix for individual tag pages. Each tag will be accessible at `/{tagsPagesPrefix}/{tag-slug}`.
+
+```js
+starlightTags({
+  tagsPagesPrefix: 'topics', // Tags at /topics/javascript, /topics/react, etc.
+})
+```
+
+### `tagsIndexSlug`
+
+- **Type:** `string`
+- **Default:** `'tags'`
+
+The URL slug for the tags index page that lists all available tags.
+
+```js
+starlightTags({
+  tagsIndexSlug: 'all-tags', // Index at /all-tags
+})
+```
+
+### `onInlineTagsNotFound`
+
+- **Type:** `'ignore' | 'warn' | 'error'`
+- **Default:** `'warn'`
+
+How to handle tags used in page frontmatter that are not defined in your tags configuration file.
+
+| Value | Behavior |
+|-------|----------|
+| `'ignore'` | Silently ignore undefined tags |
+| `'warn'` | Log a warning during build |
+| `'error'` | Fail the build with an error |
+
+```js
+starlightTags({
+  onInlineTagsNotFound: 'error', // Strict mode - fail on undefined tags
+})
+```
+
+### `enableFrontmatterTags`
+
+- **Type:** `boolean`
+- **Default:** `true`
+
+Whether to enable reading tags from page frontmatter. When enabled, pages can specify tags using the `tags` field in their frontmatter.
+
+```js
+starlightTags({
+  enableFrontmatterTags: false, // Disable frontmatter tags
+})
+```
+
+## Example Configuration
+
+Here's a complete example with all options:
+
+```js
+// astro.config.mjs
+import starlight from '@astrojs/starlight'
+import { defineConfig } from 'astro/config'
+import starlightTags from 'starlight-tags'
+
+export default defineConfig({
+  integrations: [
+    starlight({
+      plugins: [
+        starlightTags({
+          // Path to tags definition file
+          configPath: 'tags.yml',
+
+          // URL structure
+          tagsPagesPrefix: 'tags',    // /tags/javascript
+          tagsIndexSlug: 'tags',      // /tags
+
+          // Validation
+          onInlineTagsNotFound: 'warn',
+
+          // Features
+          enableFrontmatterTags: true
+        }),
+      ],
+      title: 'My Documentation',
+    }),
+  ],
+})
+```
+
+## Internationalization (i18n)
+
+The plugin integrates with [Starlight's i18n system](https://starlight.astro.build/guides/i18n/) and provides built-in translations for:
+
+- English (en)
+- French (fr)
+- Spanish (es)
+- German (de)
+
+### Translated UI Strings
+
+| Key | English Default |
+|-----|-----------------|
+| `starlightTags.totalTags` | Total Tags |
+| `starlightTags.tagsApplied` | Tags Applied |
+| `starlightTags.tagCloud` | Tag Cloud |
+| `starlightTags.alphabeticalIndex` | Alphabetical Index |
+| `starlightTags.allTags` | All Tags |
+| `starlightTags.page` | page |
+| `starlightTags.pages` | pages |
+| `starlightTags.pageTags` | Tags: |
+| `starlightTags.taggedPrefix` | Tagged: |
+| `starlightTags.relatedTags` | Related Tags |
+| `starlightTags.pagesWithTag` | Pages with this tag |
+| `starlightTags.related` | related |
+| `starlightTags.path` | Path: |
+
+### Customizing Translations
+
+You can override any translation by adding entries to your `src/content/i18n/` files. This allows you to customize the labels or add support for additional languages.
+
+#### Step 1: Set Up i18n Content Collection
+
+If you haven't already, add the i18n collection to your `src/content.config.ts`:
+
+```ts
+import { defineCollection } from 'astro:content';
+import { docsLoader, i18nLoader } from '@astrojs/starlight/loaders';
+import { docsSchema, i18nSchema } from '@astrojs/starlight/schema';
+
+export const collections = {
+  docs: defineCollection({ loader: docsLoader(), schema: docsSchema() }),
+  i18n: defineCollection({ loader: i18nLoader(), schema: i18nSchema() }),
+};
+```
+
+#### Step 2: Create Translation Files
+
+Create JSON files in `src/content/i18n/` for each language you want to customize:
+
+```json
+// src/content/i18n/en.json
+{
+  "starlightTags.totalTags": "Categories",
+  "starlightTags.tagsApplied": "Total References"
+}
+```
+
+```json
+// src/content/i18n/fr.json
+{
+  "starlightTags.totalTags": "Catégories",
+  "starlightTags.tagsApplied": "Références totales"
+}
+```
+
+#### Adding New Languages
+
+To add a language not included in the plugin, create a translation file with all the keys:
+
+```json
+// src/content/i18n/ja.json
+{
+  "starlightTags.totalTags": "タグ総数",
+  "starlightTags.tagsApplied": "適用されたタグ",
+  "starlightTags.tagCloud": "タグクラウド",
+  "starlightTags.alphabeticalIndex": "アルファベット順索引",
+  "starlightTags.allTags": "すべてのタグ",
+  "starlightTags.page": "ページ",
+  "starlightTags.pages": "ページ",
+  "starlightTags.pageTags": "タグ：",
+  "starlightTags.taggedPrefix": "タグ付き：",
+  "starlightTags.relatedTags": "関連タグ",
+  "starlightTags.pagesWithTag": "このタグのページ",
+  "starlightTags.related": "関連",
+  "starlightTags.path": "パス："
+}
+```
+
+## Next Steps
+
+- Learn how to [define tags](/tags-definition) in your `tags.yml` file
+- See how to [add tags to pages](/frontmatter) using frontmatter
+- Explore the [auto-generated routes](/routes) created by the plugin

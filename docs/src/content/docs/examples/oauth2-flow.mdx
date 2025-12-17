@@ -1,0 +1,74 @@
+---
+title: OAuth 2.0 Implementation
+description: Implement OAuth 2.0 authorization for user-facing applications
+tags:
+  - authentication
+  - advanced
+  - stable
+---
+
+OAuth 2.0 allows your application to access the API on behalf of users without handling their credentials.
+
+## Authorization Flow
+
+### Step 1: Redirect to Authorization
+
+Direct users to the authorization endpoint:
+
+```
+https://auth.acme.com/oauth/authorize?
+  client_id=YOUR_CLIENT_ID&
+  redirect_uri=https://yourapp.com/callback&
+  response_type=code&
+  scope=read:users write:users&
+  state=random_state_string
+```
+
+### Step 2: Handle the Callback
+
+After authorization, users are redirected to your `redirect_uri` with a code:
+
+```
+https://yourapp.com/callback?code=AUTH_CODE&state=random_state_string
+```
+
+### Step 3: Exchange Code for Token
+
+```bash
+curl -X POST "https://auth.acme.com/oauth/token" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "grant_type": "authorization_code",
+    "client_id": "YOUR_CLIENT_ID",
+    "client_secret": "YOUR_CLIENT_SECRET",
+    "code": "AUTH_CODE",
+    "redirect_uri": "https://yourapp.com/callback"
+  }'
+```
+
+**Response:**
+
+```json
+{
+  "access_token": "oauth_abc123...",
+  "token_type": "Bearer",
+  "expires_in": 3600,
+  "refresh_token": "refresh_xyz789..."
+}
+```
+
+## Refreshing Tokens
+
+```bash
+curl -X POST "https://auth.acme.com/oauth/token" \
+  -d "grant_type=refresh_token&refresh_token=refresh_xyz789..."
+```
+
+## Available Scopes
+
+| Scope | Description |
+|-------|-------------|
+| `read:users` | Read user profiles |
+| `write:users` | Update user profiles |
+| `read:webhooks` | View webhook configurations |
+| `write:webhooks` | Manage webhooks |

@@ -4,6 +4,15 @@ import TagsList from '../components/TagsList.astro';
 import { TagsProcessor, type MinimalLogger } from '../lib/tags-processor.js';
 import { getCollection } from 'astro:content';
 import { config } from 'virtual:starlight-tagging/config';
+import { translations } from '../translations.js';
+
+// Generate static paths for all supported locales
+export function getStaticPaths() {
+  const locales = Object.keys(translations);
+  return locales.map(locale => ({
+    params: { locale }
+  }));
+}
 
 // Create a minimal logger for build-time usage
 const buildLogger: MinimalLogger = {
@@ -20,11 +29,14 @@ await tagsProcessor.initialize();
 
 // Filter out hidden tags from the index
 const allTags = tagsProcessor.getAllTagsSorted().filter(tag => !tag.hidden);
-const totalPages = allTags.reduce((sum, tag) => sum + tag.count, 0);
+const totalTagUsages = allTags.reduce((sum, tag) => sum + tag.count, 0);
+
+// Access translations via Astro.locals.t
+const t = Astro.locals.t;
 
 // Calculate tag popularity tiers for tag cloud effect
-const maxCount = Math.max(...allTags.map(t => t.count), 1);
-const minCount = Math.min(...allTags.map(t => t.count), 1);
+const maxCount = Math.max(...allTags.map(tag => tag.count), 1);
+const minCount = Math.min(...allTags.map(tag => tag.count), 1);
 
 function getPopularityTier(count: number): 'tier-1' | 'tier-2' | 'tier-3' | 'tier-4' | 'tier-5' {
   const range = maxCount - minCount;
@@ -50,8 +62,8 @@ const sortedLetters = Object.keys(tagsByLetter).sort();
 
 <StarlightPage
   frontmatter={{
-    title: "All Tags",
-    description: `Browse all ${allTags.length} tags used across ${totalPages} pages.`,
+    title: t('starlightTags.allTags'),
+    description: `Browse all ${allTags.length} tags applied ${totalTagUsages} times across documentation pages.`,
     sidebar: {
       label: "Tags",
       order: 999
@@ -65,12 +77,12 @@ const sortedLetters = Object.keys(tagsByLetter).sort();
       <div class="stats-content">
         <div class="stat-item">
           <span class="stat-number">{allTags.length}</span>
-          <span class="stat-label">Total Tags</span>
+          <span class="stat-label">{t('starlightTags.totalTags')}</span>
         </div>
         <div class="stat-divider"></div>
         <div class="stat-item">
-          <span class="stat-number">{totalPages}</span>
-          <span class="stat-label">Tagged Pages</span>
+          <span class="stat-number">{totalTagUsages}</span>
+          <span class="stat-label">{t('starlightTags.tagsApplied')}</span>
         </div>
       </div>
     </div>
@@ -79,7 +91,7 @@ const sortedLetters = Object.keys(tagsByLetter).sort();
     <section class="tag-cloud-section">
       <h2 class="section-title">
         <svg class="title-icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z"/></svg>
-        Tag Cloud
+        {t('starlightTags.tagCloud')}
       </h2>
       <div class="tag-cloud">
         {allTags.map(tag => (
@@ -100,7 +112,7 @@ const sortedLetters = Object.keys(tagsByLetter).sort();
     <section class="alphabetical-section">
       <h2 class="section-title">
         <svg class="title-icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M3 12h18"/><path d="M3 18h18"/></svg>
-        Alphabetical Index
+        {t('starlightTags.alphabeticalIndex')}
       </h2>
 
       <!-- Letter Navigation -->

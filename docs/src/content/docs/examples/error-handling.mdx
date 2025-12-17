@@ -1,0 +1,80 @@
+---
+title: Error Handling
+description: Understanding and handling API error responses
+tags:
+  - rest-api
+  - intermediate
+  - stable
+---
+
+The Acme API uses standard HTTP status codes and returns detailed error information in JSON format.
+
+## Error Response Format
+
+All errors follow this structure:
+
+```json
+{
+  "error": {
+    "code": "invalid_request",
+    "message": "The request body is missing required fields",
+    "details": {
+      "missing_fields": ["email", "name"]
+    }
+  }
+}
+```
+
+## HTTP Status Codes
+
+| Code | Description |
+|------|-------------|
+| `400` | Bad Request - Invalid parameters |
+| `401` | Unauthorized - Invalid or missing API key |
+| `403` | Forbidden - Insufficient permissions |
+| `404` | Not Found - Resource doesn't exist |
+| `409` | Conflict - Resource already exists |
+| `422` | Unprocessable - Validation failed |
+| `429` | Too Many Requests - Rate limit exceeded |
+| `500` | Internal Error - Server-side issue |
+
+## Error Codes
+
+| Code | Description |
+|------|-------------|
+| `invalid_request` | The request format is invalid |
+| `unauthorized` | Authentication failed |
+| `forbidden` | Access denied |
+| `not_found` | Resource not found |
+| `conflict` | Resource conflict |
+| `validation_error` | Input validation failed |
+| `rate_limit` | Rate limit exceeded |
+| `internal_error` | Server error |
+
+## Handling Errors
+
+### cURL Example
+
+```bash
+response=$(curl -s -w "\n%{http_code}" -X GET \
+  "https://api.acme.com/v2/users/invalid" \
+  -H "Authorization: Bearer YOUR_API_KEY")
+
+http_code=$(echo "$response" | tail -n1)
+body=$(echo "$response" | sed '$d')
+
+if [ "$http_code" != "200" ]; then
+  echo "Error: $body"
+fi
+```
+
+### Retry Strategy
+
+For transient errors (5xx, 429), implement exponential backoff:
+
+1. Wait 1 second, retry
+2. Wait 2 seconds, retry
+3. Wait 4 seconds, retry
+4. Fail after 3 attempts
+
+Check the `Retry-After` header for rate limit errors.

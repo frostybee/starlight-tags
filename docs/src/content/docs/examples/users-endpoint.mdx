@@ -1,0 +1,88 @@
+---
+title: Users Endpoint Reference
+description: API reference for the Users endpoint
+tags:
+  - rest-api
+  - api-v2
+  - stable
+---
+
+The Users endpoint allows you to create, read, update, and delete user records.
+
+## List Users
+
+```http
+GET /v2/users
+```
+
+**Query Parameters:**
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `limit` | integer | Number of results (1-100, default: 20) |
+| `offset` | integer | Pagination offset |
+| `status` | string | Filter by status: `active`, `inactive` |
+
+**Example:**
+
+```bash
+curl -X GET "https://api.acme.com/v2/users?limit=10&status=active" \
+  -H "Authorization: Bearer YOUR_API_KEY"
+```
+
+**Response:**
+
+```json
+{
+  "data": [
+    {
+      "id": "usr_abc123",
+      "email": "alice@example.com",
+      "name": "Alice Smith",
+      "status": "active",
+      "created_at": "2024-01-10T08:00:00Z"
+    }
+  ],
+  "has_more": true,
+  "total": 150
+}
+```
+
+## Get User
+
+```http
+GET /v2/users/{id}
+```
+
+```bash
+curl -X GET "https://api.acme.com/v2/users/usr_abc123" \
+  -H "Authorization: Bearer YOUR_API_KEY"
+```
+
+## Create User
+
+```http
+POST /v2/users
+```
+
+```bash
+curl -X POST "https://api.acme.com/v2/users" \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "email": "bob@example.com",
+    "name": "Bob Jones"
+  }'
+```
+
+## Update User
+
+```http
+PATCH /v2/users/{id}
+```
+
+## Delete User
+
+```http
+DELETE /v2/users/{id}
+```

@@ -1,0 +1,232 @@
+---
+title: PrerequisiteChain
+description: Display dependency chains and migration paths
+---
+
+The `PrerequisiteChain` component displays a visual chain of prerequisite topics, useful for showing API migration paths, dependency relationships, or knowledge prerequisites.
+
+## Import
+
+```js
+import { PrerequisiteChain } from 'starlight-tags/components';
+```
+
+## Props
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `tag` | `ProcessedTag` | Required | The current tag |
+| `tagsMap` | `Map<string, ProcessedTag>` | Required | Map of all tags |
+| `showDescription` | `boolean` | `true` | Show helper text |
+| `maxChainLength` | `number` | `5` | Max prerequisites to show |
+
+## Basic Usage
+
+```astro
+---
+import { PrerequisiteChain } from 'starlight-tags/components';
+
+const currentTag = processor.getTag('oauth2');
+const tagsMap = processor.getTags(); // Returns Map<string, ProcessedTag>
+---
+
+<PrerequisiteChain tag={currentTag} tagsMap={tagsMap} />
+```
+
+## Prerequisites Setup
+
+For this component to display data, your tags need `prerequisites` defined in `tags.yml`:
+
+```yaml
+# tags.yml
+tags:
+  api-basics:
+    label: "API Basics"
+    description: "Introduction to the API"
+
+  authentication:
+    label: "Authentication"
+    prerequisites:
+      - api-basics
+
+  oauth2:
+    label: "OAuth 2.0"
+    prerequisites:
+      - api-basics
+      - authentication
+```
+
+## Display
+
+The component renders as:
+
+```
+Prerequisites
+Understand these topics before proceeding
+
+[API Basics] → [Authentication] → [OAuth 2.0]
+                                   You are here
+```
+
+## Use Cases
+
+### API Migration Paths
+
+Show users how to migrate between API versions:
+
+```yaml
+tags:
+  api-v1:
+    label: "API v1"
+    description: "Legacy API version"
+
+  api-v2:
+    label: "API v2"
+    prerequisites:
+      - api-v1
+
+  api-v3:
+    label: "API v3 (Current)"
+    prerequisites:
+      - api-v1
+      - api-v2
+```
+
+### SDK Dependencies
+
+Show SDK feature dependencies:
+
+```yaml
+tags:
+  sdk-setup:
+    label: "SDK Setup"
+
+  sdk-auth:
+    label: "SDK Authentication"
+    prerequisites:
+      - sdk-setup
+
+  sdk-webhooks:
+    label: "SDK Webhooks"
+    prerequisites:
+      - sdk-setup
+      - sdk-auth
+```
+
+## Without Description
+
+Hide the helper text:
+
+```astro
+<PrerequisiteChain
+  tag={currentTag}
+  tagsMap={tagsMap}
+  showDescription={false}
+/>
+```
+
+## Limiting Chain Length
+
+For tags with many prerequisites, limit the display:
+
+```astro
+<PrerequisiteChain
+  tag={currentTag}
+  tagsMap={tagsMap}
+  maxChainLength={3}
+/>
+```
+
+If more prerequisites exist, it shows "... and X more prerequisites".
+
+## Complete Example
+
+```astro
+---
+import { PrerequisiteChain } from 'starlight-tags/components';
+import { TagsProcessor } from 'starlight-tags';
+import { getCollection } from 'astro:content';
+import { config } from 'virtual:starlight-tagging/config';
+
+// Initialize processor
+const logger = { info: () => {}, warn: () => {}, error: () => {} };
+const docs = await getCollection('docs');
+const processor = new TagsProcessor(config, logger, docs);
+await processor.initialize();
+
+// Get current tag and tags map
+const currentTag = processor.getTag('oauth2');
+const tagsMap = processor.getTags();
+---
+
+{currentTag && currentTag.prerequisiteChain?.length > 0 && (
+  <section class="api-prerequisites">
+    <PrerequisiteChain
+      tag={currentTag}
+      tagsMap={tagsMap}
+      showDescription={true}
+      maxChainLength={5}
+    />
+  </section>
+)}
+```
+
+## How It Works
+
+1. The component reads the `prerequisiteChain` computed property from the tag
+2. This property is automatically calculated by `TagsProcessor` based on the `prerequisites` field
+3. It resolves the full chain recursively (prerequisites of prerequisites)
+4. Tags are displayed in order with arrows between them
+5. The current tag is highlighted with "You are here"
+
+## Responsive Design
+
+On mobile devices (< 768px):
+- The chain displays vertically instead of horizontally
+- Arrows rotate 90 degrees to point downward
+- "You are here" label adjusts position
+
+## Styling
+
+The component uses Starlight's CSS variables:
+
+```css
+.prerequisite-chain {
+  background: var(--sl-color-bg-sidebar);
+  border: 1px solid var(--sl-color-hairline-shade);
+  border-radius: var(--sl-border-radius);
+}
+```
+
+### Custom Styling
+
+Override the default styles:
+
+```css
+.prerequisite-chain {
+  background: var(--sl-color-bg-nav);
+  padding: 1.5rem;
+}
+
+.prerequisite-chain__arrow {
+  color: var(--sl-color-accent);
+  font-size: 1.5em;
+}
+
+.prerequisite-chain__current::before {
+  content: "Current topic";
+  color: var(--sl-color-accent);
+}
+```
+
+## When to Use
+
+This component is ideal for:
+
+- API version migration guides
+- SDK setup sequences
+- Feature dependency documentation
+- Complex workflows with ordered steps
+- Any documentation with prerequisite knowledge
+
+It works best when tags have clear prerequisite relationships defined in your `tags.yml` configuration.

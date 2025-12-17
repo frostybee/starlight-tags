@@ -1,0 +1,85 @@
+---
+title: Python SDK Getting Started
+description: Get started with the Acme Python SDK
+tags:
+  - sdk-python
+  - beginner
+  - stable
+---
+
+The Acme Python SDK provides a convenient way to interact with the API from Python applications.
+
+## Installation
+
+```bash
+pip install acme-sdk
+```
+
+## Quick Start
+
+```python
+from acme import AcmeClient
+
+# Initialize the client
+client = AcmeClient(api_key="sk_live_abc123...")
+
+# List users
+users = client.users.list(limit=10)
+for user in users:
+    print(f"{user.name}: {user.email}")
+
+# Get a specific user
+user = client.users.get("usr_abc123")
+print(user.name)
+
+# Create a new user
+new_user = client.users.create(
+    email="alice@example.com",
+    name="Alice Smith"
+)
+print(f"Created user: {new_user.id}")
+```
+
+## Configuration
+
+```python
+from acme import AcmeClient
+
+client = AcmeClient(
+    api_key="sk_live_abc123...",
+    timeout=30,  # Request timeout in seconds
+    max_retries=3  # Number of retry attempts
+)
+```
+
+## Error Handling
+
+```python
+from acme import AcmeClient
+from acme.exceptions import AcmeError, NotFoundError, RateLimitError
+
+client = AcmeClient(api_key="sk_live_abc123...")
+
+try:
+    user = client.users.get("usr_invalid")
+except NotFoundError:
+    print("User not found")
+except RateLimitError as e:
+    print(f"Rate limited. Retry after {e.retry_after} seconds")
+except AcmeError as e:
+    print(f"API error: {e.message}")
+```
+
+## Async Support
+
+```python
+import asyncio
+from acme import AsyncAcmeClient
+
+async def main():
+    client = AsyncAcmeClient(api_key="sk_live_abc123...")
+    users = await client.users.list()
+    print(users)
+
+asyncio.run(main())
+```

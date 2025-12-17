@@ -1,0 +1,201 @@
+---
+title: PageTags
+description: Auto-display tags for the current page
+---
+
+The `PageTags` component automatically displays tags from the current page's frontmatter. It's the easiest way to show tags on your documentation pages.
+
+## Import
+
+```js
+import { PageTags } from 'starlight-tags/components';
+```
+
+## Props
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `layout` | `'inline' \| 'block'` | `'inline'` | Display layout |
+| `variant` | `'solid' \| 'outline' \| 'ghost'` | `'outline'` | Badge visual style |
+| `size` | `'small' \| 'medium' \| 'large'` | `'small'` | Badge size |
+| `showIcon` | `boolean` | `true` | Show tag icons |
+| `label` | `string` | `undefined` | Optional label before tags |
+
+## Basic Usage
+
+Simply drop the component into any MDX page that has tags in its frontmatter:
+
+```mdx
+---
+title: Authentication Overview
+tags:
+  - authentication
+  - rest-api
+  - stable
+---
+
+import { PageTags } from 'starlight-tags/components';
+
+# Authentication Overview
+
+<PageTags />
+
+Your content here...
+```
+
+## Layouts
+
+### Inline (Default)
+
+Tags flow with surrounding content:
+
+```mdx
+<PageTags layout="inline" />
+```
+
+### Block
+
+Tags take full width with borders:
+
+```mdx
+<PageTags layout="block" />
+```
+
+## With Label
+
+Add a text label before the tags:
+
+```mdx
+<PageTags label="Topics:" />
+```
+
+Renders as: `Topics: [tag1] [tag2] [tag3]`
+
+## Sizes
+
+```mdx
+<PageTags size="small" />
+<PageTags size="medium" />
+<PageTags size="large" />
+```
+
+## Style Variants
+
+```mdx
+<PageTags variant="solid" />
+<PageTags variant="outline" />  <!-- Default -->
+<PageTags variant="ghost" />
+```
+
+## Without Icons
+
+```mdx
+<PageTags showIcon={false} />
+```
+
+## Positioning
+
+Place the component where you want tags to appear:
+
+### At the Top
+
+```mdx
+---
+title: Webhooks Guide
+tags: [webhooks, rest-api]
+---
+
+import { PageTags } from 'starlight-tags/components';
+
+<PageTags layout="block" />
+
+# Webhooks Guide
+
+Content here...
+```
+
+### At the Bottom
+
+```mdx
+---
+title: Webhooks Guide
+tags: [webhooks, rest-api]
+---
+
+import { PageTags } from 'starlight-tags/components';
+
+# Webhooks Guide
+
+Content here...
+
+---
+
+<PageTags label="Tagged:" />
+```
+
+### Multiple Locations
+
+```mdx
+---
+title: Webhooks Guide
+tags: [webhooks, rest-api]
+---
+
+import { PageTags } from 'starlight-tags/components';
+
+<PageTags layout="block" variant="ghost" />
+
+# Webhooks Guide
+
+Content here...
+
+---
+
+<PageTags label="Related topics:" size="small" />
+```
+
+## Complete Example
+
+```mdx
+---
+title: OAuth 2.0 Implementation
+description: Complete guide to implementing OAuth 2.0 authentication
+tags:
+  - authentication
+  - oauth2
+  - rest-api
+  - stable
+---
+
+import { PageTags } from 'starlight-tags/components';
+
+<PageTags layout="block" variant="outline" size="medium" label="This guide covers:" />
+
+# OAuth 2.0 Implementation
+
+In this guide, you'll learn how to implement OAuth 2.0...
+
+## Prerequisites
+
+Before starting, make sure you understand:
+- API authentication basics
+- HTTP fundamentals
+
+## Getting Started
+
+...
+
+---
+
+<PageTags label="Topics covered:" size="small" variant="ghost" />
+```
+
+## How It Works
+
+The `PageTags` component:
+
+1. Reads the `tags` array from the current page's frontmatter
+2. Fetches tag data from the `TagsProcessor`
+3. Renders each tag using the `TagBadge` component
+
+If no tags are defined in the frontmatter, the component renders nothing.

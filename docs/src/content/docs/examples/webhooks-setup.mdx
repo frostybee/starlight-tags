@@ -1,0 +1,83 @@
+---
+title: Setting Up Webhooks
+description: Configure webhooks to receive real-time event notifications
+tags:
+  - webhooks
+  - intermediate
+  - stable
+---
+
+Webhooks allow your application to receive real-time notifications when events occur in your Acme account.
+
+## Creating a Webhook
+
+```bash
+curl -X POST "https://api.acme.com/v2/webhooks" \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "url": "https://yourapp.com/webhooks/acme",
+    "events": ["user.created", "user.updated", "user.deleted"]
+  }'
+```
+
+**Response:**
+
+```json
+{
+  "id": "wh_abc123",
+  "url": "https://yourapp.com/webhooks/acme",
+  "events": ["user.created", "user.updated", "user.deleted"],
+  "secret": "whsec_xyz789...",
+  "status": "active"
+}
+```
+
+## Webhook Events
+
+| Event | Description |
+|-------|-------------|
+| `user.created` | A new user was created |
+| `user.updated` | A user's details changed |
+| `user.deleted` | A user was deleted |
+| `payment.completed` | A payment was processed |
+| `payment.failed` | A payment attempt failed |
+
+## Webhook Payload
+
+```json
+{
+  "id": "evt_abc123",
+  "type": "user.created",
+  "created_at": "2024-01-15T10:30:00Z",
+  "data": {
+    "id": "usr_xyz789",
+    "email": "newuser@example.com",
+    "name": "New User"
+  }
+}
+```
+
+## Verifying Signatures
+
+Always verify webhook signatures to ensure requests are from Acme:
+
+```javascript
+const crypto = require('crypto');
+
+function verifyWebhook(payload, signature, secret) {
+  const expected = crypto
+    .createHmac('sha256', secret)
+    .update(payload)
+    .digest('hex');
+
+  return crypto.timingSafeEqual(
+    Buffer.from(signature),
+    Buffer.from(`sha256=${expected}`)
+  );
+}
+```
+
+## Retry Policy
+
+Failed webhook deliveries are retried up to 5 times with exponential backoff.

@@ -1,8 +1,9 @@
 ---
 title: Getting Started
+description: Install and configure the starlight-tags plugin
 ---
 
-A plugin to add tags to your Starlight docs.
+A plugin to add tags to your Starlight documentation site. Tags help organize and categorize your content, making it easier for users to discover related pages.
 
 ## Prerequisites
 
@@ -63,6 +64,65 @@ import { Steps, Tabs, TabItem } from '@astrojs/starlight/components'
    })
    ```
 
-3. [Start the development server](https://starlight.astro.build/getting-started/#start-the-development-server) to preview the plugin in action.
+3. Create a `tags.yml` file in your project root to define your tags:
+
+   ```yaml
+   # tags.yml
+   tags:
+     authentication:
+       label: "Authentication"
+       description: "API authentication and security"
+       color: "#10b981"
+       icon: "🔐"
+
+     rest-api:
+       label: "REST API"
+       description: "RESTful API endpoints"
+       color: "#3b82f6"
+
+     stable:
+       label: "Stable"
+       description: "Production-ready features"
+       color: "#22c55e"
+
+   defaults:
+     color: "#6b7280"
+   ```
+
+   :::note[Example Tags]
+   These examples use API/SDK documentation tags, but the same patterns work for any documentation type—libraries, frameworks, applications, tutorials, or product guides. Adapt the tag names and descriptions to match your content.
+   :::
+
+4. Add tags to your pages using frontmatter:
+
+   ```mdx
+   ---
+   title: Authentication Guide
+   tags:
+     - authentication
+     - rest-api
+     - stable
+   ---
+
+   Your content here...
+   ```
+
+5. [Start the development server](https://starlight.astro.build/getting-started/#start-the-development-server) to preview the plugin in action.
 
 </Steps>
+
+## What You Get
+
+After installation, the plugin automatically creates:
+
+- **Tags Index Page** at `/tags` - Lists all available tags
+- **Tag Detail Pages** at `/tags/[tag]` - Shows all pages for each tag
+
+## Next Steps
+
+- [Configuration](/configuration) - Customize plugin options
+- [Tags Definition](/tags-definition) - Learn about all tag properties
+- [Page Frontmatter](/frontmatter) - Add tags to your pages
+- [Components](/components) - Display tags in your content
+- [Auto-Generated Routes](/routes) - Understand the tag pages
+- [Extending the Schema](/extending-schema) - Add custom fields to tags

@@ -2,17 +2,18 @@ import type { StarlightPlugin, HookParameters } from '@astrojs/starlight/types';
 import { z } from 'astro/zod';
 import { pluginConfigSchema, type PluginConfig } from './src/schemas/config.js';
 import { createTagsIntegration } from './src/lib/integration.js';
+import { translations } from './src/translations.js';
 
 export interface StarlightTagsConfig {
-  /** Path to tags.yml configuration file */
+  // Path to tags.yml configuration file.
   configPath?: string;
-  /** Base path for tag pages */
+  // Base path for tag pages.
   tagsPagesPrefix?: string;
-  /** Name of the tags index page */
+  // Name of the tags index page.
   tagsIndexSlug?: string;
-  /** Validation behavior for inline tags */
+  // Validation behavior for inline tags.
   onInlineTagsNotFound?: 'ignore' | 'warn' | 'error';
-  /** Enable tags in frontmatter */
+  // Enable tags in frontmatter.
   enableFrontmatterTags?: boolean;
 }
 
@@ -29,7 +30,7 @@ export default function starlightTagsPlugin(
 ): StarlightPlugin {
   const config = { ...defaultConfig, ...userConfig };
 
-  // Validate configuration with helpful error messages
+  // Validate configuration with helpful error messages.
   let validatedConfig: PluginConfig;
   try {
     validatedConfig = pluginConfigSchema.parse(config);
@@ -44,6 +45,9 @@ export default function starlightTagsPlugin(
   return {
     name: 'starlight-plugin-tags',
     hooks: {
+      'i18n:setup': ({ injectTranslations }: HookParameters<'i18n:setup'>) => {
+        injectTranslations(translations);
+      },
       'config:setup': async ({ addIntegration, logger }: HookParameters<'config:setup'>) => {
         logger.info('Setting up Starlight Tags plugin...');
         addIntegration(createTagsIntegration(validatedConfig, logger));
@@ -52,11 +56,11 @@ export default function starlightTagsPlugin(
   };
 }
 
-// Export types and schemas for user convenience
+// Export types and schemas for user convenience.
 export type { PluginConfig };
 export { pluginConfigSchema } from './src/schemas/config.js';
 export { tagsConfigSchema } from './src/schemas/tags.js';
 export { frontmatterSchema, starlightTagsExtension } from './src/schemas/frontmatter.js';
 
-// Export TagsProcessor for direct use in pages
+// Export TagsProcessor for direct use in pages.
 export { TagsProcessor } from './src/lib/tags-processor.js';

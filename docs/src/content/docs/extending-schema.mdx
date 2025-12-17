@@ -1,0 +1,188 @@
+---
+title: Extending the Schema
+description: Add custom fields to tags for your specific use case
+---
+
+The plugin provides a minimal core schema that you can extend with custom fields for your specific use case, such as API documentation, SDK docs, or product documentation.
+
+## Core Fields
+
+The plugin includes these fields by default:
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `label` | `string` | Display name (required) |
+| `description` | `string` | Short description |
+| `color` | `string` | Badge color |
+| `icon` | `string` | Emoji or short text |
+| `permalink` | `string` | Custom URL slug |
+| `hidden` | `boolean` | Hide from tag index |
+| `difficulty` | `enum` | Skill level (beginner/intermediate/advanced) |
+| `contentType` | `enum` | Type of content |
+| `subject` | `string` | Subject area |
+| `prerequisites` | `string[]` | Prerequisite tag IDs |
+| `learningObjectives` | `enum[]` | Learning focus areas |
+| `estimatedTime` | `number` | Time in minutes |
+| `skillLevel` | `number` | 1-10 scale |
+
+## Adding Custom Fields
+
+### Step 1: Create a Custom Schema
+
+Create a schema file in your project that extends the base schema:
+
+```typescript
+// src/config/tags-schema.ts
+import { z } from 'astro/zod';
+import { tagDefinitionSchema } from 'starlight-tags/schemas/tags';
+
+export const customTagSchema = tagDefinitionSchema.extend({
+  // API documentation fields
+  status: z.enum(['stable', 'beta', 'deprecated']).optional(),
+  version: z.string().optional(),
+  category: z.string().optional(),
+  breaking: z.boolean().optional(),
+});
+
+export type CustomTag = z.infer<typeof customTagSchema>;
+```
+
+### Step 2: Use Custom Fields in tags.yml
+
+```yaml
+# tags.yml
+tags:
+  authentication:
+    label: "Authentication"
+    description: "API authentication methods"
+    category: "Security"
+    status: "stable"
+    version: "1.0"
+
+  oauth2-pkce:
+    label: "OAuth 2.0 PKCE"
+    description: "Proof Key for Code Exchange flow"
+    category: "Security"
+    status: "stable"
+    version: "2.0"
+
+  legacy-auth:
+    label: "Legacy Authentication"
+    description: "Deprecated authentication method"
+    category: "Security"
+    status: "deprecated"
+    version: "1.0"
+    breaking: true
+```
+
+### Step 3: Access Custom Fields in Components
+
+```astro
+---
+// src/components/CustomTagBadge.astro
+import type { CustomTag } from '../config/tags-schema';
+
+interface Props {
+  tag: CustomTag;
+}
+
+const { tag } = Astro.props;
+---
+
+<span class="tag" data-status={tag.status}>
+  {tag.icon} {tag.label}
+
+  {tag.status === 'deprecated' && (
+    <span class="badge deprecated">Deprecated</span>
+  )}
+
+  {tag.status === 'beta' && (
+    <span class="badge beta">Beta</span>
+  )}
+
+  {tag.version && (
+    <span class="version">v{tag.version}</span>
+  )}
+</span>
+
+<style>
+  .badge.deprecated { background: #dc2626; color: white; }
+  .badge.beta { background: #f59e0b; color: white; }
+  .version { color: #6b7280; font-size: 0.875em; }
+</style>
+```
+
+## Example Schemas
+
+### API/SDK Documentation
+
+```typescript
+const apiTagSchema = tagDefinitionSchema.extend({
+  status: z.enum(['stable', 'beta', 'deprecated', 'experimental']).optional(),
+  version: z.string().optional(),
+  category: z.string().optional(),
+  breaking: z.boolean().optional(),
+  sdks: z.array(z.enum(['js', 'python', 'go', 'java', 'ruby'])).optional(),
+  apiVersion: z.enum(['v1', 'v2', 'v3']).optional(),
+});
+```
+
+### Product Documentation
+
+```typescript
+const productTagSchema = tagDefinitionSchema.extend({
+  product: z.string().optional(),
+  planTier: z.enum(['free', 'pro', 'enterprise']).optional(),
+  feature: z.string().optional(),
+  releaseDate: z.string().optional(),
+});
+```
+
+### Open Source Project
+
+```typescript
+const ossTagSchema = tagDefinitionSchema.extend({
+  complexity: z.enum(['low', 'medium', 'high']).optional(),
+  goodFirstIssue: z.boolean().optional(),
+  area: z.string().optional(),
+  maintainer: z.string().optional(),
+});
+```
+
+## How Custom Fields Flow Through the System
+
+```
+tags.yml                    TagProcessor                 Your Components
+------------------------------------------------------------------------------
+
++----------------+         +----------------+         +------------------+
+| authentication:|         | {              |         | <CustomTagBadge> |
+|   label: "Auth"|   ->    |   id: "auth"   |    ->   |   {tag.label}    |
+|   status: "ok" | parse   |   label: "Auth"| render  |   {tag.status}   |
+|   version: "2" |         |   status: "ok" |         |   {tag.version}  |
++----------------+         |   version: "2" |         +------------------+
+                           |   ...          |
+    Your Schema            | }              |          Your Component
+    validates              +----------------+          decides how to
+    custom fields            All fields               render them
+                             passed through
+```
+
+## Important Notes
+
+1. **Core components use core fields only** - The plugin's built-in components (`TagBadge`, `TagsList`, etc.) only render core fields. Create your own components to display custom fields.
+
+2. **Type casting may be required** - When accessing tags with custom fields, cast to your custom type:
+   ```typescript
+   const tag = processor.getTag('auth') as CustomTag;
+   ```
+
+3. **Validation at build time** - Zod validates your `tags.yml` against the schema. Invalid custom field values will cause build errors.
+
+4. **Handle undefined values** - Custom fields are optional, so handle cases where they might be `undefined` in your components.
+
+## Next Steps
+
+- Learn about the [core tag properties](/tags-definition)
+- See how to use [components](/components) to display tags
+- Understand the [auto-generated routes](/routes)

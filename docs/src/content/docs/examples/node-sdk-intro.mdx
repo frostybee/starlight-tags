@@ -1,0 +1,86 @@
+---
+title: Node.js SDK Getting Started
+description: Get started with the Acme Node.js SDK
+tags:
+  - sdk-node
+  - beginner
+  - stable
+---
+
+The Acme Node.js SDK provides a convenient way to interact with the API from Node.js applications.
+
+## Installation
+
+```bash
+npm install @acme/sdk
+```
+
+## Quick Start
+
+```javascript
+const Acme = require('@acme/sdk');
+
+// Initialize the client
+const acme = new Acme('sk_live_abc123...');
+
+// List users
+const users = await acme.users.list({ limit: 10 });
+users.data.forEach(user => {
+  console.log(`${user.name}: ${user.email}`);
+});
+
+// Get a specific user
+const user = await acme.users.get('usr_abc123');
+console.log(user.name);
+
+// Create a new user
+const newUser = await acme.users.create({
+  email: 'alice@example.com',
+  name: 'Alice Smith'
+});
+console.log(`Created user: ${newUser.id}`);
+```
+
+## Configuration
+
+```javascript
+const Acme = require('@acme/sdk');
+
+const acme = new Acme('sk_live_abc123...', {
+  timeout: 30000,  // Request timeout in ms
+  maxRetries: 3    // Number of retry attempts
+});
+```
+
+## Error Handling
+
+```javascript
+const Acme = require('@acme/sdk');
+
+const acme = new Acme('sk_live_abc123...');
+
+try {
+  const user = await acme.users.get('usr_invalid');
+} catch (error) {
+  if (error.code === 'not_found') {
+    console.log('User not found');
+  } else if (error.code === 'rate_limit') {
+    console.log(`Rate limited. Retry after ${error.retryAfter}s`);
+  } else {
+    console.log(`API error: ${error.message}`);
+  }
+}
+```
+
+## TypeScript Support
+
+The SDK includes TypeScript definitions:
+
+```typescript
+import Acme, { User, AcmeError } from '@acme/sdk';
+
+const acme = new Acme('sk_live_abc123...');
+
+const user: User = await acme.users.get('usr_abc123');
+console.log(user.email);
+```

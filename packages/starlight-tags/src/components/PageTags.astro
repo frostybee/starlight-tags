@@ -30,8 +30,8 @@ interface Props {
   size?: 'small' | 'medium' | 'large';
   /** Show tag icons */
   showIcon?: boolean;
-  /** Optional label before tags */
-  label?: string;
+  /** Optional label before tags. Pass `true` to use the localized default label, or a string for custom label */
+  label?: string | boolean;
 }
 
 const {
@@ -41,6 +41,12 @@ const {
   showIcon = true,
   label
 } = Astro.props;
+
+// Access translations via Astro.locals.t
+const t = Astro.locals.t;
+
+// Resolve the label: use translated default if `true`, custom string if provided, or undefined
+const displayLabel = label === true ? t('starlightTags.pageTags') : (typeof label === 'string' ? label : undefined);
 
 // Get frontmatter tags from the current page
 const frontmatterTags: string[] = Astro.props.frontmatter?.tags ||
@@ -77,7 +83,7 @@ if (frontmatterTags.length > 0) {
 
 {pageTags.length > 0 && (
   <div class:list={['page-tags', `page-tags--${layout}`]}>
-    {label && <span class="page-tags__label">{label}</span>}
+    {displayLabel && <span class="page-tags__label">{displayLabel}</span>}
     <div class="page-tags__list">
       {pageTags.map(tag => (
         <TagBadge

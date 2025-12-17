@@ -1,0 +1,140 @@
+---
+title: TagBadge
+description: Display a single tag as a styled badge
+---
+
+The `TagBadge` component renders a single tag as a styled pill-shaped badge with optional icon and count.
+
+## Import
+
+```js
+import { TagBadge } from 'starlight-tags/components';
+```
+
+## Props
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `tag` | `ProcessedTag` | Required | The tag data object |
+| `size` | `'small' \| 'medium' \| 'large'` | `'medium'` | Badge size |
+| `variant` | `'solid' \| 'outline' \| 'ghost'` | `'solid'` | Visual style |
+| `showCount` | `boolean` | `false` | Show page count |
+| `showIcon` | `boolean` | `true` | Show tag icon |
+| `clickable` | `boolean` | `true` | Render as link |
+
+## Basic Usage
+
+```astro
+---
+import { TagBadge } from 'starlight-tags/components';
+
+// Get tag from processor
+const tag = processor.getTag('authentication');
+---
+
+<TagBadge tag={tag} />
+```
+
+## Variants
+
+### Solid (Default)
+
+Filled background with the tag's color:
+
+```astro
+<TagBadge tag={tag} variant="solid" />
+```
+
+### Outline
+
+Bordered with transparent background:
+
+```astro
+<TagBadge tag={tag} variant="outline" />
+```
+
+### Ghost
+
+Subtle background tint:
+
+```astro
+<TagBadge tag={tag} variant="ghost" />
+```
+
+## Sizes
+
+```astro
+<TagBadge tag={tag} size="small" />
+<TagBadge tag={tag} size="medium" />
+<TagBadge tag={tag} size="large" />
+```
+
+## With Count
+
+Show the number of pages with this tag:
+
+```astro
+<TagBadge tag={tag} showCount={true} />
+```
+
+## Without Icon
+
+Hide the tag icon:
+
+```astro
+<TagBadge tag={tag} showIcon={false} />
+```
+
+## Non-Clickable
+
+Render as a span instead of a link:
+
+```astro
+<TagBadge tag={tag} clickable={false} />
+```
+
+## Complete Example
+
+```astro
+---
+import { TagBadge } from 'starlight-tags/components';
+import { TagsProcessor } from 'starlight-tags';
+import { getCollection } from 'astro:content';
+import { config } from 'virtual:starlight-tagging/config';
+
+const logger = { info: () => {}, warn: () => {}, error: () => {} };
+const docs = await getCollection('docs');
+const processor = new TagsProcessor(config, logger, docs);
+await processor.initialize();
+
+const authTag = processor.getTag('authentication');
+const apiTag = processor.getTag('rest-api');
+---
+
+<div class="tags">
+  <TagBadge tag={authTag} variant="solid" size="medium" />
+  <TagBadge tag={apiTag} variant="outline" showCount={true} />
+</div>
+```
+
+## Styling
+
+The component uses CSS custom properties that inherit from Starlight's theme:
+
+- Tag color from `tags.yml` is applied via `--tag-color`
+- Falls back to `--sl-color-accent` if no color specified
+
+### Custom Styling
+
+Override styles using CSS:
+
+```css
+/* In your custom CSS */
+.sl-tag {
+  font-family: var(--sl-font-mono);
+}
+
+.sl-tag--solid {
+  box-shadow: none;
+}
+```

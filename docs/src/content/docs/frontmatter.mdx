@@ -1,0 +1,189 @@
+---
+title: Page Frontmatter
+description: Add tags to your pages using frontmatter
+---
+
+Add tags to your documentation pages by including them in the page's frontmatter. The plugin extends Starlight's frontmatter schema to support tag-related properties.
+
+## Basic Usage
+
+Add tags to any page by including a `tags` array in the frontmatter:
+
+```mdx
+---
+title: Authentication Overview
+tags:
+  - authentication
+  - rest-api
+  - stable
+---
+
+Your page content here...
+```
+
+## Frontmatter Properties
+
+### `tags`
+
+- **Type:** `string[]`
+- **Default:** `undefined`
+
+An array of tag IDs to associate with the page. Tag IDs must match those defined in your `tags.yml` configuration file.
+
+```mdx
+---
+title: API Security Best Practices
+tags:
+  - authentication
+  - security
+  - stable
+---
+```
+
+### `featuredTags`
+
+- **Type:** `string[]`
+- **Default:** `undefined`
+
+Highlight specific tags as featured. Featured tags may be displayed more prominently depending on your component configuration.
+
+```mdx
+---
+title: Authentication Guide
+tags:
+  - authentication
+  - security
+  - api
+featuredTags:
+  - authentication
+---
+```
+
+### `hideTags`
+
+- **Type:** `boolean`
+- **Default:** `false`
+
+Hide the tags display on this specific page. The page will still be associated with its tags (appearing on tag pages), but tags won't be rendered on the page itself.
+
+```mdx
+---
+title: Internal Documentation
+tags:
+  - internal
+hideTags: true
+---
+```
+
+### `tagsPosition`
+
+- **Type:** `'top' | 'bottom' | 'both'`
+- **Default:** `'bottom'`
+
+Control where tags are displayed on the page.
+
+```mdx
+---
+title: Webhooks Reference
+tags:
+  - webhooks
+tagsPosition: top
+---
+```
+
+| Value | Description |
+|-------|-------------|
+| `'top'` | Display tags at the top of the content |
+| `'bottom'` | Display tags at the bottom of the content |
+| `'both'` | Display tags at both top and bottom |
+
+## Validation
+
+When you use a tag that isn't defined in your `tags.yml`, the plugin's behavior depends on your [configuration](/configuration):
+
+- **`'warn'`** (default): Logs a warning during build
+- **`'error'`**: Fails the build
+- **`'ignore'`**: Silently ignores undefined tags
+
+## Examples
+
+### Minimal Example
+
+```mdx
+---
+title: API Quickstart
+tags:
+  - quickstart
+---
+```
+
+### Full Example
+
+```mdx
+---
+title: OAuth 2.0 Implementation
+description: Complete guide to implementing OAuth 2.0 authentication
+tags:
+  - authentication
+  - oauth2
+  - rest-api
+  - stable
+featuredTags:
+  - authentication
+tagsPosition: top
+---
+
+import { PageTags } from 'starlight-tags/components';
+
+# OAuth 2.0 Implementation
+
+<PageTags />
+
+Your content here...
+```
+
+### API Reference Page
+
+```mdx
+---
+title: Users Endpoint Reference
+tags:
+  - rest-api
+  - endpoints
+  - stable
+  - sdk-python
+---
+
+Complete reference for the `/users` API endpoint.
+```
+
+## Using Tags in Content
+
+You can also display tags manually within your content using the exported components:
+
+```mdx
+---
+title: Webhooks Guide
+tags:
+  - webhooks
+  - rest-api
+---
+
+import { PageTags, TagBadge } from 'starlight-tags/components';
+
+# Webhooks Guide
+
+<PageTags layout="inline" />
+
+Content goes here...
+
+Or display a specific tag:
+
+<TagBadge tagId="webhooks" />
+```
+
+## Next Steps
+
+- Explore [components](/components) for displaying tags
+- Learn about [auto-generated routes](/routes) for tag pages
+- See how to [extend the schema](/extending-schema) with custom fields

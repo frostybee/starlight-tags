@@ -1,0 +1,53 @@
+---
+title: API Quickstart
+description: Get started with the Acme API in minutes
+tags:
+  - rest-api
+  - beginner
+  - stable
+---
+
+Get up and running with the Acme API in just a few minutes.
+
+## Base URL
+
+All API requests are made to:
+
+```
+https://api.acme.com/v2
+```
+
+## Your First Request
+
+Make a simple request to verify your API key works:
+
+```bash
+curl -X GET "https://api.acme.com/v2/status" \
+  -H "Authorization: Bearer YOUR_API_KEY"
+```
+
+**Response:**
+
+```json
+{
+  "status": "ok",
+  "version": "2.0.0",
+  "timestamp": "2024-01-15T10:30:00Z"
+}
+```
+
+## Authentication
+
+All requests require an API key passed in the `Authorization` header:
+
+```
+Authorization: Bearer YOUR_API_KEY
+```
+
+You can generate API keys in your [dashboard](https://dashboard.acme.com/api-keys).
+
+## Next Steps
+
+- [Authentication Guide](/examples/authentication) - Learn about authentication options
+- [Users Endpoint](/examples/users-endpoint) - Start working with user data
+- [Python SDK](/examples/python-sdk-intro) - Use our Python library

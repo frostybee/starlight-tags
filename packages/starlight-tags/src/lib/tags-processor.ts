@@ -2,7 +2,6 @@ import fs from 'fs/promises';
 import yaml from 'js-yaml';
 import type { AstroConfig, AstroIntegrationLogger } from 'astro';
 import { tagsConfigSchema, type TagsConfig, type ProcessedTag } from '../schemas/tags.js';
-import { validateTags } from './validation.js';
 import type { PluginConfig } from '../schemas/config.js';
 
 // Constants
@@ -67,8 +66,8 @@ export class TagsProcessor {
 
     } catch (error) {
       // Check for file not found error
-      if (error instanceof Error && 'code' in error && (error as NodeJS.ErrnoException).code === 'ENOENT') {
-        const errnoError = error as NodeJS.ErrnoException;
+      const errnoError = error as { code?: string; path?: string };
+      if (error instanceof Error && errnoError.code === 'ENOENT') {
         this.logger.warn(`Tags configuration file not found: ${this.config.configPath} (tried: ${errnoError.path || 'unknown path'})`);
         this.tagsData = { tags: {} };
       } else {
@@ -94,7 +93,7 @@ export class TagsProcessor {
       // Otherwise, try to fetch them dynamically
       try {
         // Dynamically import astro:content only when needed
-        // @ts-ignore - astro:content is a virtual module only available at runtime
+        // @ts-expect-error - astro:content is a virtual module only available at runtime
         const { getCollection } = await import('astro:content');
         docsEntries = await getCollection('docs') as DocsEntry[];
         this.logger.info(`Fetched ${docsEntries.length} docs entries from astro:content`);
@@ -186,7 +185,7 @@ export class TagsProcessor {
     }
   }
 
-  private async validateInlineTags(tagUsage: Map<string, Array<any>>): Promise<void> {
+  private async validateInlineTags(tagUsage: Map<string, unknown[]>): Promise<void> {
     const undefinedTags = Array.from(tagUsage.keys()).filter(
       tagId => !this.tagsData?.tags[tagId]
     );
@@ -388,7 +387,6 @@ export class TagsProcessor {
     const endTag = this.processedTags?.get(endTagId);
     if (!endTag) return [];
 
-    const path: string[] = [startTagId];
     const visited = new Set([startTagId]);
 
     // Simple BFS to find path

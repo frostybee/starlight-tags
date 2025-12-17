@@ -1,0 +1,55 @@
+---
+title: Authentication Guide
+description: Learn how to authenticate with the Acme API
+tags:
+  - authentication
+  - rest-api
+  - intermediate
+---
+
+The Acme API supports multiple authentication methods depending on your use case.
+
+## API Keys
+
+The simplest authentication method. Best for server-to-server communication.
+
+```bash
+curl -X GET "https://api.acme.com/v2/users" \
+  -H "Authorization: Bearer sk_live_abc123..."
+```
+
+### Key Types
+
+| Type | Prefix | Use Case |
+|------|--------|----------|
+| Live | `sk_live_` | Production applications |
+| Test | `sk_test_` | Development and testing |
+
+## OAuth 2.0
+
+For applications that act on behalf of users. See [OAuth 2.0 Flow](/examples/oauth2-flow) for implementation details.
+
+```bash
+curl -X GET "https://api.acme.com/v2/users/me" \
+  -H "Authorization: Bearer oauth_token_xyz..."
+```
+
+## Security Best Practices
+
+1. **Never expose keys in client-side code** - Use a backend proxy
+2. **Rotate keys regularly** - Generate new keys periodically
+3. **Use environment variables** - Don't hardcode keys in source code
+4. **Restrict key permissions** - Only grant necessary scopes
+
+## Error Responses
+
+Authentication errors return `401 Unauthorized`:
+
+```json
+{
+  "error": {
+    "code": "unauthorized",
+    "message": "Invalid or expired API key"
+  }
+}
+```

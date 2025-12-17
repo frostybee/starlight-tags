@@ -22,8 +22,14 @@ export const tagDefinitionSchema = z.object({
   skillLevel: z.number().min(1).max(10).optional(),
 });
 
+// Regex for valid tag IDs (alphanumeric with hyphens/underscores)
+const tagIdRegex = /^[a-zA-Z0-9_-]+$/;
+
 export const tagsConfigSchema = z.object({
-  tags: z.record(z.string(), tagDefinitionSchema),
+  tags: z.record(
+    z.string().regex(tagIdRegex, 'Tag ID must contain only alphanumeric characters, hyphens, and underscores'),
+    tagDefinitionSchema
+  ),
   defaults: z.object({
     color: z.string().regex(colorRegex, 'Invalid color format').optional(),
     showInSidebar: z.boolean().default(true)
@@ -34,7 +40,7 @@ export type TagDefinition = z.infer<typeof tagDefinitionSchema>;
 export type TagsConfig = z.infer<typeof tagsConfigSchema>;
 
 // Enhanced tag definition with computed properties
-export interface ProcessedTag extends TagDefinition {
+export type ProcessedTag = TagDefinition & {
   id: string;
   slug: string;
   url: string;
@@ -45,10 +51,10 @@ export interface ProcessedTag extends TagDefinition {
     title: string;
     description?: string;
     tags?: string[];
-    frontmatter?: Record<string, any>;
+    frontmatter?: Record<string, unknown>;
   }>;
   // Educational computed properties
   relatedTags?: string[];
   prerequisiteChain?: string[];
   nextSteps?: string[];
-}
+};

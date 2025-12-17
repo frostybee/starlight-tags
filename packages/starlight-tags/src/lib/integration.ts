@@ -1,7 +1,6 @@
 import type { AstroIntegration, AstroIntegrationLogger } from 'astro';
 import { fileURLToPath } from 'node:url';
 import path from 'node:path';
-import { TagsProcessor } from './tags-processor.js';
 import type { PluginConfig } from '../schemas/config.js';
 
 /**
@@ -40,13 +39,24 @@ export function createTagsIntegration(
         const tagsIndexPath = fileURLToPath(new URL('../pages/tags-index.astro', import.meta.url));
         const tagPagePath = fileURLToPath(new URL('../pages/tag-page.astro', import.meta.url));
 
+        // Inject routes with optional locale prefix for i18n support
         injectRoute({
           pattern: `/${config.tagsIndexSlug}`,
           entrypoint: tagsIndexPath
         });
 
         injectRoute({
+          pattern: `/[...locale]/${config.tagsIndexSlug}`,
+          entrypoint: tagsIndexPath
+        });
+
+        injectRoute({
           pattern: `/${config.tagsPagesPrefix}/[tag]`,
+          entrypoint: tagPagePath
+        });
+
+        injectRoute({
+          pattern: `/[...locale]/${config.tagsPagesPrefix}/[tag]`,
           entrypoint: tagPagePath
         });
 
@@ -72,32 +82,8 @@ export function createTagsIntegration(
         });
       },
 
-      'astro:config:done': async ({ config: astroConfig }) => {
-        // Validate educational prerequisites during build
-        try {
-          const processor = new TagsProcessor(resolvedConfig, logger);
-          await processor.initialize();
-          processor.setAstroConfig(astroConfig);
-
-          // Only validate prerequisites if we have tags data
-          const tagsMap = processor.getTags();
-          if (tagsMap.size > 0) {
-            const validation = processor.validatePrerequisites();
-            if (!validation.isValid) {
-              // Log prerequisite validation errors as warnings (non-fatal)
-              validation.errors.forEach(error => logger.warn(error));
-              logger.warn(`Found ${validation.errors.length} prerequisite validation issue(s)`);
-            }
-            logger.info(`Processed ${tagsMap.size} tags with educational metadata`);
-          } else {
-            logger.info('No tags configuration found, skipping prerequisite validation');
-          }
-
-          logger.info('Tags plugin routes configured successfully');
-        } catch (error) {
-          logger.warn(`Tags plugin initialization warning: ${error instanceof Error ? error.message : String(error)}`);
-          // Don't throw error to prevent build failure - just warn
-        }
+      'astro:config:done': () => {
+        logger.info('Tags plugin routes configured successfully');
       }
     }
   };

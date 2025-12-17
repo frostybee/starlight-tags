@@ -1,0 +1,154 @@
+---
+title: TagsList
+description: Display multiple tags with different layouts
+---
+
+The `TagsList` component renders a collection of tags with customizable layouts and sorting options.
+
+## Import
+
+```js
+import { TagsList } from 'starlight-tags/components';
+```
+
+## Props
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `tags` | `ProcessedTag[]` | Required | Array of tag data objects |
+| `title` | `string` | `undefined` | Optional heading above tags |
+| `showCount` | `boolean` | `false` | Show page counts on badges |
+| `layout` | `'inline' \| 'grid' \| 'list'` | `'inline'` | Layout style |
+| `variant` | `'solid' \| 'outline' \| 'ghost'` | `'solid'` | Badge visual style |
+| `sortBy` | `'name' \| 'count' \| 'recent'` | `'name'` | Sort order |
+
+## Basic Usage
+
+```astro
+---
+import { TagsList } from 'starlight-tags/components';
+
+const tags = processor.getAllTagsSorted();
+---
+
+<TagsList tags={tags} />
+```
+
+## Layouts
+
+### Inline (Default)
+
+Tags flow horizontally and wrap:
+
+```astro
+<TagsList tags={tags} layout="inline" />
+```
+
+### Grid
+
+Tags in a responsive grid:
+
+```astro
+<TagsList tags={tags} layout="grid" />
+```
+
+### List
+
+Tags stacked vertically:
+
+```astro
+<TagsList tags={tags} layout="list" />
+```
+
+## With Title
+
+Add a heading above the tags:
+
+```astro
+<TagsList tags={tags} title="Related Topics" />
+```
+
+## Sorting
+
+### By Name (Default)
+
+Alphabetical order:
+
+```astro
+<TagsList tags={tags} sortBy="name" />
+```
+
+### By Count
+
+Most used tags first:
+
+```astro
+<TagsList tags={tags} sortBy="count" />
+```
+
+## With Counts
+
+Show how many pages use each tag:
+
+```astro
+<TagsList tags={tags} showCount={true} />
+```
+
+## Style Variants
+
+```astro
+<TagsList tags={tags} variant="solid" />
+<TagsList tags={tags} variant="outline" />
+<TagsList tags={tags} variant="ghost" />
+```
+
+## Complete Example
+
+```astro
+---
+import { TagsList } from 'starlight-tags/components';
+import { TagsProcessor } from 'starlight-tags';
+import { getCollection } from 'astro:content';
+import { config } from 'virtual:starlight-tagging/config';
+
+const logger = { info: () => {}, warn: () => {}, error: () => {} };
+const docs = await getCollection('docs');
+const processor = new TagsProcessor(config, logger, docs);
+await processor.initialize();
+
+const allTags = processor.getAllTagsSorted();
+const topTags = allTags.slice(0, 10);
+---
+
+<section>
+  <TagsList
+    tags={topTags}
+    title="Popular Topics"
+    layout="grid"
+    sortBy="count"
+    showCount={true}
+    variant="outline"
+  />
+</section>
+```
+
+## Filtering Tags
+
+Filter tags before passing to the component:
+
+```astro
+---
+const allTags = processor.getAllTagsSorted();
+
+// Only visible tags
+const visibleTags = allTags.filter(tag => !tag.hidden);
+
+// Only tags with at least 3 pages
+const popularTags = allTags.filter(tag => tag.count >= 3);
+
+// Only stable APIs
+const stableTags = allTags.filter(tag => tag.subject === 'stable');
+---
+
+<TagsList tags={popularTags} title="Popular Tags" />
+```

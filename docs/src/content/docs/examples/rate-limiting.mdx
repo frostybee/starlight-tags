@@ -1,0 +1,86 @@
+---
+title: Rate Limiting
+description: Understanding API rate limits and how to handle them
+tags:
+  - rest-api
+  - advanced
+  - beta
+---
+
+:::caution[Beta Feature]
+Rate limiting policies are in beta and may change. Monitor the changelog for updates.
+:::
+
+The Acme API enforces rate limits to ensure fair usage and system stability.
+
+## Rate Limit Tiers
+
+| Plan | Requests/Minute | Requests/Day |
+|------|-----------------|--------------|
+| Free | 60 | 1,000 |
+| Pro | 600 | 50,000 |
+| Enterprise | 6,000 | Unlimited |
+
+## Rate Limit Headers
+
+Every response includes rate limit information:
+
+```http
+X-RateLimit-Limit: 600
+X-RateLimit-Remaining: 595
+X-RateLimit-Reset: 1705312800
+```
+
+| Header | Description |
+|--------|-------------|
+| `X-RateLimit-Limit` | Maximum requests per minute |
+| `X-RateLimit-Remaining` | Remaining requests in current window |
+| `X-RateLimit-Reset` | Unix timestamp when the limit resets |
+
+## Rate Limit Exceeded
+
+When you exceed the limit, you'll receive a `429` response:
+
+```json
+{
+  "error": {
+    "code": "rate_limit",
+    "message": "Rate limit exceeded",
+    "retry_after": 45
+  }
+}
+```
+
+The `Retry-After` header indicates seconds to wait:
+
+```http
+HTTP/1.1 429 Too Many Requests
+Retry-After: 45
+```
+
+## Best Practices
+
+1. **Monitor headers** - Track remaining requests proactively
+2. **Implement backoff** - Use exponential backoff for retries
+3. **Queue requests** - Spread requests over time
+4. **Cache responses** - Reduce unnecessary API calls
+5. **Use webhooks** - Subscribe to events instead of polling
+
+## Handling Rate Limits
+
+```javascript
+async function fetchWithRetry(url, options, maxRetries = 3) {
+  for (let i = 0; i < maxRetries; i++) {
+    const response = await fetch(url, options);
+
+    if (response.status === 429) {
+      const retryAfter = response.headers.get('Retry-After') || 60;
+      await sleep(retryAfter * 1000);
+      continue;
+    }
+
+    return response;
+  }
+  throw new Error('Max retries exceeded');
+}
+```

@@ -5,6 +5,13 @@ import starlightTags from 'starlight-tags'
 export default defineConfig({
   integrations: [
     starlight({
+      defaultLocale: 'root',
+      locales: {
+        root: { label: 'English', lang: 'en' },
+        fr: { label: 'Français', lang: 'fr' },
+        es: { label: 'Español', lang: 'es' },
+        de: { label: 'Deutsch', lang: 'de' },
+      },
       editLink: {
         baseUrl: 'https://github.com/frostybee/starlight-tags/edit/main/docs/',
       },
@@ -23,9 +30,19 @@ export default defineConfig({
           items: ['getting-started'],
         },
         {
-          label: 'Tagged Pages',
+          label: 'Guide',
+          items: ['configuration', 'tags-definition', 'frontmatter', 'routes', 'extending-schema'],
+        },
+        {
+          label: 'Components',
           autogenerate: {
-            directory: 'php/',
+            directory: 'components/',
+          },
+        },
+        {
+          label: 'Examples',
+          autogenerate: {
+            directory: 'examples/',
           },
         },
       ],
