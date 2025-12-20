@@ -1,0 +1,161 @@
+---
+title: Virtual Tags Module
+description: Efficient, memoized access to tag data via the virtual module API
+---
+
+The `virtual:starlight-tagging/tags` module provides efficient, memoized access to processed tag data. Tags are processed once per build and cached for all subsequent requests.
+
+## Basic Usage
+
+```astro
+---
+import { initTags, getTag, getAllTagsSorted } from 'virtual:starlight-tagging/tags';
+
+// Initialize once (memoized - safe to call from any component)
+await initTags();
+
+// Use helper functions synchronously
+const tag = getTag('authentication');
+const allTags = getAllTagsSorted();
+---
+```
+
+## Available Functions
+
+### `initTags(options?)`
+
+Initialize the tags store. Must be called before using other functions.
+
+```ts
+await initTags();
+
+// With verbose logging (useful for debugging)
+await initTags({ verbose: true });
+```
+
+This function is **memoized** - calling it multiple times only initializes once.
+
+### `getTag(tagId)`
+
+Get a specific tag by its ID.
+
+```ts
+const tag = getTag('authentication');
+// Returns ProcessedTag | undefined
+```
+
+### `getTags()`
+
+Get all tags as a Map.
+
+```ts
+const tagsMap = getTags();
+// Returns Map<string, ProcessedTag>
+```
+
+### `getAllTagsSorted()`
+
+Get all tags sorted by count (descending) then label (ascending).
+
+```ts
+const tags = getAllTagsSorted();
+// Returns ProcessedTag[]
+```
+
+### `getTagsForPage(pageSlug)`
+
+Get tags for a specific page by its slug.
+
+```ts
+const pageTags = getTagsForPage('guides/authentication');
+// Returns ProcessedTag[]
+```
+
+### `getTagsByDifficulty(difficulty)`
+
+Get tags filtered by difficulty level.
+
+```ts
+const beginnerTags = getTagsByDifficulty('beginner');
+// Returns ProcessedTag[]
+```
+
+### `getTagsBySubject(subject)`
+
+Get tags filtered by subject.
+
+```ts
+const apiTags = getTagsBySubject('api');
+// Returns ProcessedTag[]
+```
+
+### `getTagsByContentType(contentType)`
+
+Get tags filtered by content type.
+
+```ts
+const tutorials = getTagsByContentType('tutorial');
+// Returns ProcessedTag[]
+```
+
+### `getLearningPath(startTagId, endTagId?)`
+
+Get learning path between two tags.
+
+```ts
+const path = getLearningPath('basics', 'advanced');
+// Returns string[] (tag IDs)
+```
+
+### `isInitialized()`
+
+Check if the tags store has been initialized.
+
+```ts
+if (isInitialized()) {
+  // Safe to use sync functions
+}
+```
+
+## Complete Example
+
+```astro
+---
+import { TagsList } from 'starlight-tags/components';
+import { initTags, getAllTagsSorted } from 'virtual:starlight-tagging/tags';
+
+// Initialize tags store (memoized - safe to call multiple times)
+await initTags();
+
+// Get top 10 tags by popularity
+const allTags = getAllTagsSorted();
+const topTags = allTags.slice(0, 10);
+---
+
+<section>
+  <h2>Popular Topics</h2>
+  <TagsList
+    tags={topTags}
+    layout="grid"
+    showCount={true}
+    variant="outline"
+  />
+</section>
+```
+
+## Key Benefits
+
+- **Single initialization** - Tags processed once per build
+- **No boilerplate** - No need to manually configure processors
+- **Type safety** - Full TypeScript support via virtual module declarations
+- **Consistent API** - Same functions available everywhere
+
+## Advanced: Direct TagsProcessor Access
+
+For advanced use cases where you need direct access to the `TagsProcessor` class (e.g., custom processing logic), you can import it directly:
+
+```ts
+import { TagsProcessor } from 'starlight-tags';
+```
+
+However, for most use cases, the virtual module API is recommended.

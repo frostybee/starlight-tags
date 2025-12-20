@@ -5,7 +5,9 @@ export const pluginConfigSchema = z.object({
   tagsPagesPrefix: z.string().default('tags'),
   tagsIndexSlug: z.string().default('tags'),
   onInlineTagsNotFound: z.enum(['ignore', 'warn', 'error']).default('warn'),
-  enableFrontmatterTags: z.boolean().default(true)
+  enableFrontmatterTags: z.boolean().default(true),
+  // Internal: Set by the integration from Astro config
+  basePath: z.string().default('')
 });
 
 export type PluginConfig = z.infer<typeof pluginConfigSchema>;

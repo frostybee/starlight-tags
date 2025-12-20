@@ -1,0 +1,85 @@
+---
+title: PageWithTags Demo
+description: Live demo of the PageWithTags wrapper component
+tags:
+  - webhooks
+  - intermediate
+---
+
+import PageWithTagsDemo from '../../../components/PageWithTagsDemo.astro';
+
+This page demonstrates the `PageWithTags` component, which wraps content and displays tags at configurable positions.
+
+:::tip[Wrapper Component]
+Unlike `PageTags`, this component wraps your content and requires you to pass pre-fetched tag data. It's ideal for layout templates.
+:::
+
+## Bottom Position (Default)
+
+Tags appear after the content with a separator line and "Tags" heading:
+
+<PageWithTagsDemo position="bottom" />
+
+```astro
+<PageWithTags tags={pageTags} position="bottom">
+  <YourContent />
+</PageWithTags>
+```
+
+## Top Position
+
+Tags appear before the content:
+
+<PageWithTagsDemo position="top" />
+
+```astro
+<PageWithTags tags={pageTags} position="top">
+  <YourContent />
+</PageWithTags>
+```
+
+## Both Positions
+
+Tags appear at both top and bottom:
+
+<PageWithTagsDemo position="both" />
+
+```astro
+<PageWithTags tags={pageTags} position="both">
+  <YourContent />
+</PageWithTags>
+```
+
+## Without Title
+
+Hide the "Tags" heading at the bottom:
+
+<PageWithTagsDemo position="bottom" showTitle={false} />
+
+```astro
+<PageWithTags tags={pageTags} position="bottom" showTitle={false}>
+  <YourContent />
+</PageWithTags>
+```
+
+## Custom Tag Selection
+
+The demo component lets you specify which tags to display:
+
+<PageWithTagsDemo position="bottom" tagIds={['stable', 'sdk-python', 'advanced']} />
+
+```astro
+---
+const customTags = ['stable', 'sdk-python', 'advanced']
+  .map(id => getTag(id))
+  .filter(Boolean);
+---
+
+<PageWithTags tags={customTags} position="bottom">
+  <YourContent />
+</PageWithTags>
+```
+
+---
+
+See the [PageWithTags documentation](/components/page-with-tags) for full API reference.

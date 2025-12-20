@@ -1,0 +1,85 @@
+---
+/**
+ * MDX-compatible wrapper for PageWithTags component demos
+ */
+import { PageWithTags } from 'starlight-tags/components';
+import { initTags, getTag } from 'virtual:starlight-tagging/tags';
+
+interface Props {
+  /** Which position variant to demonstrate */
+  position?: 'top' | 'bottom' | 'both';
+  /** Show title in bottom position */
+  showTitle?: boolean;
+  /** Tag IDs to use for the demo */
+  tagIds?: string[];
+}
+
+const {
+  position = 'bottom',
+  showTitle = true,
+  tagIds = ['rest-api', 'authentication', 'beginner']
+} = Astro.props;
+
+// Initialize tags store (memoized - only runs once across all components)
+await initTags();
+
+// Get processed tags from the provided tag IDs
+const tags = tagIds
+  .map(id => getTag(id))
+  .filter(Boolean);
+---
+
+{tags.length > 0 ? (
+  <div class="page-with-tags-demo">
+    <PageWithTags tags={tags} position={position} showTitle={showTitle}>
+      <div class="demo-content">
+        <h4>Sample Page Content</h4>
+        <p>This represents your actual page content. The <code>PageWithTags</code> component wraps this content and displays tags at the configured position.</p>
+        <p>Notice how the tags appear at the <strong>{position}</strong> position.</p>
+      </div>
+    </PageWithTags>
+  </div>
+) : (
+  <div class="error-message">
+    No valid tags found. Make sure the tag IDs exist in your tags.yml configuration.
+  </div>
+)}
+
+<style>
+  .page-with-tags-demo {
+    border: 1px solid var(--sl-color-hairline);
+    border-radius: var(--sl-border-radius);
+    padding: 1rem;
+    margin: 1rem 0;
+    background: var(--sl-color-bg-sidebar);
+  }
+
+  .demo-content {
+    padding: 1rem;
+    background: var(--sl-color-bg);
+    border-radius: var(--sl-border-radius);
+  }
+
+  .demo-content h4 {
+    margin-top: 0;
+    color: var(--sl-color-white);
+  }
+
+  .demo-content p {
+    margin-bottom: 0.5rem;
+    color: var(--sl-color-text);
+  }
+
+  .demo-content p:last-child {
+    margin-bottom: 0;
+  }
+
+  .error-message {
+    padding: 0.75rem 1rem;
+    background: color-mix(in srgb, #ef4444 15%, transparent);
+    border: 1px solid #ef4444;
+    border-radius: var(--sl-border-radius);
+    color: #ef4444;
+    font-size: var(--sl-text-sm);
+  }
+</style>

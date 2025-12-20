@@ -57,9 +57,10 @@ Display a specific tag with custom styling:
 ```astro
 ---
 import { TagBadge } from 'starlight-tags/components';
+import { initTags, getTag } from 'virtual:starlight-tagging/tags';
 
-// Get tag data from TagsProcessor
-const tag = processor.getTag('authentication');
+await initTags();
+const tag = getTag('authentication');
 ---
 
 <TagBadge tag={tag} variant="outline" size="large" />
@@ -72,8 +73,10 @@ Display multiple tags with sorting:
 ```astro
 ---
 import { TagsList } from 'starlight-tags/components';
+import { initTags, getAllTagsSorted } from 'virtual:starlight-tagging/tags';
 
-const tags = processor.getAllTagsSorted();
+await initTags();
+const tags = getAllTagsSorted();
 ---
 
 <TagsList tags={tags} layout="grid" showCount={true} />
@@ -102,25 +105,24 @@ All tag components support three visual variants:
 
 ## Getting Tag Data
 
-Components that display specific tags need `ProcessedTag` data. You can get this from the `TagsProcessor`:
+Components that display specific tags need `ProcessedTag` data. Use the virtual module for efficient, memoized access:
 
 ```astro
 ---
-import { TagsProcessor } from 'starlight-tags';
-import { getCollection } from 'astro:content';
-import { config } from 'virtual:starlight-tagging/config';
+import { initTags, getTag, getAllTagsSorted } from 'virtual:starlight-tagging/tags';
 
-const docs = await getCollection('docs');
-const processor = new TagsProcessor(config, logger, docs);
-await processor.initialize();
+// Initialize once (memoized - safe to call multiple times)
+await initTags();
 
 // Get a single tag
-const authTag = processor.getTag('authentication');
+const authTag = getTag('authentication');
 
-// Get all tags
-const allTags = processor.getAllTagsSorted();
+// Get all tags sorted by popularity
+const allTags = getAllTagsSorted();
 ---
 ```
+
+The `initTags()` function is memoized, so calling it multiple times (e.g., in multiple components on the same page) only initializes once. This ensures efficient builds regardless of how many components use tag data.
 
 ## Next Steps
 

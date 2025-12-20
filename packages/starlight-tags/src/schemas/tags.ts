@@ -1,7 +1,12 @@
 import { z } from 'astro/zod';
 
-// Regex for valid CSS color values (hex, named colors, rgb/hsl)
-const colorRegex = /^(#[0-9A-Fa-f]{3,8}|rgb\(|rgba\(|hsl\(|hsla\(|[a-z]+)$/i;
+// Regex for valid CSS color values (hex, named colors, rgb/hsl functions)
+// Matches:
+// - Hex colors: #fff, #ffffff, #ffffffff (3, 4, 6, or 8 hex digits)
+// - Named colors: blue, red, transparent, etc. (lowercase letters only)
+// - RGB/RGBA: rgb(0, 0, 0), rgba(0, 0, 0, 0.5), rgb(0 0 0), rgb(0 0 0 / 50%)
+// - HSL/HSLA: hsl(0, 0%, 0%), hsla(0, 0%, 0%, 0.5), hsl(0 0% 0%)
+const colorRegex = /^(#[0-9A-Fa-f]{3}|#[0-9A-Fa-f]{4}|#[0-9A-Fa-f]{6}|#[0-9A-Fa-f]{8}|rgba?\([^)]+\)|hsla?\([^)]+\)|[a-z]+)$/i;
 // Regex for URL-safe slugs
 const permalinkRegex = /^[a-z0-9][a-z0-9-/]*[a-z0-9]$|^[a-z0-9]$/i;
 
@@ -39,20 +44,23 @@ export const tagsConfigSchema = z.object({
 export type TagDefinition = z.infer<typeof tagDefinitionSchema>;
 export type TagsConfig = z.infer<typeof tagsConfigSchema>;
 
+/** Reference to a page that uses a tag */
+export type PageReference = {
+  id: string;
+  slug: string;
+  title: string;
+  description?: string;
+  tags?: string[];
+  frontmatter?: Record<string, unknown>;
+};
+
 // Enhanced tag definition with computed properties
 export type ProcessedTag = TagDefinition & {
   id: string;
   slug: string;
   url: string;
   count: number;
-  pages: Array<{
-    id: string;
-    slug: string;
-    title: string;
-    description?: string;
-    tags?: string[];
-    frontmatter?: Record<string, unknown>;
-  }>;
+  pages: PageReference[];
   // Educational computed properties
   relatedTags?: string[];
   prerequisiteChain?: string[];

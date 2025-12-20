@@ -5,6 +5,8 @@ description: Display multiple tags with different layouts
 
 The `TagsList` component renders a collection of tags with customizable layouts and sorting options.
 
+**[See live demo →](/demos/tags-list)**
+
 ## Import
 
 ```js
@@ -107,16 +109,12 @@ Show how many pages use each tag:
 ```astro
 ---
 import { TagsList } from 'starlight-tags/components';
-import { TagsProcessor } from 'starlight-tags';
-import { getCollection } from 'astro:content';
-import { config } from 'virtual:starlight-tagging/config';
+import { initTags, getAllTagsSorted } from 'virtual:starlight-tagging/tags';
 
-const logger = { info: () => {}, warn: () => {}, error: () => {} };
-const docs = await getCollection('docs');
-const processor = new TagsProcessor(config, logger, docs);
-await processor.initialize();
+// Initialize tags store (memoized - safe to call multiple times)
+await initTags();
 
-const allTags = processor.getAllTagsSorted();
+const allTags = getAllTagsSorted();
 const topTags = allTags.slice(0, 10);
 ---
 

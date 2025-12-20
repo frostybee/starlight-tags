@@ -4,7 +4,7 @@ import type { ProcessedTag } from '../schemas/tags.js';
 
 interface Props {
   tags: ProcessedTag[];
-  title?: string;
+  title?: string | undefined;
   showCount?: boolean;
   layout?: 'inline' | 'grid' | 'list';
   variant?: 'solid' | 'outline' | 'ghost';

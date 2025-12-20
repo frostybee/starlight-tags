@@ -1,0 +1,142 @@
+---
+title: TagBadge Demo
+description: Live demo of the TagBadge component
+tags:
+  - stable
+  - api-v2
+---
+
+import TagBadgeDemo from '../../../components/TagBadgeDemo.astro';
+
+This page demonstrates the `TagBadge` component, which renders a single tag as a styled badge.
+
+## Basic Usage
+
+Single tags with different configurations:
+
+<div style="display: flex; gap: 0.5rem; flex-wrap: wrap; align-items: center;">
+  <TagBadgeDemo tagId="authentication" />
+  <TagBadgeDemo tagId="rest-api" />
+  <TagBadgeDemo tagId="webhooks" />
+  <TagBadgeDemo tagId="stable" />
+</div>
+
+## Style Variants
+
+### Solid (Default)
+
+Filled background with the tag's color:
+
+<div style="display: flex; gap: 0.5rem; flex-wrap: wrap; align-items: center;">
+  <TagBadgeDemo tagId="authentication" variant="solid" />
+  <TagBadgeDemo tagId="rest-api" variant="solid" />
+  <TagBadgeDemo tagId="beginner" variant="solid" />
+</div>
+
+### Outline
+
+Bordered with transparent background:
+
+<div style="display: flex; gap: 0.5rem; flex-wrap: wrap; align-items: center;">
+  <TagBadgeDemo tagId="authentication" variant="outline" />
+  <TagBadgeDemo tagId="rest-api" variant="outline" />
+  <TagBadgeDemo tagId="beginner" variant="outline" />
+</div>
+
+### Ghost
+
+Subtle background tint:
+
+<div style="display: flex; gap: 0.5rem; flex-wrap: wrap; align-items: center;">
+  <TagBadgeDemo tagId="authentication" variant="ghost" />
+  <TagBadgeDemo tagId="rest-api" variant="ghost" />
+  <TagBadgeDemo tagId="beginner" variant="ghost" />
+</div>
+
+## Sizes
+
+### Small
+
+<div style="display: flex; gap: 0.5rem; flex-wrap: wrap; align-items: center;">
+  <TagBadgeDemo tagId="authentication" size="small" />
+  <TagBadgeDemo tagId="rest-api" size="small" />
+</div>
+
+### Medium (Default)
+
+<div style="display: flex; gap: 0.5rem; flex-wrap: wrap; align-items: center;">
+  <TagBadgeDemo tagId="authentication" size="medium" />
+  <TagBadgeDemo tagId="rest-api" size="medium" />
+</div>
+
+### Large
+
+<div style="display: flex; gap: 0.5rem; flex-wrap: wrap; align-items: center;">
+  <TagBadgeDemo tagId="authentication" size="large" />
+  <TagBadgeDemo tagId="rest-api" size="large" />
+</div>
+
+## With Page Count
+
+Show how many pages use each tag:
+
+<div style="display: flex; gap: 0.5rem; flex-wrap: wrap; align-items: center;">
+  <TagBadgeDemo tagId="authentication" showCount={true} />
+  <TagBadgeDemo tagId="rest-api" showCount={true} />
+  <TagBadgeDemo tagId="beginner" showCount={true} />
+</div>
+
+## Without Icon
+
+Hide the tag icon:
+
+<div style="display: flex; gap: 0.5rem; flex-wrap: wrap; align-items: center;">
+  <TagBadgeDemo tagId="authentication" showIcon={false} />
+  <TagBadgeDemo tagId="rest-api" showIcon={false} />
+  <TagBadgeDemo tagId="beginner" showIcon={false} />
+</div>
+
+## Non-Clickable
+
+Render as a span instead of a link:
+
+<div style="display: flex; gap: 0.5rem; flex-wrap: wrap; align-items: center;">
+  <TagBadgeDemo tagId="authentication" clickable={false} />
+  <TagBadgeDemo tagId="rest-api" clickable={false} />
+</div>
+
+## All Tag Types
+
+### Status Tags
+
+<div style="display: flex; gap: 0.5rem; flex-wrap: wrap; align-items: center;">
+  <TagBadgeDemo tagId="stable" />
+  <TagBadgeDemo tagId="beta" />
+  <TagBadgeDemo tagId="deprecated" />
+</div>
+
+### Difficulty Tags
+
+<div style="display: flex; gap: 0.5rem; flex-wrap: wrap; align-items: center;">
+  <TagBadgeDemo tagId="beginner" />
+  <TagBadgeDemo tagId="intermediate" />
+  <TagBadgeDemo tagId="advanced" />
+</div>
+
+### SDK Tags
+
+<div style="display: flex; gap: 0.5rem; flex-wrap: wrap; align-items: center;">
+  <TagBadgeDemo tagId="sdk-python" />
+  <TagBadgeDemo tagId="sdk-node" />
+</div>
+
+### Version Tags
+
+<div style="display: flex; gap: 0.5rem; flex-wrap: wrap; align-items: center;">
+  <TagBadgeDemo tagId="api-v1" />
+  <TagBadgeDemo tagId="api-v2" />
+</div>
+
+---
+
+See the [TagBadge documentation](/components/tag-badge) for full API reference.

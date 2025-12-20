@@ -5,6 +5,8 @@ description: Display a single tag as a styled badge
 
 The `TagBadge` component renders a single tag as a styled pill-shaped badge with optional icon and count.
 
+**[See live demo →](/demos/tag-badge)**
+
 ## Import
 
 ```js
@@ -98,17 +100,13 @@ Render as a span instead of a link:
 ```astro
 ---
 import { TagBadge } from 'starlight-tags/components';
-import { TagsProcessor } from 'starlight-tags';
-import { getCollection } from 'astro:content';
-import { config } from 'virtual:starlight-tagging/config';
+import { initTags, getTag } from 'virtual:starlight-tagging/tags';
 
-const logger = { info: () => {}, warn: () => {}, error: () => {} };
-const docs = await getCollection('docs');
-const processor = new TagsProcessor(config, logger, docs);
-await processor.initialize();
+// Initialize tags store (memoized - safe to call multiple times)
+await initTags();
 
-const authTag = processor.getTag('authentication');
-const apiTag = processor.getTag('rest-api');
+const authTag = getTag('authentication');
+const apiTag = getTag('rest-api');
 ---
 
 <div class="tags">

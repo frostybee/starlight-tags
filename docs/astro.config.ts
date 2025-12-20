@@ -31,12 +31,18 @@ export default defineConfig({
         },
         {
           label: 'Guide',
-          items: ['configuration', 'tags-definition', 'frontmatter', 'routes', 'extending-schema'],
+          items: ['configuration', 'tags-definition', 'frontmatter', 'routes', 'extending-schema', 'guides/virtual-tags-module'],
         },
         {
           label: 'Components',
           autogenerate: {
             directory: 'components/',
+          },
+        },
+        {
+          label: 'Demos',
+          autogenerate: {
+            directory: 'demos/',
           },
         },
         {

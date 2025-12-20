@@ -9,7 +9,7 @@
     "forceConsistentCasingInFileNames": true,
     "allowSyntheticDefaultImports": true,
     "resolveJsonModule": true,
-    "types": ["node"],
+    "types": ["node", "vite/client"],
     "noEmit": true
   },
   "include": [
@@ -17,7 +17,8 @@
     "src/**/*.ts"
   ],
   "exclude": [
-    "node_modules",
+    "**/node_modules",
+    "../../node_modules",
     "dist",
     "tests",
     "**/*.astro",

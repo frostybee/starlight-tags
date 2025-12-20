@@ -1,4 +1,4 @@
-// Export all components for easy importing
+// Export all components for easy importing by the consuming application.
 export { default as TagBadge } from './TagBadge.astro';
 export { default as TagsList } from './TagsList.astro';
 export { default as PageTags } from './PageTags.astro';

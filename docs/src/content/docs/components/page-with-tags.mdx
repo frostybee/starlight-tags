@@ -5,6 +5,22 @@ description: Wrapper component that adds tags to content
 
 The `PageWithTags` component wraps your content and automatically displays tags at configurable positions (top, bottom, or both).
 
+**[See live demo →](/demos/page-with-tags)**
+
+:::tip[Wrapper component with positioning control]
+```astro
+<PageWithTags tags={tags} position="both">
+  <YourContent />
+</PageWithTags>
+```
+
+- **Requires tags prop** - you must pass pre-fetched `ProcessedTag[]` data
+- **Wraps content** via `<slot />` - your content goes inside
+- **Position control** - `top`, `bottom`, or `both`
+- Adds separator line and "Tags" title for bottom position
+- Best for: Layout templates where you want tags to frame content
+:::
+
 ## Import
 
 ```js
@@ -24,9 +40,13 @@ import { PageWithTags } from 'starlight-tags/components';
 ```astro
 ---
 import { PageWithTags } from 'starlight-tags/components';
+import { initTags, getTagsForPage } from 'virtual:starlight-tagging/tags';
+
+// Initialize tags store (memoized - safe to call multiple times)
+await initTags();
 
 // Get tags for this page
-const pageTags = processor.getTagsForPage(pageId);
+const pageTags = getTagsForPage('guides/authentication');
 ---
 
 <PageWithTags tags={pageTags}>
@@ -82,23 +102,18 @@ Hide the "Tags" heading at the bottom:
 ```astro
 ---
 import { PageWithTags } from 'starlight-tags/components';
-import { TagsProcessor } from 'starlight-tags';
-import { getCollection } from 'astro:content';
-import { config } from 'virtual:starlight-tagging/config';
+import { initTags, getTag } from 'virtual:starlight-tagging/tags';
 
 // Get page data
 const { entry } = Astro.props;
 const frontmatterTags = entry.data.tags || [];
 
-// Initialize processor
-const logger = { info: () => {}, warn: () => {}, error: () => {} };
-const docs = await getCollection('docs');
-const processor = new TagsProcessor(config, logger, docs);
-await processor.initialize();
+// Initialize tags store (memoized - safe to call multiple times)
+await initTags();
 
 // Get processed tag objects
 const pageTags = frontmatterTags
-  .map(tagId => processor.getTag(tagId))
+  .map(tagId => getTag(tagId))
   .filter(Boolean);
 ---
 
@@ -136,15 +151,48 @@ Override the default styles:
 }
 ```
 
-## When to Use
+## PageWithTags vs PageTags
 
-Use `PageWithTags` when you need to:
+Wondering which component to use? Here's a quick comparison:
 
-- Control tag display at the layout level
-- Show tags in a consistent position across multiple pages
-- Have more control over tag data (e.g., filtering, custom ordering)
+| Feature | `PageWithTags` | `PageTags` |
+|---------|----------------|-----------|
+| Auto-reads frontmatter | ❌ No | ✅ Yes |
+| Requires tags prop | ✅ Yes | ❌ No |
+| Wraps content | ✅ Yes (via slot) | ❌ No |
+| Position control | ✅ `top` / `bottom` / `both` | ❌ Manual placement |
+| Separator line | ✅ Yes (bottom position) | ❌ No |
+| "Tags" title | ✅ Optional | ❌ No |
+| Best for | Layout templates | Drop-in tag display |
 
-For simpler use cases where you just want to show the current page's tags, consider using [`PageTags`](/components/page-tags) instead.
+### When to Use `PageWithTags`
+
+Choose `PageWithTags` when you need:
+
+- **Content wrapping** - Tags frame your content automatically
+- **Consistent positioning** - Enforce same layout across pages (great for layout components)
+- **Custom tag data** - You control which tags display, with filtering or custom ordering
+- **Visual separation** - Built-in separator line and optional "Tags" title
+
+```astro
+<PageWithTags tags={pageTags} position="both">
+  <article>
+    <slot />
+  </article>
+</PageWithTags>
+```
+
+### When to Use `PageTags`
+
+Choose [`PageTags`](/components/page-tags) when you want:
+
+- **Simplicity** - Just drop `<PageTags />` anywhere in your MDX
+- **Flexibility** - Place tags exactly where you want in your content
+- **No setup** - Automatically reads tags from the page's frontmatter
+
+```mdx
+<PageTags />  <!-- That's it! -->
+```
 
 ## Components vs Auto-Generated Pages
 

@@ -1,7 +1,7 @@
 import type { StarlightPlugin, HookParameters } from '@astrojs/starlight/types';
 import { z } from 'astro/zod';
 import { pluginConfigSchema, type PluginConfig } from './src/schemas/config.js';
-import { createTagsIntegration } from './src/lib/integration.js';
+import { createTagsIntegration } from './src/libs/integration.js';
 import { translations } from './src/translations.js';
 
 export interface StarlightTagsConfig {
@@ -43,7 +43,7 @@ export default function starlightTagsPlugin(
   }
 
   return {
-    name: 'starlight-plugin-tags',
+    name: 'starlight-tags',
     hooks: {
       'i18n:setup': ({ injectTranslations }: HookParameters<'i18n:setup'>) => {
         injectTranslations(translations);
@@ -61,6 +61,3 @@ export type { PluginConfig };
 export { pluginConfigSchema } from './src/schemas/config.js';
 export { tagsConfigSchema } from './src/schemas/tags.js';
 export { frontmatterSchema, starlightTagsExtension } from './src/schemas/frontmatter.js';
-
-// Export TagsProcessor for direct use in pages.
-export { TagsProcessor } from './src/lib/tags-processor.js';

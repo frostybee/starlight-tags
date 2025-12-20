@@ -3,8 +3,7 @@
  * MDX-compatible wrapper for PrerequisiteChain component
  */
 import { PrerequisiteChain } from 'starlight-tags/components';
-import { TagsProcessor } from 'starlight-tags';
-import { config } from 'virtual:starlight-tagging/config';
+import { initTags, getTag, getTags } from 'virtual:starlight-tagging/tags';
 
 interface Props {
   /** Tag ID to show prerequisites for */
@@ -21,11 +20,11 @@ const {
   maxChainLength = 5
 } = Astro.props;
 
-const processor = new TagsProcessor(config, console);
-await processor.initialize();
+// Initialize tags store (memoized - only runs once across all components)
+await initTags();
 
-const tag = processor.getTag(tagId);
-const tagsMap = processor.getTags();
+const tag = getTag(tagId);
+const tagsMap = getTags();
 ---
 
 {tag ? (

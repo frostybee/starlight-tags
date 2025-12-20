@@ -5,6 +5,8 @@ description: Display dependency chains and migration paths
 
 The `PrerequisiteChain` component displays a visual chain of prerequisite topics, useful for showing API migration paths, dependency relationships, or knowledge prerequisites.
 
+**[See live demo →](/demos/prerequisite-chain)**
+
 ## Import
 
 ```js
@@ -144,19 +146,14 @@ If more prerequisites exist, it shows "... and X more prerequisites".
 ```astro
 ---
 import { PrerequisiteChain } from 'starlight-tags/components';
-import { TagsProcessor } from 'starlight-tags';
-import { getCollection } from 'astro:content';
-import { config } from 'virtual:starlight-tagging/config';
+import { initTags, getTag, getTags } from 'virtual:starlight-tagging/tags';
 
-// Initialize processor
-const logger = { info: () => {}, warn: () => {}, error: () => {} };
-const docs = await getCollection('docs');
-const processor = new TagsProcessor(config, logger, docs);
-await processor.initialize();
+// Initialize tags store (memoized - safe to call multiple times)
+await initTags();
 
 // Get current tag and tags map
-const currentTag = processor.getTag('oauth2');
-const tagsMap = processor.getTags();
+const currentTag = getTag('oauth2');
+const tagsMap = getTags();
 ---
 
 {currentTag && currentTag.prerequisiteChain?.length > 0 && (
@@ -174,7 +171,7 @@ const tagsMap = processor.getTags();
 ## How It Works
 
 1. The component reads the `prerequisiteChain` computed property from the tag
-2. This property is automatically calculated by `TagsProcessor` based on the `prerequisites` field
+2. This property is automatically calculated based on the `prerequisites` field in your tags configuration
 3. It resolves the full chain recursively (prerequisites of prerequisites)
 4. Tags are displayed in order with arrows between them
 5. The current tag is highlighted with "You are here"

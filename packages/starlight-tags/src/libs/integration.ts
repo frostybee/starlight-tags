@@ -2,6 +2,7 @@ import type { AstroIntegration, AstroIntegrationLogger } from 'astro';
 import { fileURLToPath } from 'node:url';
 import path from 'node:path';
 import type { PluginConfig } from '../schemas/config.js';
+import { vitePluginStarlightTags } from './vite.js';
 
 /**
  * Creates the Astro integration for Starlight Tags plugin.
@@ -11,7 +12,6 @@ export function createTagsIntegration(
   config: PluginConfig,
   logger: AstroIntegrationLogger
 ): AstroIntegration {
-  // Store resolved config path for later use
   let resolvedConfig: PluginConfig = config;
 
   return {
@@ -24,10 +24,14 @@ export function createTagsIntegration(
           ? config.configPath
           : path.resolve(astroRoot, config.configPath);
 
-        // Create resolved config with absolute path
+        // Get base path from Astro config (remove trailing slash for consistency)
+        const basePath = (astroConfig.base || '').replace(/\/$/, '');
+
+        // Create resolved config with absolute path and base path
         resolvedConfig = {
           ...config,
-          configPath: absoluteConfigPath
+          configPath: absoluteConfigPath,
+          basePath
         };
 
         logger.info(`Resolved tags config path: ${absoluteConfigPath}`);
@@ -35,7 +39,7 @@ export function createTagsIntegration(
         // Watch tags configuration file
         addWatchFile(absoluteConfigPath);
 
-        // Inject virtual routes for tags using absolute paths
+        // Inject virtual routes for tags
         const tagsIndexPath = fileURLToPath(new URL('../pages/tags-index.astro', import.meta.url));
         const tagPagePath = fileURLToPath(new URL('../pages/tag-page.astro', import.meta.url));
 
@@ -60,24 +64,13 @@ export function createTagsIntegration(
           entrypoint: tagPagePath
         });
 
-        // Inject virtual module for config with resolved absolute path
+        // Get path to tags-store for virtual module
+        const tagsStorePath = fileURLToPath(new URL('./tags-store.js', import.meta.url));
+
+        // Inject virtual modules via Vite plugin
         updateConfig({
           vite: {
-            plugins: [
-              {
-                name: 'vite-plugin-starlight-tagging-config',
-                resolveId(id) {
-                  if (id === 'virtual:starlight-tagging/config') {
-                    return '\0' + id;
-                  }
-                },
-                load(id) {
-                  if (id === '\0virtual:starlight-tagging/config') {
-                    return `export const config = ${JSON.stringify(resolvedConfig)};`;
-                  }
-                }
-              }
-            ]
+            plugins: [vitePluginStarlightTags(resolvedConfig, tagsStorePath)]
           }
         });
       },

@@ -1,29 +1,27 @@
 ---
 import StarlightPage from '@astrojs/starlight/components/StarlightPage.astro';
-import { getCollection } from 'astro:content';
 import TagBadge from '../components/TagBadge.astro';
-import { TagsProcessor } from '../lib/tags-processor.js';
-import { config } from 'virtual:starlight-tagging/config';
+import { initTags, getAllTagsSorted, getTag } from 'virtual:starlight-tagging/tags';
 import { translations } from '../translations.js';
+import type { ProcessedTag, PageReference } from '../schemas/tags.js';
+
+interface Props {
+  tag: ProcessedTag;
+  pages: PageReference[];
+}
 
 export async function getStaticPaths() {
-  const buildLogger = {
-    info: (msg: string) => console.info(`[starlight-tags] ${msg}`),
-    warn: (msg: string) => console.warn(`[starlight-tags] ${msg}`),
-    error: (msg: string) => console.error(`[starlight-tags] ${msg}`)
-  };
+  // Initialize tags store (memoized - only runs once)
+  await initTags();
 
-  // Fetch docs collection to pass to TagsProcessor
-  const docsEntries = await getCollection('docs');
-
-  const tagsProcessor = new TagsProcessor(config, buildLogger, docsEntries);
-  await tagsProcessor.initialize();
-
-  const tags = tagsProcessor.getAllTagsSorted();
+  const tags = getAllTagsSorted();
   const locales = Object.keys(translations);
 
   // Generate paths for each tag + locale combination
-  const paths = [];
+  const paths: Array<{
+    params: { tag: string; locale: string | undefined };
+    props: Props;
+  }> = [];
   for (const tag of tags) {
     // Root path (no locale)
     paths.push({
@@ -47,31 +45,24 @@ const { tag, pages } = Astro.props;
 // Access translations via Astro.locals.t
 const t = Astro.locals.t;
 
-// Get all docs to find related tags
-const allDocs = await getCollection('docs');
+// Initialize tags store (memoized - already initialized in getStaticPaths, this is a no-op)
+await initTags();
+
+// Find related tags from the pages that have this tag
 const relatedTags = new Set<string>();
 
-pages.forEach((page: { id: string; slug?: string }) => {
-  // Use id for lookup since Astro 5 doesn't have slug on entries
-  const doc = allDocs.find(d => d.id === page.id);
-  if (doc?.data.tags) {
-    (doc.data.tags as string[]).forEach((t: string) => {
-      if (t !== tag.id) relatedTags.add(t);
+pages.forEach((page: { id: string; slug?: string; tags?: string[] }) => {
+  // Use tags from the page data (already available from the processor)
+  if (page.tags) {
+    page.tags.forEach((tagId: string) => {
+      if (tagId !== tag.id) relatedTags.add(tagId);
     });
   }
 });
 
-const relatedLogger = {
-  info: (msg: string) => console.info(`[starlight-tags] ${msg}`),
-  warn: (msg: string) => console.warn(`[starlight-tags] ${msg}`),
-  error: (msg: string) => console.error(`[starlight-tags] ${msg}`)
-};
-
-const tagsProcessorForRelated = new TagsProcessor(config, relatedLogger, allDocs);
-await tagsProcessorForRelated.initialize();
 const relatedTagsData = Array.from(relatedTags)
-  .map(tagId => tagsProcessorForRelated.getTag(tagId))
-  .filter((t): t is NonNullable<typeof t> => t !== undefined && !t.hidden)
+  .map(tagId => getTag(tagId))
+  .filter((relTag): relTag is NonNullable<typeof relTag> => relTag !== undefined && !relTag.hidden)
   .sort((a, b) => b.count - a.count);
 
 // Calculate popularity tiers for related tags
@@ -546,29 +537,19 @@ function getPopularityTier(count: number): 'tier-1' | 'tier-2' | 'tier-3' | 'tie
     background: rgba(20, 20, 30, 0.6);
   }
 
-  :global([data-theme='dark']) .page-card {
+  :global([data-theme='dark']) .page-card,
+  :global([data-theme='dark']) .cloud-tag {
     background: rgba(30, 30, 40, 0.6);
   }
 
-  :global([data-theme='dark']) .page-card:hover {
+  :global([data-theme='dark']) .page-card:hover,
+  :global([data-theme='dark']) .cloud-tag:hover {
     background: rgba(40, 40, 55, 0.8);
-  }
-
-  :global([data-theme='dark']) .page-card-number {
-    background: rgba(20, 20, 30, 0.8);
   }
 
   :global([data-theme='dark']) .tagged-pages,
   :global([data-theme='dark']) .related-tags {
     background: rgba(20, 20, 30, 0.5);
-  }
-
-  :global([data-theme='dark']) .cloud-tag {
-    background: rgba(30, 30, 40, 0.6);
-  }
-
-  :global([data-theme='dark']) .cloud-tag:hover {
-    background: rgba(40, 40, 55, 0.8);
   }
 
   /* ===== Accessibility: Reduced Motion ===== */

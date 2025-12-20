@@ -8,7 +8,7 @@
  * title: My Page
  * tags: [php, security]
  * ---
- * import { PageTags } from 'starlight-plugin-tags/components';
+ * import { PageTags } from 'starlight-tags/components';
  *
  * <PageTags />
  *
@@ -16,9 +16,7 @@
  * ```
  */
 import TagBadge from './TagBadge.astro';
-import { TagsProcessor } from '../lib/tags-processor.js';
-import { getCollection } from 'astro:content';
-import { config } from 'virtual:starlight-tagging/config';
+import { initTags, getTag } from 'virtual:starlight-tagging/tags';
 import type { ProcessedTag } from '../schemas/tags.js';
 
 interface Props {
@@ -57,20 +55,13 @@ const frontmatterTags: string[] = Astro.props.frontmatter?.tags ||
 let pageTags: ProcessedTag[] = [];
 
 if (frontmatterTags.length > 0) {
-  const buildLogger = {
-    info: () => {},
-    warn: () => {},
-    error: () => {}
-  };
-
   try {
-    const docsEntries = await getCollection('docs');
-    const tagsProcessor = new TagsProcessor(config, buildLogger, docsEntries);
-    await tagsProcessor.initialize();
+    // Initialize tags store (memoized - only runs once across all components)
+    await initTags();
 
     // Get processed tag data for each frontmatter tag
     pageTags = frontmatterTags
-      .map(tagId => tagsProcessor.getTag(tagId))
+      .map(tagId => getTag(tagId))
       .filter((t): t is ProcessedTag => t !== undefined);
   } catch (e) {
     // Log error in development for debugging

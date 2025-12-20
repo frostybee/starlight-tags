@@ -1,0 +1,96 @@
+---
+title: PageTags Demo
+description: Live demo of the PageTags component
+tags:
+  - rest-api
+  - authentication
+  - beginner
+---
+
+import { PageTags } from 'starlight-tags/components';
+
+This page demonstrates the `PageTags` component, which automatically reads and displays tags from the current page's frontmatter.
+
+:::tip[Real Frontmatter Tags]
+This page has `rest-api`, `authentication`, and `beginner` tags defined in its frontmatter. The demos below read these tags automatically.
+:::
+
+## Default (Inline)
+
+The simplest usage - just drop in the component:
+
+<PageTags />
+
+```mdx
+<PageTags />
+```
+
+## Block Layout
+
+Full-width with borders:
+
+<PageTags layout="block" />
+
+```mdx
+<PageTags layout="block" />
+```
+
+## With Label
+
+Add a text label before the tags:
+
+<PageTags label="Topics:" />
+
+```mdx
+<PageTags label="Topics:" />
+```
+
+## Sizes
+
+### Small (Default)
+
+<PageTags size="small" />
+
+### Medium
+
+<PageTags size="medium" />
+
+### Large
+
+<PageTags size="large" />
+
+## Style Variants
+
+### Outline (Default)
+
+<PageTags variant="outline" />
+
+### Solid
+
+<PageTags variant="solid" />
+
+### Ghost
+
+<PageTags variant="ghost" />
+
+## Without Icons
+
+<PageTags showIcon={false} />
+
+```mdx
+<PageTags showIcon={false} />
+```
+
+## Combined Options
+
+Block layout with label, medium size, and solid variant:
+
+<PageTags layout="block" label="This guide covers:" size="medium" variant="solid" />
+
+```mdx
+<PageTags layout="block" label="This guide covers:" size="medium" variant="solid" />
+```
+
+---
+
+See the [PageTags documentation](/components/page-tags) for full API reference.

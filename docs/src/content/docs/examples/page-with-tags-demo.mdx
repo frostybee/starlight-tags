@@ -1,0 +1,113 @@
+---
+title: PageWithTags Examples
+description: Live examples of the PageWithTags wrapper component
+tags:
+  - rest-api
+  - intermediate
+---
+
+import PageWithTagsDemo from '../../../components/PageWithTagsDemo.astro';
+
+The `PageWithTags` component wraps your content and displays tags at configurable positions. This page demonstrates various configurations with live examples.
+
+## Position Variants
+
+The `position` prop controls where tags appear relative to your content. Choose based on how you want users to discover and interact with tags.
+
+### Bottom Position (Default)
+
+The most common placement, adding tags below the content with a separator line.
+
+<PageWithTagsDemo position="bottom" />
+
+**When to use:** Standard documentation pages where tags serve as "related topics" navigation.
+
+### Top Position
+
+Tags appear before the content, giving immediate context.
+
+<PageWithTagsDemo position="top" />
+
+**When to use:** Tutorial pages where knowing the tags upfront helps set expectations.
+
+### Both Positions
+
+Tags appear at both top and bottom of the content.
+
+<PageWithTagsDemo position="both" />
+
+**When to use:** Long pages where users benefit from seeing tags at both the start and end.
+
+## Title Configuration
+
+The `showTitle` prop controls whether a "Tags" heading appears above the tag list when using the bottom position.
+
+### With Title (Default)
+
+The bottom position shows a "Tags" heading, making the section clearly identifiable:
+
+<PageWithTagsDemo position="bottom" showTitle={true} />
+
+**Configuration:** `showTitle={true}` (or omit the prop) displays a heading above the tags.
+
+### Without Title
+
+A cleaner look when the tags section is self-explanatory or when you want minimal visual separation:
+
+<PageWithTagsDemo position="bottom" showTitle={false} />
+
+**Configuration:** `showTitle={false}` removes the heading for a more compact appearance.
+
+## Different Tag Combinations
+
+The `tagIds` prop accepts an array of tag identifiers from your `tags.yml` configuration. This lets you display any combination of tags relevant to your content.
+
+### SDK Tags
+
+Display tags related to SDK documentation. Here we show both Python and Node.js SDK tags alongside a difficulty level:
+
+<PageWithTagsDemo
+  position="bottom"
+  tagIds={['sdk-python', 'sdk-node', 'beginner']}
+/>
+
+**Configuration:** `tagIds={['sdk-python', 'sdk-node', 'beginner']}` groups SDK-related tags with a skill level indicator.
+
+### Status Tags
+
+Combine stability and versioning tags to communicate API maturity:
+
+<PageWithTagsDemo
+  position="bottom"
+  tagIds={['stable', 'api-v2', 'rest-api']}
+/>
+
+**Configuration:** `tagIds={['stable', 'api-v2', 'rest-api']}` shows that this content covers the stable v2 REST API.
+
+## Real-World Use Cases
+
+### API Reference Page
+
+For API reference documentation, placing version and stability tags at the top helps users immediately understand which API version they're reading about:
+
+<PageWithTagsDemo
+  position="top"
+  tagIds={['api-v2', 'stable', 'rest-api']}
+/>
+
+**Configuration:** `position="top"` with `tagIds={['api-v2', 'stable', 'rest-api']}` provides upfront context about API version and stability status.
+
+### Tutorial Page
+
+For longer tutorial content, showing tags at both positions helps readers navigate. The top tags set expectations, while bottom tags encourage exploration of related topics:
+
+<PageWithTagsDemo
+  position="both"
+  tagIds={['authentication', 'intermediate', 'webhooks']}
+/>
+
+**Configuration:** `position="both"` with `tagIds={['authentication', 'intermediate', 'webhooks']}` indicates this is an intermediate-level tutorial covering authentication and webhooks.
+
+## Learn More
+
+See the [PageWithTags component documentation](/components/page-with-tags) for the complete API reference and implementation details.

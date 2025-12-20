@@ -5,6 +5,15 @@ description: Auto-display tags for the current page
 
 The `PageTags` component automatically displays tags from the current page's frontmatter. It's the easiest way to show tags on your documentation pages.
 
+**[See live demo →](/demos/page-tags)**
+
+:::tip[Self-contained, automatic tag display]
+- **Reads tags automatically** from the current page's frontmatter
+- **No props required** - just drop it in
+- Renders as a simple inline/block list of tag badges
+- Best for: Quick tag display anywhere in your MDX
+:::
+
 ## Import
 
 ```js
@@ -19,7 +28,7 @@ import { PageTags } from 'starlight-tags/components';
 | `variant` | `'solid' \| 'outline' \| 'ghost'` | `'outline'` | Badge visual style |
 | `size` | `'small' \| 'medium' \| 'large'` | `'small'` | Badge size |
 | `showIcon` | `boolean` | `true` | Show tag icons |
-| `label` | `string` | `undefined` | Optional label before tags |
+| `label` | `string \| boolean` | `undefined` | Pass `true` for localized default label, or a custom string |
 
 ## Basic Usage
 
@@ -63,9 +72,13 @@ Tags take full width with borders:
 
 ## With Label
 
-Add a text label before the tags:
+Add a text label before the tags. Use `true` for the localized default ("Tags:") or pass a custom string:
 
 ```mdx
+{/* Use localized default label */}
+<PageTags label={true} />
+
+{/* Use custom label */}
 <PageTags label="Topics:" />
 ```
 
@@ -195,7 +208,47 @@ Before starting, make sure you understand:
 The `PageTags` component:
 
 1. Reads the `tags` array from the current page's frontmatter
-2. Fetches tag data from the `TagsProcessor`
+2. Fetches tag data from the [virtual tags module](/guides/virtual-tags-module) (memoized for efficiency)
 3. Renders each tag using the `TagBadge` component
 
 If no tags are defined in the frontmatter, the component renders nothing.
+
+## PageTags vs PageWithTags
+
+Wondering which component to use? Here's a quick comparison:
+
+| Feature | `PageTags` | `PageWithTags` |
+|---------|-----------|----------------|
+| Auto-reads frontmatter | ✅ Yes | ❌ No |
+| Requires tags prop | ❌ No | ✅ Yes |
+| Wraps content | ❌ No | ✅ Yes (via slot) |
+| Position control | ❌ Manual placement | ✅ `top` / `bottom` / `both` |
+| Separator line | ❌ No | ✅ Yes (bottom position) |
+| "Tags" title | ❌ No | ✅ Optional |
+| Best for | Drop-in tag display | Layout templates |
+
+### When to Use `PageTags`
+
+Choose `PageTags` when you want:
+
+- **Simplicity** - Just drop `<PageTags />` anywhere in your MDX
+- **Flexibility** - Place tags exactly where you want them
+- **No setup** - Automatically reads from frontmatter
+
+```mdx
+<PageTags />  <!-- That's it! -->
+```
+
+### When to Use `PageWithTags`
+
+Choose [`PageWithTags`](/components/page-with-tags) when you need:
+
+- **Content wrapping** - Tags frame your content
+- **Consistent positioning** - Same layout across pages
+- **Custom tag data** - You control which tags display
+
+```astro
+<PageWithTags tags={customTags} position="both">
+  <YourContent />
+</PageWithTags>
+```

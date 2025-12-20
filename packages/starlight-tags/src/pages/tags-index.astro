@@ -1,9 +1,7 @@
 ---
 import StarlightPage from '@astrojs/starlight/components/StarlightPage.astro';
 import TagsList from '../components/TagsList.astro';
-import { TagsProcessor, type MinimalLogger } from '../lib/tags-processor.js';
-import { getCollection } from 'astro:content';
-import { config } from 'virtual:starlight-tagging/config';
+import { initTags, getAllTagsSorted } from 'virtual:starlight-tagging/tags';
 import { translations } from '../translations.js';
 
 // Generate static paths for all supported locales
@@ -14,21 +12,11 @@ export function getStaticPaths() {
   }));
 }
 
-// Create a minimal logger for build-time usage
-const buildLogger: MinimalLogger = {
-  info: (msg: string) => console.info(`[starlight-tags] ${msg}`),
-  warn: (msg: string) => console.warn(`[starlight-tags] ${msg}`),
-  error: (msg: string) => console.error(`[starlight-tags] ${msg}`)
-};
-
-// Fetch docs collection to pass to TagsProcessor
-const docsEntries = await getCollection('docs');
-
-const tagsProcessor = new TagsProcessor(config, buildLogger, docsEntries);
-await tagsProcessor.initialize();
+// Initialize tags store (memoized - only runs once across all components)
+await initTags();
 
 // Filter out hidden tags from the index
-const allTags = tagsProcessor.getAllTagsSorted().filter(tag => !tag.hidden);
+const allTags = getAllTagsSorted().filter(tag => !tag.hidden);
 const totalTagUsages = allTags.reduce((sum, tag) => sum + tag.count, 0);
 
 // Access translations via Astro.locals.t

@@ -1,0 +1,108 @@
+---
+title: PrerequisiteChain Demo
+description: Live demo of the PrerequisiteChain component
+tags:
+  - api-v2
+  - advanced
+---
+
+import PrerequisiteChainDemo from '../../../components/PrerequisiteChainDemo.astro';
+
+This page demonstrates the `PrerequisiteChain` component, which displays visual dependency chains between topics.
+
+:::tip[Prerequisites Required]
+This component only displays data for tags that have `prerequisites` defined in your `tags.yml` configuration.
+:::
+
+## Basic Usage
+
+The `webhooks` tag has prerequisites defined (`authentication` and `rest-api`):
+
+<PrerequisiteChainDemo tagId="webhooks" />
+
+## API Version Chain
+
+The `api-v2` tag shows a migration path from v1:
+
+<PrerequisiteChainDemo tagId="api-v2" />
+
+## Without Description
+
+Hide the helper text for a more compact display:
+
+<PrerequisiteChainDemo tagId="webhooks" showDescription={false} />
+
+```astro
+<PrerequisiteChain
+  tag={webhooksTag}
+  tagsMap={tagsMap}
+  showDescription={false}
+/>
+```
+
+## Limiting Chain Length
+
+For tags with many prerequisites, you can limit the display:
+
+<PrerequisiteChainDemo tagId="webhooks" maxChainLength={2} />
+
+```astro
+<PrerequisiteChain
+  tag={currentTag}
+  tagsMap={tagsMap}
+  maxChainLength={2}
+/>
+```
+
+## How Prerequisites Work
+
+Prerequisites are defined in your `tags.yml` configuration:
+
+```yaml
+tags:
+  rest-api:
+    label: "REST API"
+    description: "RESTful API endpoints"
+
+  authentication:
+    label: "Authentication"
+    prerequisites:
+      - rest-api  # Must understand REST API first
+
+  webhooks:
+    label: "Webhooks"
+    prerequisites:
+      - authentication  # Must understand auth first
+      - rest-api        # And REST API basics
+```
+
+The component automatically:
+1. Reads the `prerequisiteChain` computed property from the tag
+2. Resolves the full chain recursively (prerequisites of prerequisites)
+3. Displays tags in order with arrows between them
+4. Highlights the current tag with "You are here"
+
+## Use Cases
+
+### API Migration Paths
+
+Show users how to migrate between API versions:
+
+<PrerequisiteChainDemo tagId="api-v2" />
+
+### Learning Paths
+
+Guide users through a sequence of topics they should understand:
+
+<PrerequisiteChainDemo tagId="webhooks" />
+
+## Responsive Behavior
+
+On mobile devices (< 768px):
+- The chain displays vertically instead of horizontally
+- Arrows rotate 90 degrees to point downward
+- Resize your browser to see this in action
+
+---
+
+See the [PrerequisiteChain documentation](/components/prerequisite-chain) for full API reference.

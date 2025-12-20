@@ -1,6 +1,6 @@
 import fs from 'fs/promises';
 import yaml from 'js-yaml';
-import type { AstroConfig, AstroIntegrationLogger } from 'astro';
+import type { AstroIntegrationLogger } from 'astro';
 import { tagsConfigSchema, type TagsConfig, type ProcessedTag } from '../schemas/tags.js';
 import type { PluginConfig } from '../schemas/config.js';
 
@@ -31,7 +31,6 @@ export interface MinimalLogger {
 export class TagsProcessor {
   private config: PluginConfig;
   private logger: AstroIntegrationLogger | MinimalLogger;
-  private astroConfig?: AstroConfig;
   private tagsData?: TagsConfig;
   private processedTags?: Map<string, ProcessedTag>;
   private providedDocsEntries?: DocsEntry[];
@@ -208,17 +207,8 @@ export class TagsProcessor {
 
   private generateTagUrl(tagId: string, permalink?: string): string {
     const slug = this.generateTagSlug(tagId, permalink);
-    const basePath = (this.astroConfig?.base || '').replace(/\/$/, ''); // Remove trailing slash
+    const basePath = this.config.basePath || '';
     return `${basePath}/${this.config.tagsPagesPrefix}/${slug}/`;
-  }
-
-  setAstroConfig(config: AstroConfig): void {
-    this.astroConfig = config;
-  }
-
-  setBasePath(basePath: string): void {
-    // Create a minimal AstroConfig object with just the base path
-    this.astroConfig = { base: basePath } as AstroConfig;
   }
 
   getTags(): Map<string, ProcessedTag> {

@@ -1,0 +1,93 @@
+import type { Plugin } from 'vite';
+import type { PluginConfig } from '../schemas/config.js';
+
+const resolveVirtualModuleId = <T extends string>(id: T): `\0${T}` => `\0${id}`;
+
+const moduleNames = [
+  'virtual:starlight-tagging/config',
+  'virtual:starlight-tagging/tags',
+] as const;
+
+type ModuleName = (typeof moduleNames)[number];
+
+/**
+ * Creates the Vite plugin for Starlight Tags virtual modules.
+ */
+export function vitePluginStarlightTags(
+  config: PluginConfig,
+  tagsStorePath: string
+): Plugin {
+  const resolvedModuleIds = Object.fromEntries(
+    moduleNames.map((name) => [resolveVirtualModuleId(name), name])
+  ) as Record<`\0${ModuleName}`, ModuleName>;
+
+  const modules: Record<ModuleName, string> = {
+    'virtual:starlight-tagging/config': `export const config = ${JSON.stringify(config)};`,
+    'virtual:starlight-tagging/tags': getTagsVirtualModule(config, tagsStorePath),
+  };
+
+  return {
+    name: 'vite-plugin-starlight-tagging',
+    resolveId(id) {
+      if (moduleNames.includes(id as ModuleName)) {
+        return resolveVirtualModuleId(id as ModuleName);
+      }
+    },
+    load(id) {
+      const moduleName = resolvedModuleIds[id as keyof typeof resolvedModuleIds];
+      if (moduleName) {
+        return modules[moduleName];
+      }
+    },
+  };
+}
+
+/**
+ * Generates the virtual module content for starlight-tagging/tags.
+ */
+function getTagsVirtualModule(config: PluginConfig, tagsStorePath: string): string {
+  // Normalize path for cross-platform compatibility
+  const normalizedPath = tagsStorePath.replace(/\\/g, '/');
+
+  return `
+import {
+  initializeTagsStore,
+  getTag,
+  getTags,
+  getAllTagsSorted,
+  getTagsForPage,
+  getTagsByDifficulty,
+  getTagsBySubject,
+  getTagsByContentType,
+  validatePrerequisites,
+  getLearningPath,
+  isInitialized,
+  resetTagsStore
+} from '${normalizedPath}';
+
+const config = ${JSON.stringify(config)};
+
+/**
+ * Initialize the tags store. Must be called once before using other functions.
+ * This is memoized - subsequent calls are no-ops.
+ */
+export async function initTags(options) {
+  return initializeTagsStore(config, options);
+}
+
+// Re-export all helper functions
+export {
+  getTag,
+  getTags,
+  getAllTagsSorted,
+  getTagsForPage,
+  getTagsByDifficulty,
+  getTagsBySubject,
+  getTagsByContentType,
+  validatePrerequisites,
+  getLearningPath,
+  isInitialized,
+  resetTagsStore
+};
+`;
+}
