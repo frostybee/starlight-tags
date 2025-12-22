@@ -6,22 +6,26 @@ tags:
   - intermediate
 ---
 
-import PageWithTagsDemo from '../../../components/PageWithTagsDemo.astro';
+import { PageWithTags } from 'starlight-tags/components';
 
 This page demonstrates the `PageWithTags` component, which wraps content and displays tags at configurable positions.
 
 :::tip[Wrapper Component]
-Unlike `PageTags`, this component wraps your content and requires you to pass pre-fetched tag data. It's ideal for layout templates.
+This component wraps your content and automatically fetches tags from the page's frontmatter, or you can specify custom tags via `tagIds`.
 :::
 
 ## Bottom Position (Default)
 
 Tags appear after the content with a separator line and "Tags" heading:
 
-<PageWithTagsDemo position="bottom" />
+<PageWithTags position="bottom" tagIds={['webhooks', 'intermediate']}>
+  <p>This is sample content wrapped by PageWithTags.</p>
+</PageWithTags>
 
 ```astro
-<PageWithTags tags={pageTags} position="bottom">
+import { PageWithTags } from 'starlight-tags/components';
+
+<PageWithTags position="bottom">
   <YourContent />
 </PageWithTags>
 ```
@@ -30,10 +34,12 @@ Tags appear after the content with a separator line and "Tags" heading:
 
 Tags appear before the content:
 
-<PageWithTagsDemo position="top" />
+<PageWithTags position="top" tagIds={['webhooks', 'intermediate']}>
+  <p>This is sample content wrapped by PageWithTags.</p>
+</PageWithTags>
 
 ```astro
-<PageWithTags tags={pageTags} position="top">
+<PageWithTags position="top">
   <YourContent />
 </PageWithTags>
 ```
@@ -42,10 +48,12 @@ Tags appear before the content:
 
 Tags appear at both top and bottom:
 
-<PageWithTagsDemo position="both" />
+<PageWithTags position="both" tagIds={['webhooks', 'intermediate']}>
+  <p>This is sample content wrapped by PageWithTags.</p>
+</PageWithTags>
 
 ```astro
-<PageWithTags tags={pageTags} position="both">
+<PageWithTags position="both">
   <YourContent />
 </PageWithTags>
 ```
@@ -54,28 +62,26 @@ Tags appear at both top and bottom:
 
 Hide the "Tags" heading at the bottom:
 
-<PageWithTagsDemo position="bottom" showTitle={false} />
+<PageWithTags position="bottom" showTitle={false} tagIds={['webhooks', 'intermediate']}>
+  <p>This is sample content wrapped by PageWithTags.</p>
+</PageWithTags>
 
 ```astro
-<PageWithTags tags={pageTags} position="bottom" showTitle={false}>
+<PageWithTags position="bottom" showTitle={false}>
   <YourContent />
 </PageWithTags>
 ```
 
 ## Custom Tag Selection
 
-The demo component lets you specify which tags to display:
+Specify which tags to display using `tagIds`:
 
-<PageWithTagsDemo position="bottom" tagIds={['stable', 'sdk-python', 'advanced']} />
+<PageWithTags position="bottom" tagIds={['stable', 'sdk-python', 'advanced']}>
+  <p>This content shows custom-selected tags.</p>
+</PageWithTags>
 
 ```astro
----
-const customTags = ['stable', 'sdk-python', 'advanced']
-  .map(id => getTag(id))
-  .filter(Boolean);
----
-
-<PageWithTags tags={customTags} position="bottom">
+<PageWithTags position="bottom" tagIds={['stable', 'sdk-python', 'advanced']}>
   <YourContent />
 </PageWithTags>
 ```

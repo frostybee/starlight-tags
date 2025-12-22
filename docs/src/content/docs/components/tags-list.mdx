@@ -17,23 +17,45 @@ import { TagsList } from 'starlight-tags/components';
 
 | Prop | Type | Default | Description |
 |------|------|---------|-------------|
-| `tags` | `ProcessedTag[]` | Required | Array of tag data objects |
+| `tagIds` | `string[]` | - | Specific tag IDs to display |
+| `tags` | `ProcessedTag[]` | - | Pre-fetched tag objects (for advanced use) |
+| `limit` | `number` | - | Maximum number of tags to show |
 | `title` | `string` | `undefined` | Optional heading above tags |
 | `showCount` | `boolean` | `false` | Show page counts on badges |
 | `layout` | `'inline' \| 'grid' \| 'list'` | `'inline'` | Layout style |
 | `variant` | `'solid' \| 'outline' \| 'ghost'` | `'solid'` | Badge visual style |
 | `sortBy` | `'name' \| 'count' \| 'recent'` | `'name'` | Sort order |
 
+:::note
+If neither `tagIds` nor `tags` is provided, the component displays all available tags.
+:::
+
 ## Basic Usage
 
+Show all tags:
+
 ```astro
----
 import { TagsList } from 'starlight-tags/components';
 
-const tags = processor.getAllTagsSorted();
----
+<TagsList />
+```
 
-<TagsList tags={tags} />
+That's it! The component fetches all tags automatically.
+
+## Specific Tags
+
+Display only specific tags by ID:
+
+```astro
+<TagsList tagIds={['authentication', 'rest-api', 'webhooks']} />
+```
+
+## Limiting Results
+
+Show only a certain number of tags:
+
+```astro
+<TagsList limit={6} />
 ```
 
 ## Layouts
@@ -43,7 +65,7 @@ const tags = processor.getAllTagsSorted();
 Tags flow horizontally and wrap:
 
 ```astro
-<TagsList tags={tags} layout="inline" />
+<TagsList layout="inline" />
 ```
 
 ### Grid
@@ -51,7 +73,7 @@ Tags flow horizontally and wrap:
 Tags in a responsive grid:
 
 ```astro
-<TagsList tags={tags} layout="grid" />
+<TagsList layout="grid" />
 ```
 
 ### List
@@ -59,7 +81,7 @@ Tags in a responsive grid:
 Tags stacked vertically:
 
 ```astro
-<TagsList tags={tags} layout="list" />
+<TagsList layout="list" />
 ```
 
 ## With Title
@@ -67,7 +89,7 @@ Tags stacked vertically:
 Add a heading above the tags:
 
 ```astro
-<TagsList tags={tags} title="Related Topics" />
+<TagsList title="Related Topics" />
 ```
 
 ## Sorting
@@ -77,7 +99,7 @@ Add a heading above the tags:
 Alphabetical order:
 
 ```astro
-<TagsList tags={tags} sortBy="name" />
+<TagsList sortBy="name" />
 ```
 
 ### By Count
@@ -85,7 +107,7 @@ Alphabetical order:
 Most used tags first:
 
 ```astro
-<TagsList tags={tags} sortBy="count" />
+<TagsList sortBy="count" />
 ```
 
 ## With Counts
@@ -93,59 +115,66 @@ Most used tags first:
 Show how many pages use each tag:
 
 ```astro
-<TagsList tags={tags} showCount={true} />
+<TagsList showCount />
 ```
 
 ## Style Variants
 
 ```astro
-<TagsList tags={tags} variant="solid" />
-<TagsList tags={tags} variant="outline" />
-<TagsList tags={tags} variant="ghost" />
+<TagsList variant="solid" />
+<TagsList variant="outline" />
+<TagsList variant="ghost" />
 ```
 
-## Complete Example
+## Combined Options
+
+```astro
+<TagsList
+  title="Popular Topics"
+  layout="grid"
+  sortBy="count"
+  showCount
+  variant="outline"
+  limit={6}
+/>
+```
+
+## Grouped Examples
+
+### Status Tags
+
+```astro
+<TagsList
+  tagIds={['stable', 'beta', 'deprecated']}
+  title="API Status"
+  variant="outline"
+/>
+```
+
+### SDK Options
+
+```astro
+<TagsList
+  tagIds={['sdk-python', 'sdk-node', 'sdk-go']}
+  title="Available SDKs"
+  showCount
+/>
+```
+
+## Advanced: Pre-fetched Tags
+
+For advanced filtering or custom data sources:
 
 ```astro
 ---
 import { TagsList } from 'starlight-tags/components';
 import { initTags, getAllTagsSorted } from 'virtual:starlight-tagging/tags';
 
-// Initialize tags store (memoized - safe to call multiple times)
 await initTags();
 
 const allTags = getAllTagsSorted();
-const topTags = allTags.slice(0, 10);
----
-
-<section>
-  <TagsList
-    tags={topTags}
-    title="Popular Topics"
-    layout="grid"
-    sortBy="count"
-    showCount={true}
-    variant="outline"
-  />
-</section>
-```
-
-## Filtering Tags
-
-Filter tags before passing to the component:
-
-```astro
----
-const allTags = processor.getAllTagsSorted();
-
-// Only visible tags
-const visibleTags = allTags.filter(tag => !tag.hidden);
-
-// Only tags with at least 3 pages
+// Custom filtering
 const popularTags = allTags.filter(tag => tag.count >= 3);
-
-// Only stable APIs
-const stableTags = allTags.filter(tag => tag.subject === 'stable');
 ---
 
 <TagsList tags={popularTags} title="Popular Tags" />

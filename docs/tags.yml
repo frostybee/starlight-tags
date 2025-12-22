@@ -10,37 +10,28 @@ tags:
     description: "API authentication and authorization methods"
     color: "#10b981"
     icon: "🔐"
-    subject: "security"
     difficulty: "intermediate"
-    contentType: "tutorial"
-    learningObjectives: ["conceptual", "practical"]
-    estimatedTime: 30
-    skillLevel: 5
+    product: "Platform"
+    planTier: "free"
 
   rest-api:
     label: "REST API"
     description: "RESTful API endpoints and usage"
     color: "#3b82f6"
     icon: "🌐"
-    subject: "api"
     difficulty: "beginner"
-    contentType: "reference"
-    learningObjectives: ["practical"]
-    estimatedTime: 20
-    skillLevel: 3
+    product: "Platform"
+    planTier: "free"
 
   webhooks:
     label: "Webhooks"
     description: "Event-driven integrations and callbacks"
     color: "#8b5cf6"
     icon: "🔔"
-    subject: "integrations"
     difficulty: "intermediate"
-    contentType: "tutorial"
     prerequisites: ["authentication", "rest-api"]
-    learningObjectives: ["practical", "problem-solving"]
-    estimatedTime: 45
-    skillLevel: 6
+    product: "Platform"
+    planTier: "pro"
 
   # SDK tags
   sdk-python:
@@ -48,24 +39,18 @@ tags:
     description: "Python SDK usage and examples"
     color: "#3776ab"
     icon: "🐍"
-    subject: "sdk"
     difficulty: "beginner"
-    contentType: "tutorial"
-    learningObjectives: ["practical"]
-    estimatedTime: 25
-    skillLevel: 3
+    product: "SDKs"
+    planTier: "free"
 
   sdk-node:
     label: "Node.js SDK"
     description: "Node.js SDK usage and examples"
     color: "#339933"
     icon: "📦"
-    subject: "sdk"
     difficulty: "beginner"
-    contentType: "tutorial"
-    learningObjectives: ["practical"]
-    estimatedTime: 25
-    skillLevel: 3
+    product: "SDKs"
+    planTier: "free"
 
   # Status tags
   stable:
@@ -93,15 +78,17 @@ tags:
     description: "Version 1 API endpoints (legacy)"
     color: "#94a3b8"
     icon: "1"
-    subject: "versioning"
+    product: "Platform"
+    planTier: "free"
 
   api-v2:
     label: "API v2"
     description: "Version 2 API endpoints (current)"
     color: "#3b82f6"
     icon: "2"
-    subject: "versioning"
     prerequisites: ["api-v1"]
+    product: "Platform"
+    planTier: "pro"
 
   # Difficulty tags
   beginner:

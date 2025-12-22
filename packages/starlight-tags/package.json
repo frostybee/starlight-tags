@@ -10,6 +10,7 @@
     "./schema": "./src/schemas/frontmatter.ts",
     "./schemas/tags": "./src/schemas/tags.ts",
     "./components": "./src/components/index.ts",
+    "./libs/url": "./src/libs/url.ts",
     "./styles": "./src/styles/tags.css",
     "./pages/tags-index.astro": "./src/pages/tags-index.astro",
     "./pages/tag-page.astro": "./src/pages/tag-page.astro",

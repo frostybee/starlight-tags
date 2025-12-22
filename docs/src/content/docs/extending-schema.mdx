@@ -18,12 +18,8 @@ The plugin includes these fields by default:
 | `permalink` | `string` | Custom URL slug |
 | `hidden` | `boolean` | Hide from tag index |
 | `difficulty` | `enum` | Skill level (beginner/intermediate/advanced) |
-| `contentType` | `enum` | Type of content |
-| `subject` | `string` | Subject area |
+| `contentType` | `enum` | Type of content (lecture/lab/assignment/project/reference/tutorial/assessment) |
 | `prerequisites` | `string[]` | Prerequisite tag IDs |
-| `learningObjectives` | `enum[]` | Learning focus areas |
-| `estimatedTime` | `number` | Time in minutes |
-| `skillLevel` | `number` | 1-10 scale |
 
 ## Adding Custom Fields
 
@@ -183,6 +179,7 @@ tags.yml                    TagProcessor                 Your Components
 
 ## Next Steps
 
+- **[See the live demo](/demos/extended-schema)** - Working example with product documentation fields
 - Learn about the [core tag properties](/tags-definition)
 - See how to use [components](/components) to display tags
 - Understand the [auto-generated routes](/routes)

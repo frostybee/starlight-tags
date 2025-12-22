@@ -141,92 +141,9 @@ export default defineConfig({
 
 ## Internationalization (i18n)
 
-The plugin integrates with [Starlight's i18n system](https://starlight.astro.build/guides/i18n/) and provides built-in translations for:
+The plugin integrates with Starlight's i18n system and provides built-in translations for English, French, Spanish, and German.
 
-- English (en)
-- French (fr)
-- Spanish (es)
-- German (de)
-
-### Translated UI Strings
-
-| Key | English Default |
-|-----|-----------------|
-| `starlightTags.totalTags` | Total Tags |
-| `starlightTags.tagsApplied` | Tags Applied |
-| `starlightTags.tagCloud` | Tag Cloud |
-| `starlightTags.alphabeticalIndex` | Alphabetical Index |
-| `starlightTags.allTags` | All Tags |
-| `starlightTags.page` | page |
-| `starlightTags.pages` | pages |
-| `starlightTags.pageTags` | Tags: |
-| `starlightTags.taggedPrefix` | Tagged: |
-| `starlightTags.relatedTags` | Related Tags |
-| `starlightTags.pagesWithTag` | Pages with this tag |
-| `starlightTags.related` | related |
-| `starlightTags.path` | Path: |
-
-### Customizing Translations
-
-You can override any translation by adding entries to your `src/content/i18n/` files. This allows you to customize the labels or add support for additional languages.
-
-#### Step 1: Set Up i18n Content Collection
-
-If you haven't already, add the i18n collection to your `src/content.config.ts`:
-
-```ts
-import { defineCollection } from 'astro:content';
-import { docsLoader, i18nLoader } from '@astrojs/starlight/loaders';
-import { docsSchema, i18nSchema } from '@astrojs/starlight/schema';
-
-export const collections = {
-  docs: defineCollection({ loader: docsLoader(), schema: docsSchema() }),
-  i18n: defineCollection({ loader: i18nLoader(), schema: i18nSchema() }),
-};
-```
-
-#### Step 2: Create Translation Files
-
-Create JSON files in `src/content/i18n/` for each language you want to customize:
-
-```json
-// src/content/i18n/en.json
-{
-  "starlightTags.totalTags": "Categories",
-  "starlightTags.tagsApplied": "Total References"
-}
-```
-
-```json
-// src/content/i18n/fr.json
-{
-  "starlightTags.totalTags": "Catégories",
-  "starlightTags.tagsApplied": "Références totales"
-}
-```
-
-#### Adding New Languages
-
-To add a language not included in the plugin, create a translation file with all the keys:
-
-```json
-// src/content/i18n/ja.json
-{
-  "starlightTags.totalTags": "タグ総数",
-  "starlightTags.tagsApplied": "適用されたタグ",
-  "starlightTags.tagCloud": "タグクラウド",
-  "starlightTags.alphabeticalIndex": "アルファベット順索引",
-  "starlightTags.allTags": "すべてのタグ",
-  "starlightTags.page": "ページ",
-  "starlightTags.pages": "ページ",
-  "starlightTags.pageTags": "タグ：",
-  "starlightTags.taggedPrefix": "タグ付き：",
-  "starlightTags.relatedTags": "関連タグ",
-  "starlightTags.pagesWithTag": "このタグのページ",
-  "starlightTags.related": "関連",
-  "starlightTags.path": "パス："
-}
-```
+See the [Internationalization guide](/guides/i18n/) for customizing translations or adding support for additional languages.
 
 ## Next Steps
 

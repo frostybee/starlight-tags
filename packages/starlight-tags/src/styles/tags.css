@@ -1,13 +1,13 @@
 /* Starlight Tags Plugin Styles */
 
 /* Base tag styles */
-.sl-tag {
+.fb-tag {
   --tag-border-radius: var(--sl-border-radius, 0.5rem);
   --tag-transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-  
+
   /* Ensure consistent box model */
   box-sizing: border-box;
-  
+
   /* Improve accessibility */
   &:focus-visible {
     outline: 2px solid var(--sl-color-accent);
@@ -16,11 +16,11 @@
 }
 
 /* Tag badge hover animations */
-.sl-tag--clickable {
+.fb-tag--clickable {
   cursor: pointer;
   position: relative;
   overflow: hidden;
-  
+
   &::before {
     content: '';
     position: absolute;
@@ -36,50 +36,50 @@
     );
     transition: left 0.5s;
   }
-  
+
   &:hover::before {
     left: 100%;
   }
 }
 
 /* Tags list responsive behavior */
-.sl-tags-list {
+.fb-tags-list {
   /* Responsive gap adjustments */
   @media (max-width: 640px) {
-    &.sl-tags-list--grid {
+    &.fb-tags-list--grid {
       grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
       gap: 0.75rem;
     }
-    
-    &.sl-tags-list--inline {
+
+    &.fb-tags-list--inline {
       gap: 0.375rem;
     }
   }
 }
 
 /* Page tags styling */
-.page-tags {
+.fb-page-tags {
   /* Ensure proper spacing in different contexts */
   &:first-child {
     margin-top: 0;
   }
-  
+
   &:last-child {
     margin-bottom: 0;
   }
-  
+
   /* Add subtle animation for tag appearance */
-  .sl-tag {
+  .fb-tag {
     opacity: 0;
     transform: translateY(10px);
     animation: fadeInUp 0.3s ease forwards;
   }
-  
-  .sl-tag:nth-child(1) { animation-delay: 0.1s; }
-  .sl-tag:nth-child(2) { animation-delay: 0.2s; }
-  .sl-tag:nth-child(3) { animation-delay: 0.3s; }
-  .sl-tag:nth-child(4) { animation-delay: 0.4s; }
-  .sl-tag:nth-child(5) { animation-delay: 0.5s; }
+
+  .fb-tag:nth-child(1) { animation-delay: 0.1s; }
+  .fb-tag:nth-child(2) { animation-delay: 0.2s; }
+  .fb-tag:nth-child(3) { animation-delay: 0.3s; }
+  .fb-tag:nth-child(4) { animation-delay: 0.4s; }
+  .fb-tag:nth-child(5) { animation-delay: 0.5s; }
 }
 
 /* Animation keyframes */
@@ -94,7 +94,7 @@
 .tag-page .page-card {
   /* Add subtle glow effect on hover */
   &:hover {
-    box-shadow: 
+    box-shadow:
       0 4px 16px color-mix(in srgb, var(--sl-color-accent) 10%, transparent),
       0 0 0 1px var(--sl-color-accent-low);
   }
@@ -105,26 +105,26 @@
   /* Improve visual hierarchy */
   .tags-stats {
     text-align: center;
-    
+
     p {
       margin: 0;
       font-size: var(--sl-text-lg);
     }
-    
+
     strong {
       color: var(--sl-color-accent);
       font-size: 1.2em;
     }
   }
-  
+
   .alphabet-item {
     /* Add subtle animation */
     transition: var(--tag-transition);
-    
+
     &:hover {
       transform: translateY(-2px);
     }
-    
+
     /* Improve text hierarchy */
     strong {
       display: block;
@@ -136,10 +136,10 @@
 
 /* Dark mode adjustments */
 :root[data-theme="dark"] {
-  .sl-tag--solid {
+  .fb-tag--solid {
     /* Ensure good contrast in dark mode */
     color: var(--sl-color-black);
-    
+
     &:hover {
       color: var(--sl-color-white);
     }
@@ -148,12 +148,12 @@
 
 /* High contrast mode support */
 @media (prefers-contrast: high) {
-  .sl-tag {
+  .fb-tag {
     border-width: 2px;
     font-weight: 600;
   }
-  
-  .sl-tag--ghost {
+
+  .fb-tag--ghost {
     background: var(--sl-color-bg-nav);
     border-color: var(--tag-color, var(--sl-color-accent));
   }
@@ -161,18 +161,18 @@
 
 /* Reduced motion support */
 @media (prefers-reduced-motion: reduce) {
-  .sl-tag,
+  .fb-tag,
   .page-card,
   .alphabet-item {
     transition: none;
     animation: none;
   }
-  
-  .sl-tag--clickable::before {
+
+  .fb-tag--clickable::before {
     display: none;
   }
-  
-  .page-tags .sl-tag {
+
+  .fb-page-tags .fb-tag {
     opacity: 1;
     transform: none;
   }

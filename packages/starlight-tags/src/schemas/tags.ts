@@ -1,68 +1,139 @@
+/**
+ * Tag Schemas
+ *
+ * Zod schemas and TypeScript types for tag definitions and processed tags.
+ * Used for validating tags.yml and typing component props.
+ */
 import { z } from 'astro/zod';
 
-// Regex for valid CSS color values (hex, named colors, rgb/hsl functions)
-// Matches:
-// - Hex colors: #fff, #ffffff, #ffffffff (3, 4, 6, or 8 hex digits)
-// - Named colors: blue, red, transparent, etc. (lowercase letters only)
-// - RGB/RGBA: rgb(0, 0, 0), rgba(0, 0, 0, 0.5), rgb(0 0 0), rgb(0 0 0 / 50%)
-// - HSL/HSLA: hsl(0, 0%, 0%), hsla(0, 0%, 0%, 0.5), hsl(0 0% 0%)
+/**
+ * Regex for valid CSS color values.
+ * Supports: hex (#fff, #ffffff), named colors (blue), rgb/rgba, hsl/hsla
+ */
 const colorRegex = /^(#[0-9A-Fa-f]{3}|#[0-9A-Fa-f]{4}|#[0-9A-Fa-f]{6}|#[0-9A-Fa-f]{8}|rgba?\([^)]+\)|hsla?\([^)]+\)|[a-z]+)$/i;
-// Regex for URL-safe slugs
-const permalinkRegex = /^[a-z0-9][a-z0-9-/]*[a-z0-9]$|^[a-z0-9]$/i;
 
+/** Regex for URL-safe permalinks (lowercase letters, numbers, hyphens, slashes) */
+const permalinkRegex = /^[a-z0-9][a-z0-9-/]*[a-z0-9]$|^[a-z0-9]$/;
+
+/**
+ * Schema for a single tag definition in tags.yml.
+ *
+ * @example
+ * ```yaml
+ * # tags.yml
+ * tags:
+ *   authentication:
+ *     label: "Authentication"
+ *     description: "User authentication and authorization"
+ *     color: "#3b82f6"
+ *     icon: "🔐"
+ *     difficulty: beginner
+ *     prerequisites:
+ *       - rest-api
+ *
+ *   rest-api:
+ *     label: "REST API"
+ *     description: "RESTful API endpoints"
+ *     color: "#10b981"
+ * ```
+ */
 export const tagDefinitionSchema = z.object({
+  /** Display name for the tag */
   label: z.string(),
+  /** Short description shown in tooltips and tag pages */
   description: z.string().optional(),
+  /** CSS color value for the tag badge (hex, named, rgb, hsl) */
   color: z.string().regex(colorRegex, 'Invalid color format. Use hex (#fff), named color (blue), or rgb/hsl').optional(),
-  icon: z.string().optional(), // emoji or short text
+  /** Emoji or short text displayed before the label */
+  icon: z.string().optional(),
+  /** Custom URL slug (defaults to tag ID) */
   permalink: z.string().regex(permalinkRegex, 'Permalink must be URL-safe (lowercase letters, numbers, hyphens)').optional(),
-  hidden: z.boolean().optional(), // hide from tag index but still functional
-  // Educational metadata
+  /** Hide from tag index page but still functional on content pages */
+  hidden: z.boolean().optional(),
+
+  // Educational metadata (optional)
+  /** Difficulty level: beginner, intermediate, or advanced */
   difficulty: z.enum(['beginner', 'intermediate', 'advanced']).optional(),
-  contentType: z.enum(['lecture', 'tutorial', 'exercise', 'reference', 'assessment']).optional(),
-  subject: z.string().optional(),
+  /** Type of content: lecture, lab, assignment, project, reference, tutorial, or assessment */
+  contentType: z.enum(['lecture', 'lab', 'assignment', 'project', 'reference', 'tutorial', 'assessment']).optional(),
+  /** Tag IDs that should be learned before this topic */
   prerequisites: z.array(z.string()).optional(),
-  learningObjectives: z.array(z.enum(['conceptual', 'practical', 'problem-solving', 'analytical'])).optional(),
-  estimatedTime: z.number().optional(), // in minutes
-  skillLevel: z.number().min(1).max(10).optional(),
-});
+}).passthrough(); // Allow custom fields to pass through for schema extension
 
-// Regex for valid tag IDs (alphanumeric with hyphens/underscores)
-const tagIdRegex = /^[a-zA-Z0-9_-]+$/;
+/** Regex for valid tag IDs (lowercase alphanumeric with hyphens/underscores) */
+const tagIdRegex = /^[a-z0-9_-]+$/;
 
+/**
+ * Schema for the entire tags.yml configuration file
+ */
 export const tagsConfigSchema = z.object({
+  /** Map of tag ID to tag definition */
   tags: z.record(
-    z.string().regex(tagIdRegex, 'Tag ID must contain only alphanumeric characters, hyphens, and underscores'),
+    z.string().regex(tagIdRegex, 'Tag ID must contain only lowercase letters, numbers, hyphens, and underscores'),
     tagDefinitionSchema
   ),
+  /** Default settings applied to all tags */
   defaults: z.object({
+    /** Default color for tags without explicit color */
     color: z.string().regex(colorRegex, 'Invalid color format').optional(),
+    /** Whether to show tags in the sidebar navigation */
     showInSidebar: z.boolean().default(true)
   }).optional()
 });
 
+/** Raw tag definition as specified in tags.yml */
 export type TagDefinition = z.infer<typeof tagDefinitionSchema>;
+
+/** Complete tags.yml configuration */
 export type TagsConfig = z.infer<typeof tagsConfigSchema>;
 
-/** Reference to a page that uses a tag */
+/**
+ * Reference to a documentation page that uses a tag.
+ * Used internally to track which pages have which tags.
+ */
 export type PageReference = {
+  /** Unique content collection entry ID */
   id: string;
+  /** URL slug for the page */
   slug: string;
+  /** Page title from frontmatter */
   title: string;
+  /** Page description from frontmatter */
   description?: string;
+  /** Tag IDs assigned to this page */
   tags?: string[];
+  /** Full frontmatter data for advanced use */
   frontmatter?: Record<string, unknown>;
 };
 
-// Enhanced tag definition with computed properties
+/**
+ * Processed tag with computed properties.
+ * This is what components receive - the raw TagDefinition plus
+ * runtime-computed data like page counts and URLs.
+ *
+ * Custom fields from extended schemas are preserved via the index signature.
+ * Cast to your extended type to access custom fields with type safety.
+ */
 export type ProcessedTag = TagDefinition & {
+  /** Original tag ID from tags.yml */
   id: string;
+  /** URL-safe slug (from permalink or generated from ID) */
   slug: string;
+  /** Full URL to the tag's page (e.g., "/tags/authentication") */
   url: string;
+  /** Number of pages using this tag */
   count: number;
+  /** List of pages that have this tag */
   pages: PageReference[];
-  // Educational computed properties
+
+  // Computed educational properties
+  /** IDs of tags that share pages or prerequisites with this tag */
   relatedTags?: string[];
+  /** Ordered list of prerequisite tag IDs (resolved recursively) */
   prerequisiteChain?: string[];
+  /** Suggested next topics based on this tag's prerequisites */
   nextSteps?: string[];
+
+  /** Custom fields from extended schemas are preserved */
+  [key: string]: unknown;
 };

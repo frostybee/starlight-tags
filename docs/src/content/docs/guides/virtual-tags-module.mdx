@@ -3,7 +3,28 @@ title: Virtual Tags Module
 description: Efficient, memoized access to tag data via the virtual module API
 ---
 
-The `virtual:starlight-tagging/tags` module provides efficient, memoized access to processed tag data. Tags are processed once per build and cached for all subsequent requests.
+The `starlight-tags` plugin exposes a virtual module that gives you programmatic access to all processed tag data. This allows you to build custom components, create dynamic tag-based features, or integrate tags into your application logic.
+
+## What is a Virtual Module?
+
+A [virtual module](https://vite.dev/guide/api-plugin#virtual-modules-convention) is a Vite/Astro concept that provides access to data and functionality without an actual file on disk. The plugin creates `virtual:starlight-tagging/tags` at build time, making all your processed tag data available to any component or page.
+
+## When to Use This
+
+Use the virtual module when you need to:
+
+- **Build custom components** that display tags differently than the built-in components
+- **Create dynamic features** like tag clouds, filters, or search functionality
+- **Access tag metadata** (counts, descriptions, prerequisites) programmatically
+- **Integrate tags** with other parts of your application
+
+If you just want to display tags on pages, the [built-in components](/components/) are simpler and require no configuration.
+
+## How It Works
+
+When your site builds, the plugin reads your `tags.yml` configuration, processes all tag relationships, and counts how many pages use each tag. This processed data is then **cached in memory**.
+
+The virtual module gives you access to this cache. You call `initTags()` once to load the data, then use the helper functions to query it. Don't worry about calling `initTags()` multiple times across different components as it's memoized, so the actual processing only happens once.
 
 ## Basic Usage
 
@@ -80,21 +101,13 @@ const beginnerTags = getTagsByDifficulty('beginner');
 // Returns ProcessedTag[]
 ```
 
-### `getTagsBySubject(subject)`
-
-Get tags filtered by subject.
-
-```ts
-const apiTags = getTagsBySubject('api');
-// Returns ProcessedTag[]
-```
-
 ### `getTagsByContentType(contentType)`
 
-Get tags filtered by content type.
+Get tags filtered by content type. Available types: `lecture`, `lab`, `assignment`, `project`, `reference`, `tutorial`, `assessment`.
 
 ```ts
 const tutorials = getTagsByContentType('tutorial');
+const labs = getTagsByContentType('lab');
 // Returns ProcessedTag[]
 ```
 
@@ -142,13 +155,6 @@ const topTags = allTags.slice(0, 10);
   />
 </section>
 ```
-
-## Key Benefits
-
-- **Single initialization** - Tags processed once per build
-- **No boilerplate** - No need to manually configure processors
-- **Type safety** - Full TypeScript support via virtual module declarations
-- **Consistent API** - Same functions available everywhere
 
 ## Advanced: Direct TagsProcessor Access
 

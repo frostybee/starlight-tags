@@ -1,0 +1,197 @@
+---
+/**
+ * ProductTagBadge: Extended tag badge with product documentation fields
+ *
+ * Demonstrates how to create a custom component that renders extended schema fields.
+ * Shows plan tier badges (free/pro/enterprise) and product grouping.
+ *
+ * Usage:
+ * ```astro
+ * <ProductTagBadge tagId="authentication" />
+ * <ProductTagBadge tagId="webhooks" showProduct />
+ * ```
+ */
+import { initTags, getTag } from 'virtual:starlight-tagging/tags';
+import { buildUrlFromCurrentPage } from 'starlight-tags/libs/url';
+import type { ProcessedTag } from 'starlight-tags/schemas/tags';
+import type { ProductTag, PlanTier } from '../config/product-tag-schema';
+
+interface Props {
+  /** Tag ID to display */
+  tagId: string;
+  /** Show the product name */
+  showProduct?: boolean;
+  /** Show the plan tier badge */
+  showPlanTier?: boolean;
+  /** Make the badge clickable */
+  clickable?: boolean;
+}
+
+const {
+  tagId,
+  showProduct = false,
+  showPlanTier = true,
+  clickable = true
+} = Astro.props;
+
+// Fetch the tag data
+await initTags();
+const baseTag = getTag(tagId);
+
+if (!baseTag) {
+  if (import.meta.env.DEV) {
+    console.warn(`[ProductTagBadge] Tag not found: "${tagId}"`);
+  }
+  return;
+}
+
+// Cast to our extended type to access custom fields
+const tag = baseTag as ProcessedTag & ProductTag;
+
+// Plan tier styling
+const tierColors: Record<PlanTier, string> = {
+  free: '#22c55e',
+  pro: '#3b82f6',
+  enterprise: '#8b5cf6'
+};
+
+const tierLabels: Record<PlanTier, string> = {
+  free: 'Free',
+  pro: 'Pro',
+  enterprise: 'Enterprise'
+};
+
+const planTier = tag.planTier as PlanTier | undefined;
+const tierColor = planTier ? tierColors[planTier] : undefined;
+const tierLabel = planTier ? tierLabels[planTier] : undefined;
+
+const TagElement = clickable ? 'a' : 'span';
+const href = clickable ? buildUrlFromCurrentPage(tag.url, Astro.url) : undefined;
+const tagStyle = tag.color ? `--tag-color: ${tag.color}` : '';
+---
+
+<div class="product-tag-wrapper">
+  {showProduct && tag.product && (
+    <span class="product-label">{tag.product}</span>
+  )}
+
+  <TagElement
+    class:list={['product-tag', { 'product-tag--clickable': clickable }]}
+    href={href}
+    style={tagStyle}
+    title={tag.description || tag.label}
+  >
+    {tag.icon && <span class="product-tag__icon">{tag.icon}</span>}
+    <span class="product-tag__label">{tag.label}</span>
+
+    {showPlanTier && planTier && (
+      <span
+        class="product-tag__tier"
+        style={`--tier-color: ${tierColor}`}
+      >
+        {tierLabel}
+      </span>
+    )}
+  </TagElement>
+</div>
+
+<style>
+  .product-tag-wrapper {
+    display: inline-flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.25rem;
+  }
+
+  .product-label {
+    font-size: 0.7rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--sl-color-gray-4);
+  }
+
+  .product-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.375rem 0.75rem;
+    border-radius: 9999px;
+    font-size: 0.8125rem;
+    font-weight: 500;
+    line-height: 1;
+    text-decoration: none;
+    white-space: nowrap;
+    background: var(--tag-color, var(--sl-color-accent));
+    color: white;
+    border: 1px solid transparent;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+  }
+
+  .product-tag--clickable {
+    cursor: pointer;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .product-tag--clickable:hover {
+    transform: translateY(-2px) scale(1.02);
+    filter: brightness(1.1);
+    box-shadow:
+      0 4px 12px color-mix(in srgb, var(--tag-color, var(--sl-color-accent)) 30%, transparent),
+      0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+
+  .product-tag--clickable:focus-visible {
+    outline: 2px solid var(--tag-color, var(--sl-color-accent));
+    outline-offset: 2px;
+  }
+
+  .product-tag__icon {
+    font-style: normal;
+    line-height: 1;
+  }
+
+  .product-tag__label {
+    line-height: 1.2;
+  }
+
+  .product-tag__tier {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.2rem 0.5rem;
+    margin-left: 0.35rem;
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    border-radius: 299px;
+    background: var(--tier-color);
+    color: #dc2626;
+    border: 2.5px solid rgb(255, 0, 89);
+  }
+
+  /* Dark mode */
+  :global([data-theme='dark']) .product-tag {
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+  }
+
+  :global([data-theme='dark']) .product-label {
+    color: var(--sl-color-gray-3);
+  }
+
+  :global([data-theme='dark']) .product-tag__tier {
+    background: rgba(0, 0, 0, 0.2);
+  }
+
+  /* Reduced motion */
+  @media (prefers-reduced-motion: reduce) {
+    .product-tag--clickable {
+      transition: none;
+    }
+
+    .product-tag--clickable:hover {
+      transform: none;
+    }
+  }
+</style>

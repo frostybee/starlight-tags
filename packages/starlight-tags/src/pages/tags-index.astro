@@ -2,14 +2,29 @@
 import StarlightPage from '@astrojs/starlight/components/StarlightPage.astro';
 import TagsList from '../components/TagsList.astro';
 import { initTags, getAllTagsSorted } from 'virtual:starlight-tagging/tags';
-import { translations } from '../translations.js';
+import { buildUrl } from '../libs/url.js';
+// @ts-expect-error - virtual module provided by Starlight
+import starlightConfig from 'virtual:starlight/user-config';
 
 // Generate static paths for all supported locales
+// The [...locale] rest parameter requires:
+// - undefined for the root/default locale path
+// - locale string for other locales
 export function getStaticPaths() {
-  const locales = Object.keys(translations);
-  return locales.map(locale => ({
-    params: { locale }
-  }));
+  // Get configured locales from Starlight config (not plugin translations)
+  // If no locales configured, only generate root path
+  const configuredLocales = starlightConfig.locales
+    ? Object.keys(starlightConfig.locales).filter(l => l !== 'root')
+    : [];
+
+  return [
+    // Root path (default locale - no prefix)
+    { params: { locale: undefined } },
+    // Localized paths (only if i18n is configured)
+    ...configuredLocales.map(locale => ({
+      params: { locale }
+    }))
+  ];
 }
 
 // Initialize tags store (memoized - only runs once across all components)
@@ -21,6 +36,9 @@ const totalTagUsages = allTags.reduce((sum, tag) => sum + tag.count, 0);
 
 // Access translations via Astro.locals.t
 const t = Astro.locals.t;
+
+// Get locale from params for building URLs
+const { locale } = Astro.params;
 
 // Calculate tag popularity tiers for tag cloud effect
 const maxCount = Math.max(...allTags.map(tag => tag.count), 1);
@@ -84,7 +102,7 @@ const sortedLetters = Object.keys(tagsByLetter).sort();
       <div class="tag-cloud">
         {allTags.map(tag => (
           <a
-            href={tag.url}
+            href={buildUrl(tag.url, locale)}
             class={`cloud-tag ${getPopularityTier(tag.count)}`}
             title={`${tag.label}: ${tag.count} ${tag.count === 1 ? 'page' : 'pages'}`}
           >
@@ -120,7 +138,7 @@ const sortedLetters = Object.keys(tagsByLetter).sort();
             </h3>
             <div class="letter-tags">
               {tagsByLetter[letter].map(tag => (
-                <a href={tag.url} class={`tag-card ${getPopularityTier(tag.count)}`}>
+                <a href={buildUrl(tag.url, locale)} class={`tag-card ${getPopularityTier(tag.count)}`}>
                   <div class="tag-card-header">
                     <strong class="tag-card-name">
                       {tag.icon && <span class="tag-icon">{tag.icon}</span>}

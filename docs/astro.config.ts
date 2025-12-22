@@ -3,9 +3,10 @@ import { defineConfig } from 'astro/config'
 import starlightTags from 'starlight-tags'
 
 export default defineConfig({
+  base: '/docs',
   integrations: [
     starlight({
-      defaultLocale: 'root',
+      defaultLocale: 'root',      
       locales: {
         root: { label: 'English', lang: 'en' },
         fr: { label: 'Français', lang: 'fr' },
@@ -30,8 +31,8 @@ export default defineConfig({
           items: ['getting-started'],
         },
         {
-          label: 'Guide',
-          items: ['configuration', 'tags-definition', 'frontmatter', 'routes', 'extending-schema', 'guides/virtual-tags-module'],
+          label: 'Guides',
+          items: ['configuration', 'tags-definition', 'frontmatter', 'routes', 'extending-schema', 'guides/virtual-tags-module', 'guides/i18n'],
         },
         {
           label: 'Components',

@@ -1,9 +1,38 @@
 ---
+/**
+ * TagsList: Displays a collection of tags with customizable layouts
+ *
+ * Usage in MDX:
+ * ```mdx
+ * import { TagsList } from 'starlight-tags/components';
+ *
+ * <!-- Show all tags -->
+ * <TagsList />
+ *
+ * <!-- Show specific tags -->
+ * <TagsList tagIds={['auth', 'api', 'webhooks']} />
+ *
+ * <!-- With options -->
+ * <TagsList limit={6} layout="grid" showCount variant="outline" />
+ * ```
+ *
+ * Or with pre-fetched tags (for internal use):
+ * ```astro
+ * <TagsList tags={processedTags} />
+ * ```
+ */
 import TagBadge from './TagBadge.astro';
+import { initTags, getTag, getAllTagsSorted } from 'virtual:starlight-tagging/tags';
 import type { ProcessedTag } from '../schemas/tags.js';
 
 interface Props {
-  tags: ProcessedTag[];
+  /** Specific tag IDs to display */
+  tagIds?: string[];
+  /** Pre-fetched tag objects (for internal/advanced use) */
+  tags?: ProcessedTag[];
+  /** Maximum number of tags to show */
+  limit?: number;
+  /** Optional heading above tags */
   title?: string | undefined;
   showCount?: boolean;
   layout?: 'inline' | 'grid' | 'list';
@@ -12,7 +41,9 @@ interface Props {
 }
 
 const {
-  tags,
+  tagIds,
+  tags: tagsProp,
+  limit,
   title,
   showCount = false,
   layout = 'inline',
@@ -20,8 +51,25 @@ const {
   sortBy = 'name'
 } = Astro.props;
 
+// Resolve tags: use provided tags, fetch by IDs, or get all
+let tags: ProcessedTag[] = tagsProp || [];
+
+if (!tagsProp) {
+  await initTags();
+
+  if (tagIds && tagIds.length > 0) {
+    // Fetch specific tags by ID
+    tags = tagIds
+      .map(id => getTag(id))
+      .filter((t): t is ProcessedTag => t !== undefined);
+  } else {
+    // Get all tags
+    tags = getAllTagsSorted();
+  }
+}
+
 // Sort tags based on sortBy prop
-const sortedTags = [...tags].sort((a, b) => {
+let sortedTags = [...tags].sort((a, b) => {
   switch (sortBy) {
     case 'count':
       return b.count - a.count || a.label.localeCompare(b.label);
@@ -31,13 +79,18 @@ const sortedTags = [...tags].sort((a, b) => {
       return 0;
   }
 });
+
+// Apply limit after sorting
+if (limit && limit > 0) {
+  sortedTags = sortedTags.slice(0, limit);
+}
 ---
 
-{title && <h3 class="sl-tags-title">{title}</h3>}
+{title && <h3 class="fb-tags-list__title">{title}</h3>}
 
 <div class:list={[
-  'sl-tags-list',
-  `sl-tags-list--${layout}`
+  'fb-tags-list',
+  `fb-tags-list--${layout}`
 ]}>
   {sortedTags.map(tag => (
     <TagBadge
@@ -49,30 +102,30 @@ const sortedTags = [...tags].sort((a, b) => {
 </div>
 
 <style>
-  .sl-tags-title {
+  .fb-tags-list__title {
     margin-bottom: 1rem;
     font-size: var(--sl-text-lg);
     font-weight: 600;
     color: var(--sl-color-white);
   }
 
-  .sl-tags-list {
+  .fb-tags-list {
     /* Inline layout (default) */
-    &.sl-tags-list--inline {
+    &.fb-tags-list--inline {
       display: flex;
       flex-wrap: wrap;
       gap: 0.5rem;
     }
 
     /* Grid layout */
-    &.sl-tags-list--grid {
+    &.fb-tags-list--grid {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
       gap: 1rem;
     }
 
     /* List layout */
-    &.sl-tags-list--list {
+    &.fb-tags-list--list {
       display: flex;
       flex-direction: column;
       gap: 0.5rem;

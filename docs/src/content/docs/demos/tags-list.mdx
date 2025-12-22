@@ -6,7 +6,7 @@ tags:
   - sdk-node
 ---
 
-import TagsListDemo from '../../../components/TagsListDemo.astro';
+import { TagsList } from 'starlight-tags/components';
 
 This page demonstrates the `TagsList` component, which renders a collection of tags with customizable layouts and sorting.
 
@@ -14,7 +14,13 @@ This page demonstrates the `TagsList` component, which renders a collection of t
 
 Display all tags in the system:
 
-<TagsListDemo limit={8} />
+<TagsList limit={8} />
+
+```astro
+import { TagsList } from 'starlight-tags/components';
+
+<TagsList limit={8} />
+```
 
 ## Layouts
 
@@ -22,101 +28,95 @@ Display all tags in the system:
 
 Tags flow horizontally and wrap:
 
-<TagsListDemo layout="inline" limit={6} />
+<TagsList layout="inline" limit={6} />
 
 ```astro
-<TagsList tags={tags} layout="inline" />
+<TagsList layout="inline" />
 ```
 
 ### Grid
 
 Tags in a responsive grid:
 
-<TagsListDemo layout="grid" limit={6} />
+<TagsList layout="grid" limit={6} />
 
 ```astro
-<TagsList tags={tags} layout="grid" />
+<TagsList layout="grid" />
 ```
 
 ### List
 
 Tags stacked vertically:
 
-<TagsListDemo layout="list" limit={6} />
+<TagsList layout="list" limit={6} />
 
 ```astro
-<TagsList tags={tags} layout="list" />
+<TagsList layout="list" />
 ```
 
 ## With Title
 
 Add a heading above the tags:
 
-<TagsListDemo title="Related Topics" limit={5} />
+<TagsList title="Related Topics" limit={5} />
 
 ```astro
-<TagsList tags={tags} title="Related Topics" />
+<TagsList title="Related Topics" />
 ```
 
 ## Style Variants
 
 ### Solid (Default)
 
-<TagsListDemo variant="solid" limit={5} />
+<TagsList variant="solid" limit={5} />
 
 ### Outline
 
-<TagsListDemo variant="outline" limit={5} />
+<TagsList variant="outline" limit={5} />
 
 ### Ghost
 
-<TagsListDemo variant="ghost" limit={5} />
+<TagsList variant="ghost" limit={5} />
 
 ## With Page Counts
 
 Show how many pages use each tag:
 
-<TagsListDemo showCount={true} limit={6} />
+<TagsList showCount={true} limit={6} />
 
 ```astro
-<TagsList tags={tags} showCount={true} />
+<TagsList showCount />
 ```
 
 ## Specific Tags
 
 Display only specific tags by ID:
 
-<TagsListDemo tagIds={['authentication', 'rest-api', 'webhooks', 'stable']} />
+<TagsList tagIds={['authentication', 'rest-api', 'webhooks', 'stable']} />
 
 ```astro
----
-const specificTags = ['authentication', 'rest-api', 'webhooks', 'stable']
-  .map(id => getTag(id))
-  .filter(Boolean);
----
-
-<TagsList tags={specificTags} />
+<TagsList tagIds={['authentication', 'rest-api', 'webhooks', 'stable']} />
 ```
 
 ## Grouped Examples
 
 ### Status Tags
 
-<TagsListDemo tagIds={['stable', 'beta', 'deprecated']} title="API Status" variant="outline" />
+<TagsList tagIds={['stable', 'beta', 'deprecated']} title="API Status" variant="outline" />
 
 ### Difficulty Levels
 
-<TagsListDemo tagIds={['beginner', 'intermediate', 'advanced']} title="Difficulty" layout="grid" />
+<TagsList tagIds={['beginner', 'intermediate', 'advanced']} title="Difficulty" layout="grid" />
 
 ### SDK Options
 
-<TagsListDemo tagIds={['sdk-python', 'sdk-node']} title="Available SDKs" showCount={true} />
+<TagsList tagIds={['sdk-python', 'sdk-node']} title="Available SDKs" showCount={true} />
 
 ## Combined Options
 
 Grid layout with title, counts, and outline variant:
 
-<TagsListDemo
+<TagsList
   title="Popular Topics"
   layout="grid"
   showCount={true}
@@ -126,11 +126,11 @@ Grid layout with title, counts, and outline variant:
 
 ```astro
 <TagsList
-  tags={tags}
   title="Popular Topics"
   layout="grid"
-  showCount={true}
+  showCount
   variant="outline"
+  limit={6}
 />
 ```
 

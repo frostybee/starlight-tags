@@ -17,23 +17,25 @@ import { PrerequisiteChain } from 'starlight-tags/components';
 
 | Prop | Type | Default | Description |
 |------|------|---------|-------------|
-| `tag` | `ProcessedTag` | Required | The current tag |
-| `tagsMap` | `Map<string, ProcessedTag>` | Required | Map of all tags |
+| `tagId` | `string` | - | Tag ID to show prerequisites for |
+| `tag` | `ProcessedTag` | - | Pre-fetched tag object (for advanced use) |
+| `tagsMap` | `Map<string, ProcessedTag>` | - | Pre-fetched tags map (for advanced use) |
 | `showDescription` | `boolean` | `true` | Show helper text |
 | `maxChainLength` | `number` | `5` | Max prerequisites to show |
+
+:::note
+You must provide either `tagId` or `tag`. Using `tagId` is recommended as it handles data fetching automatically.
+:::
 
 ## Basic Usage
 
 ```astro
----
 import { PrerequisiteChain } from 'starlight-tags/components';
 
-const currentTag = processor.getTag('oauth2');
-const tagsMap = processor.getTags(); // Returns Map<string, ProcessedTag>
----
-
-<PrerequisiteChain tag={currentTag} tagsMap={tagsMap} />
+<PrerequisiteChain tagId="oauth2" />
 ```
+
+That's it! The component fetches tag data and builds the chain automatically.
 
 ## Prerequisites Setup
 
@@ -64,7 +66,7 @@ The component renders as:
 
 ```
 Prerequisites
-Understand these topics before proceeding
+Complete these topics before starting this content
 
 [API Basics] → [Authentication] → [OAuth 2.0]
                                    You are here
@@ -76,7 +78,12 @@ Understand these topics before proceeding
 
 Show users how to migrate between API versions:
 
+```astro
+<PrerequisiteChain tagId="api-v2" />
+```
+
 ```yaml
+# tags.yml
 tags:
   api-v1:
     label: "API v1"
@@ -86,45 +93,22 @@ tags:
     label: "API v2"
     prerequisites:
       - api-v1
-
-  api-v3:
-    label: "API v3 (Current)"
-    prerequisites:
-      - api-v1
-      - api-v2
 ```
 
-### SDK Dependencies
+### Learning Paths
 
-Show SDK feature dependencies:
+Guide users through a sequence of topics:
 
-```yaml
-tags:
-  sdk-setup:
-    label: "SDK Setup"
-
-  sdk-auth:
-    label: "SDK Authentication"
-    prerequisites:
-      - sdk-setup
-
-  sdk-webhooks:
-    label: "SDK Webhooks"
-    prerequisites:
-      - sdk-setup
-      - sdk-auth
+```astro
+<PrerequisiteChain tagId="webhooks" />
 ```
 
 ## Without Description
 
-Hide the helper text:
+Hide the helper text for a more compact display:
 
 ```astro
-<PrerequisiteChain
-  tag={currentTag}
-  tagsMap={tagsMap}
-  showDescription={false}
-/>
+<PrerequisiteChain tagId="webhooks" showDescription={false} />
 ```
 
 ## Limiting Chain Length
@@ -132,41 +116,10 @@ Hide the helper text:
 For tags with many prerequisites, limit the display:
 
 ```astro
-<PrerequisiteChain
-  tag={currentTag}
-  tagsMap={tagsMap}
-  maxChainLength={3}
-/>
+<PrerequisiteChain tagId="advanced-topic" maxChainLength={3} />
 ```
 
 If more prerequisites exist, it shows "... and X more prerequisites".
-
-## Complete Example
-
-```astro
----
-import { PrerequisiteChain } from 'starlight-tags/components';
-import { initTags, getTag, getTags } from 'virtual:starlight-tagging/tags';
-
-// Initialize tags store (memoized - safe to call multiple times)
-await initTags();
-
-// Get current tag and tags map
-const currentTag = getTag('oauth2');
-const tagsMap = getTags();
----
-
-{currentTag && currentTag.prerequisiteChain?.length > 0 && (
-  <section class="api-prerequisites">
-    <PrerequisiteChain
-      tag={currentTag}
-      tagsMap={tagsMap}
-      showDescription={true}
-      maxChainLength={5}
-    />
-  </section>
-)}
-```
 
 ## How It Works
 
@@ -182,6 +135,25 @@ On mobile devices (< 768px):
 - The chain displays vertically instead of horizontally
 - Arrows rotate 90 degrees to point downward
 - "You are here" label adjusts position
+
+## Advanced: Pre-fetched Data
+
+For advanced use cases where you already have tag data:
+
+```astro
+---
+import { PrerequisiteChain } from 'starlight-tags/components';
+import { initTags, getTag, getTags } from 'virtual:starlight-tagging/tags';
+
+await initTags();
+const currentTag = getTag('oauth2');
+const tagsMap = getTags();
+---
+
+{currentTag?.prerequisiteChain?.length > 0 && (
+  <PrerequisiteChain tag={currentTag} tagsMap={tagsMap} />
+)}
+```
 
 ## Styling
 

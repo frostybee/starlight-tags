@@ -142,23 +142,14 @@ export class TagsProcessor {
       const pages = tagUsage.get(tagId) || [];
 
       const processedTag: ProcessedTag = {
+        // Spread all original fields first (including custom fields from extended schemas)
+        ...tagDef,
+        // Then add/override with computed properties
         id: tagId,
         slug: this.generateTagSlug(tagId, tagDef.permalink),
         url: this.generateTagUrl(tagId, tagDef.permalink),
-        label: tagDef.label,
-        description: tagDef.description,
         color: tagDef.color || this.tagsData.defaults?.color,
-        icon: tagDef.icon,
-        permalink: tagDef.permalink,
-        hidden: tagDef.hidden,
-        // Educational metadata
-        difficulty: tagDef.difficulty,
-        contentType: tagDef.contentType,
-        subject: tagDef.subject,
         prerequisites: tagDef.prerequisites || [],
-        learningObjectives: tagDef.learningObjectives || [],
-        estimatedTime: tagDef.estimatedTime,
-        skillLevel: tagDef.skillLevel,
         count: pages.length,
         pages: pages.map(page => {
           // Use Map for O(1) lookup instead of find()
@@ -202,13 +193,21 @@ export class TagsProcessor {
 
   private generateTagSlug(tagId: string, permalink?: string): string {
     if (permalink) return permalink;
-    return tagId.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+    // Convert to lowercase, replace non-alphanumeric chars with hyphens,
+    // then trim leading/trailing hyphens to avoid malformed URLs
+    return tagId
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-+|-+$/g, '');
   }
 
+  /**
+   * Generates the relative URL path for a tag (without base path or locale).
+   * The full URL is constructed at render time with locale and base path.
+   */
   private generateTagUrl(tagId: string, permalink?: string): string {
     const slug = this.generateTagSlug(tagId, permalink);
-    const basePath = this.config.basePath || '';
-    return `${basePath}/${this.config.tagsPagesPrefix}/${slug}/`;
+    return `/${this.config.tagsPagesPrefix}/${slug}/`;
   }
 
   getTags(): Map<string, ProcessedTag> {
@@ -253,42 +252,55 @@ export class TagsProcessor {
     const tag = this.processedTags?.get(tagId);
     if (!tag || !tag.prerequisites?.length) return [];
 
-    visited.add(tagId);
     const chain: string[] = [];
 
     for (const prereqId of tag.prerequisites) {
       if (this.processedTags?.has(prereqId)) {
         chain.push(prereqId);
-        // Recursively build chain for prerequisites - pass same visited Set to detect cycles
-        const subChain = this.buildPrerequisiteChain(prereqId, visited);
+        // Create a new Set for each branch to detect cycles within the path,
+        // not across sibling branches. This allows shared dependencies like:
+        // A -> B -> D and A -> C -> D (D can appear in both branches)
+        const branchVisited = new Set(visited);
+        branchVisited.add(tagId);
+        const subChain = this.buildPrerequisiteChain(prereqId, branchVisited);
         chain.push(...subChain);
       }
     }
 
-    return Array.from(new Set(chain)); // Remove duplicates
+    return Array.from(new Set(chain)); // Remove duplicates from multiple paths
   }
 
   private findRelatedTags(tagId: string): string[] {
     const currentTag = this.processedTags?.get(tagId);
     if (!currentTag) return [];
 
-    const related: string[] = [];
+    const currentPageIds = new Set(currentTag.pages.map(p => p.id));
+    const related: Array<{ id: string; score: number }> = [];
 
     for (const [otherId, otherTag] of this.processedTags!) {
       if (otherId === tagId) continue;
-      if (related.length >= MAX_RELATED_TAGS) break; // Early termination
 
-      // Tags are related if they share subject or learning objectives
-      if (currentTag.subject && currentTag.subject === otherTag.subject) {
-        related.push(otherId);
-      } else if (currentTag.learningObjectives?.some(obj =>
-        otherTag.learningObjectives?.includes(obj)
-      )) {
-        related.push(otherId);
+      // Calculate relationship score based on shared pages and prerequisites
+      let score = 0;
+
+      // Shared pages indicate related topics
+      const sharedPages = otherTag.pages.filter(p => currentPageIds.has(p.id)).length;
+      score += sharedPages * 2;
+
+      // Prerequisite relationships
+      if (currentTag.prerequisites?.includes(otherId)) score += 3;
+      if (otherTag.prerequisites?.includes(tagId)) score += 3;
+
+      if (score > 0) {
+        related.push({ id: otherId, score });
       }
     }
 
-    return related;
+    // Sort by score descending and return top results
+    return related
+      .sort((a, b) => b.score - a.score)
+      .slice(0, MAX_RELATED_TAGS)
+      .map(r => r.id);
   }
 
   private findNextSteps(tagId: string): string[] {
@@ -296,8 +308,6 @@ export class TagsProcessor {
     if (!currentTag) return [];
 
     const nextSteps: string[] = [];
-    const currentDifficultyIndex = currentTag.difficulty ?
-      DIFFICULTY_ORDER.indexOf(currentTag.difficulty) : -1;
 
     for (const [otherId, otherTag] of this.processedTags!) {
       if (otherId === tagId) continue;
@@ -305,14 +315,6 @@ export class TagsProcessor {
       // Check if this tag lists current tag as prerequisite
       if (otherTag.prerequisites?.includes(tagId)) {
         nextSteps.push(otherId);
-      }
-      // Or if it's the next difficulty level in the same subject
-      else if (currentTag.subject === otherTag.subject &&
-               otherTag.difficulty && currentDifficultyIndex >= 0) {
-        const otherDifficultyIndex = DIFFICULTY_ORDER.indexOf(otherTag.difficulty);
-        if (otherDifficultyIndex === currentDifficultyIndex + 1) {
-          nextSteps.push(otherId);
-        }
       }
     }
 
@@ -326,17 +328,7 @@ export class TagsProcessor {
       .sort((a, b) => b.count - a.count);
   }
 
-  getTagsBySubject(subject: string): ProcessedTag[] {
-    return Array.from(this.getTags().values())
-      .filter(tag => tag.subject === subject)
-      .sort((a, b) => {
-        const aDiff = a.difficulty ? DIFFICULTY_ORDER.indexOf(a.difficulty) : 0;
-        const bDiff = b.difficulty ? DIFFICULTY_ORDER.indexOf(b.difficulty) : 0;
-        return aDiff - bDiff;
-      });
-  }
-
-  getTagsByContentType(contentType: 'lecture' | 'tutorial' | 'exercise' | 'reference' | 'assessment'): ProcessedTag[] {
+  getTagsByContentType(contentType: 'lecture' | 'lab' | 'assignment' | 'project' | 'reference' | 'tutorial' | 'assessment'): ProcessedTag[] {
     return Array.from(this.getTags().values())
       .filter(tag => tag.contentType === contentType)
       .sort((a, b) => b.count - a.count);
@@ -361,6 +353,17 @@ export class TagsProcessor {
       isValid: errors.length === 0,
       errors
     };
+  }
+
+  /**
+   * Cleanup internal data structures to help garbage collection.
+   * Called during HMR to prevent memory leaks.
+   */
+  cleanup(): void {
+    this.processedTags?.clear();
+    this.processedTags = undefined;
+    this.tagsData = undefined;
+    this.providedDocsEntries = undefined;
   }
 
   getLearningPath(startTagId: string, endTagId?: string): string[] {

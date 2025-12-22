@@ -1,5 +1,4 @@
 import type { StarlightPlugin, HookParameters } from '@astrojs/starlight/types';
-import { z } from 'astro/zod';
 import { pluginConfigSchema, type PluginConfig } from './src/schemas/config.js';
 import { createTagsIntegration } from './src/libs/integration.js';
 import { translations } from './src/translations.js';
@@ -17,30 +16,18 @@ export interface StarlightTagsConfig {
   enableFrontmatterTags?: boolean;
 }
 
-const defaultConfig: Required<StarlightTagsConfig> = {
-  configPath: 'tags.yml',
-  tagsPagesPrefix: 'tags',
-  tagsIndexSlug: 'tags',
-  onInlineTagsNotFound: 'warn',
-  enableFrontmatterTags: true
-};
-
 export default function starlightTagsPlugin(
-  userConfig: StarlightTagsConfig = {}
+  userConfig?: StarlightTagsConfig
 ): StarlightPlugin {
-  const config = { ...defaultConfig, ...userConfig };
+  // Validate configuration - Zod schema handles defaults.
+  const result = pluginConfigSchema.safeParse(userConfig ?? {});
 
-  // Validate configuration with helpful error messages.
-  let validatedConfig: PluginConfig;
-  try {
-    validatedConfig = pluginConfigSchema.parse(config);
-  } catch (error) {
-    if (error instanceof z.ZodError) {
-      const issues = error.errors.map(e => `${e.path.join('.')}: ${e.message}`).join(', ');
-      throw new Error(`Invalid starlight-tags configuration: ${issues}`);
-    }
-    throw error;
+  if (!result.success) {
+    const issues = result.error.errors.map(e => `${e.path.join('.')}: ${e.message}`).join(', ');
+    throw new Error(`Invalid starlight-tags configuration: ${issues}`);
   }
+
+  const validatedConfig = result.data;
 
   return {
     name: 'starlight-tags',

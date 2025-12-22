@@ -1,25 +1,65 @@
 ---
+/**
+ * PrerequisiteChain: Displays a visual chain of prerequisite tags
+ *
+ * Usage in MDX:
+ * ```mdx
+ * import { PrerequisiteChain } from 'starlight-tags/components';
+ *
+ * <PrerequisiteChain tagId="advanced-api" />
+ * <PrerequisiteChain tagId="advanced-api" showDescription={false} />
+ * ```
+ *
+ * Or with a pre-fetched tag object (for internal use):
+ * ```astro
+ * <PrerequisiteChain tag={processedTag} tagsMap={tagsMap} />
+ * ```
+ */
+import { initTags, getTag, getTags } from 'virtual:starlight-tagging/tags';
 import type { ProcessedTag } from '../schemas/tags.js';
 import TagBadge from './TagBadge.astro';
 
 interface Props {
-  tag: ProcessedTag;
-  tagsMap: Map<string, ProcessedTag>;
+  /** Tag ID to show prerequisites for */
+  tagId?: string;
+  /** Pre-fetched tag object (for internal/advanced use) */
+  tag?: ProcessedTag;
+  /** Pre-fetched tags map (for internal/advanced use) */
+  tagsMap?: Map<string, ProcessedTag>;
   showDescription?: boolean;
   maxChainLength?: number;
 }
 
 const {
-  tag,
-  tagsMap,
+  tagId,
+  tag: tagProp,
+  tagsMap: tagsMapProp,
   showDescription = true,
   maxChainLength = 5
 } = Astro.props;
 
+// Resolve tag and tagsMap: use provided objects, or fetch internally
+let tag: ProcessedTag | undefined = tagProp;
+let tagsMap: Map<string, ProcessedTag> = tagsMapProp || new Map();
+
+if (!tag && tagId) {
+  await initTags();
+  tag = getTag(tagId);
+  tagsMap = getTags();
+}
+
+// Early return if no tag found
+if (!tag) {
+  if (import.meta.env.DEV && tagId) {
+    console.warn(`[PrerequisiteChain] Tag not found: "${tagId}"`);
+  }
+  return;
+}
+
 // Get prerequisite chain with tag objects
 const prerequisiteChain = (tag.prerequisiteChain || [])
   .slice(0, maxChainLength)
-  .map(tagId => tagsMap.get(tagId))
+  .map(id => tagsMap.get(id))
   .filter(Boolean) as ProcessedTag[];
 
 const hasPrerequisites = prerequisiteChain.length > 0;
@@ -49,13 +89,17 @@ const hasPrerequisites = prerequisiteChain.length > 0;
               showCount={false}
             />
             {index < prerequisiteChain.length - 1 && (
-              <div class="prerequisite-chain__arrow">→</div>
+              <div class="prerequisite-chain__arrow">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+              </div>
             )}
           </div>
         ))}
         {prerequisiteChain.length > 0 && (
           <>
-            <div class="prerequisite-chain__arrow prerequisite-chain__arrow--final">→</div>
+            <div class="prerequisite-chain__arrow prerequisite-chain__arrow--final">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+            </div>
             <div class="prerequisite-chain__current">
               <TagBadge
                 tag={tag}
@@ -128,10 +172,17 @@ const hasPrerequisites = prerequisiteChain.length > 0;
   }
 
   .prerequisite-chain__arrow {
+    display: flex;
+    align-items: center;
+    justify-content: center;
     color: var(--sl-color-text-accent);
-    font-weight: bold;
-    font-size: 1.1em;
     user-select: none;
+    flex-shrink: 0;
+  }
+
+  .prerequisite-chain__arrow svg {
+    width: 1rem;
+    height: 1rem;
   }
 
   .prerequisite-chain__arrow--final {
@@ -166,7 +217,7 @@ const hasPrerequisites = prerequisiteChain.length > 0;
       align-items: flex-start;
     }
 
-    .prerequisite-chain__arrow {
+    .prerequisite-chain__arrow svg {
       transform: rotate(90deg);
     }
 

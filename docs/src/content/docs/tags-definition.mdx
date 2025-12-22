@@ -137,21 +137,17 @@ tags:
     hidden: true  # Won't appear in /tags index
 ```
 
-## Advanced Properties
+## Educational Properties
 
-These optional properties support additional categorization and relationships:
+These optional properties support difficulty levels, content types, and prerequisite relationships:
 
 | Property | Type | Description |
 |----------|------|-------------|
 | `difficulty` | `'beginner' \| 'intermediate' \| 'advanced'` | Complexity level |
-| `contentType` | `'lecture' \| 'tutorial' \| 'exercise' \| 'reference' \| 'assessment'` | Type of content |
-| `subject` | `string` | Subject area for grouping |
+| `contentType` | `'lecture' \| 'lab' \| 'assignment' \| 'project' \| 'reference' \| 'tutorial' \| 'assessment'` | Type of content |
 | `prerequisites` | `string[]` | Tag IDs that should be understood first |
-| `learningObjectives` | `string[]` | Content focus areas |
-| `estimatedTime` | `number` | Estimated reading time in minutes |
-| `skillLevel` | `number` | Complexity level (1-10) |
 
-### Example with Advanced Properties
+### Example with Educational Properties
 
 ```yaml
 tags:
@@ -162,20 +158,15 @@ tags:
     icon: "📖"
     difficulty: "beginner"
     contentType: "reference"
-    subject: "api"
-    estimatedTime: 15
-    skillLevel: 2
 
   oauth2:
     label: "OAuth 2.0"
     description: "OAuth 2.0 authentication flows"
     difficulty: "intermediate"
-    subject: "authentication"
+    contentType: "tutorial"
     prerequisites:
       - api-basics
       - authentication
-    estimatedTime: 30
-    skillLevel: 5
 ```
 
 ## Defaults Section

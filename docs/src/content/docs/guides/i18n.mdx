@@ -1,0 +1,107 @@
+---
+title: Internationalization (i18n)
+description: Configure translations and add support for multiple languages
+---
+
+The `starlight-tags` plugin integrates with [Starlight's i18n system](https://starlight.astro.build/guides/i18n/) and provides built-in translations for:
+
+- English (en)
+- French (fr)
+- Spanish (es)
+- German (de)
+
+## Translated UI Strings
+
+The plugin uses the following translation keys for its UI components:
+
+| Key | English Default |
+|-----|-----------------|
+| `starlightTags.totalTags` | Total Tags |
+| `starlightTags.tagsApplied` | Tags Applied |
+| `starlightTags.tagCloud` | Tag Cloud |
+| `starlightTags.alphabeticalIndex` | Alphabetical Index |
+| `starlightTags.allTags` | All Tags |
+| `starlightTags.page` | page |
+| `starlightTags.pages` | pages |
+| `starlightTags.pageTags` | Tags: |
+| `starlightTags.taggedPrefix` | Tagged: |
+| `starlightTags.relatedTags` | Related Tags |
+| `starlightTags.pagesWithTag` | Pages with this tag |
+| `starlightTags.related` | related |
+| `starlightTags.path` | Path: |
+
+## Customizing Translations
+
+You can override any translation by adding entries to your `src/content/i18n/` files. This allows you to customize the labels or add support for additional languages.
+
+### Step 1: Set Up i18n Content Collection
+
+If you haven't already, add the i18n collection to your `src/content.config.ts`:
+
+```ts
+import { defineCollection } from 'astro:content';
+import { docsLoader, i18nLoader } from '@astrojs/starlight/loaders';
+import { docsSchema, i18nSchema } from '@astrojs/starlight/schema';
+
+export const collections = {
+  docs: defineCollection({ loader: docsLoader(), schema: docsSchema() }),
+  i18n: defineCollection({ loader: i18nLoader(), schema: i18nSchema() }),
+};
+```
+
+### Step 2: Create Translation Files
+
+Create JSON files in `src/content/i18n/` for each language you want to customize:
+
+```json
+// src/content/i18n/en.json
+{
+  "starlightTags.totalTags": "Categories",
+  "starlightTags.tagsApplied": "Total References"
+}
+```
+
+```json
+// src/content/i18n/fr.json
+{
+  "starlightTags.totalTags": "Catégories",
+  "starlightTags.tagsApplied": "Références totales"
+}
+```
+
+## Adding New Languages
+
+To add a language not included in the plugin's built-in translations, create a translation file with all the keys:
+
+```json
+// src/content/i18n/ja.json
+{
+  "starlightTags.totalTags": "タグ総数",
+  "starlightTags.tagsApplied": "適用されたタグ",
+  "starlightTags.tagCloud": "タグクラウド",
+  "starlightTags.alphabeticalIndex": "アルファベット順索引",
+  "starlightTags.allTags": "すべてのタグ",
+  "starlightTags.page": "ページ",
+  "starlightTags.pages": "ページ",
+  "starlightTags.pageTags": "タグ：",
+  "starlightTags.taggedPrefix": "タグ付き：",
+  "starlightTags.relatedTags": "関連タグ",
+  "starlightTags.pagesWithTag": "このタグのページ",
+  "starlightTags.related": "関連",
+  "starlightTags.path": "パス："
+}
+```
+
+## How It Works
+
+The plugin automatically detects the current locale from Starlight's routing and displays the appropriate translations. When a translation key is not found for a locale, it falls back to the English default.
+
+### Locale-Aware URLs
+
+All tag-related URLs are automatically localized:
+
+- **Default locale**: `/tags/authentication/`
+- **French**: `/fr/tags/authentication/`
+- **German**: `/de/tags/authentication/`
+
+This works seamlessly with Starlight's `defaultLocale: 'root'` configuration, where the default language has no URL prefix.

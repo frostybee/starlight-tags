@@ -11,6 +11,7 @@ import type { ProcessedTag } from '../schemas/tags.js';
 // Module-level cache for the processor instance
 let cachedProcessor: TagsProcessor | null = null;
 let initializationPromise: Promise<void> | null = null;
+let initializationError: Error | null = null;
 
 // Silent logger for production use
 const silentLogger: MinimalLogger = {
@@ -30,6 +31,11 @@ const buildLogger: MinimalLogger = {
  * Initialize the tags store with the given configuration.
  * This function is memoized - calling it multiple times will only
  * initialize once and return the cached result.
+ *
+ * Race condition handling:
+ * - All concurrent callers share the same promise
+ * - On failure, the error is cached so all callers get the same error
+ * - After failure, subsequent calls can retry initialization
  */
 export async function initializeTagsStore(
   config: PluginConfig,
@@ -44,14 +50,19 @@ export async function initializeTagsStore(
   }
 
   // If initialization is in progress, wait for it
+  // All concurrent callers share the same promise
   if (initializationPromise) {
     return initializationPromise;
   }
 
-  // Start initialization
-  initializationPromise = (async () => {
-    const logger = options?.verbose || import.meta.env.DEV ? buildLogger : silentLogger;
+  // If we reach here, no initialization is in progress
+  // Clear any previous error to allow retry attempts
+  initializationError = null;
 
+  const logger = options?.verbose || import.meta.env.DEV ? buildLogger : silentLogger;
+
+  // Create promise that all concurrent callers will share
+  initializationPromise = (async () => {
     try {
       // Dynamically import astro:content to get docs collection
       // @ts-expect-error - astro:content is a virtual module only available at runtime
@@ -59,17 +70,22 @@ export async function initializeTagsStore(
       const docsEntries = await getCollection('docs');
 
       // Create and initialize the processor
-      cachedProcessor = new TagsProcessor(config, logger, docsEntries);
-      await cachedProcessor.initialize();
+      const processor = new TagsProcessor(config, logger, docsEntries);
+      await processor.initialize();
+
+      // Only set cached processor after successful initialization
+      cachedProcessor = processor;
 
       if (options?.verbose || import.meta.env.DEV) {
         logger.info(`Tags store initialized with ${cachedProcessor.getTags().size} tags`);
       }
     } catch (error) {
-      // Reset state on error so retry is possible
-      cachedProcessor = null;
+      // Cache the error for concurrent callers
+      initializationError = error instanceof Error ? error : new Error(String(error));
+      throw initializationError;
+    } finally {
+      // Always clear the promise so retries are possible after the current batch completes
       initializationPromise = null;
-      throw error;
     }
   })();
 
@@ -128,17 +144,10 @@ export function getTagsByDifficulty(
 }
 
 /**
- * Get tags filtered by subject.
- */
-export function getTagsBySubject(subject: string): ProcessedTag[] {
-  return ensureInitialized().getTagsBySubject(subject);
-}
-
-/**
  * Get tags filtered by content type.
  */
 export function getTagsByContentType(
-  contentType: 'lecture' | 'tutorial' | 'exercise' | 'reference' | 'assessment'
+  contentType: 'lecture' | 'lab' | 'assignment' | 'project' | 'reference' | 'tutorial' | 'assessment'
 ): ProcessedTag[] {
   return ensureInitialized().getTagsByContentType(contentType);
 }
@@ -165,9 +174,20 @@ export function isInitialized(): boolean {
 }
 
 /**
- * Reset the tags store (mainly for testing purposes).
+ * Reset the tags store (for testing and HMR purposes).
+ * Explicitly cleans up processor data to prevent memory leaks during HMR.
  */
 export function resetTagsStore(): void {
+  // Cleanup processor's internal data structures before releasing reference
+  cachedProcessor?.cleanup();
   cachedProcessor = null;
   initializationPromise = null;
+  initializationError = null;
+}
+
+// Handle Vite HMR to prevent memory leaks during development
+if (import.meta.hot) {
+  import.meta.hot.dispose(() => {
+    resetTagsStore();
+  });
 }

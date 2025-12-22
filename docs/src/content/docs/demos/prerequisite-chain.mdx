@@ -6,7 +6,7 @@ tags:
   - advanced
 ---
 
-import PrerequisiteChainDemo from '../../../components/PrerequisiteChainDemo.astro';
+import { PrerequisiteChain } from 'starlight-tags/components';
 
 This page demonstrates the `PrerequisiteChain` component, which displays visual dependency chains between topics.
 
@@ -18,40 +18,38 @@ This component only displays data for tags that have `prerequisites` defined in 
 
 The `webhooks` tag has prerequisites defined (`authentication` and `rest-api`):
 
-<PrerequisiteChainDemo tagId="webhooks" />
+<PrerequisiteChain tagId="webhooks" />
+
+```astro
+import { PrerequisiteChain } from 'starlight-tags/components';
+
+<PrerequisiteChain tagId="webhooks" />
+```
 
 ## API Version Chain
 
 The `api-v2` tag shows a migration path from v1:
 
-<PrerequisiteChainDemo tagId="api-v2" />
+<PrerequisiteChain tagId="api-v2" />
 
 ## Without Description
 
 Hide the helper text for a more compact display:
 
-<PrerequisiteChainDemo tagId="webhooks" showDescription={false} />
+<PrerequisiteChain tagId="webhooks" showDescription={false} />
 
 ```astro
-<PrerequisiteChain
-  tag={webhooksTag}
-  tagsMap={tagsMap}
-  showDescription={false}
-/>
+<PrerequisiteChain tagId="webhooks" showDescription={false} />
 ```
 
 ## Limiting Chain Length
 
 For tags with many prerequisites, you can limit the display:
 
-<PrerequisiteChainDemo tagId="webhooks" maxChainLength={2} />
+<PrerequisiteChain tagId="webhooks" maxChainLength={2} />
 
 ```astro
-<PrerequisiteChain
-  tag={currentTag}
-  tagsMap={tagsMap}
-  maxChainLength={2}
-/>
+<PrerequisiteChain tagId="webhooks" maxChainLength={2} />
 ```
 
 ## How Prerequisites Work
@@ -88,13 +86,13 @@ The component automatically:
 
 Show users how to migrate between API versions:
 
-<PrerequisiteChainDemo tagId="api-v2" />
+<PrerequisiteChain tagId="api-v2" />
 
 ### Learning Paths
 
 Guide users through a sequence of topics they should understand:
 
-<PrerequisiteChainDemo tagId="webhooks" />
+<PrerequisiteChain tagId="webhooks" />
 
 ## Responsive Behavior
 

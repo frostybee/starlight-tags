@@ -3,18 +3,18 @@ title: PageWithTags
 description: Wrapper component that adds tags to content
 ---
 
-The `PageWithTags` component wraps your content and automatically displays tags at configurable positions (top, bottom, or both).
+The `PageWithTags` component wraps your content and displays tags at configurable positions (top, bottom, or both).
 
 **[See live demo →](/demos/page-with-tags)**
 
 :::tip[Wrapper component with positioning control]
 ```astro
-<PageWithTags tags={tags} position="both">
+<PageWithTags position="both">
   <YourContent />
 </PageWithTags>
 ```
 
-- **Requires tags prop** - you must pass pre-fetched `ProcessedTag[]` data
+- **Automatic data fetching** - reads from frontmatter or accepts `tagIds`
 - **Wraps content** via `<slot />` - your content goes inside
 - **Position control** - `top`, `bottom`, or `both`
 - Adds separator line and "Tags" title for bottom position
@@ -31,27 +31,35 @@ import { PageWithTags } from 'starlight-tags/components';
 
 | Prop | Type | Default | Description |
 |------|------|---------|-------------|
-| `tags` | `ProcessedTag[]` | Required | Array of tag data objects |
+| `tagIds` | `string[]` | - | Specific tag IDs to display |
+| `tags` | `ProcessedTag[]` | - | Pre-fetched tag objects (for advanced use) |
 | `position` | `'top' \| 'bottom' \| 'both'` | `'bottom'` | Where to display tags |
 | `showTitle` | `boolean` | `true` | Show "Tags" heading (bottom only) |
 
+:::note
+If neither `tagIds` nor `tags` is provided, the component automatically reads tags from the page's frontmatter.
+:::
+
 ## Basic Usage
 
+Display tags from the current page's frontmatter:
+
 ```astro
----
 import { PageWithTags } from 'starlight-tags/components';
-import { initTags, getTagsForPage } from 'virtual:starlight-tagging/tags';
 
-// Initialize tags store (memoized - safe to call multiple times)
-await initTags();
-
-// Get tags for this page
-const pageTags = getTagsForPage('guides/authentication');
----
-
-<PageWithTags tags={pageTags}>
+<PageWithTags>
   <h1>My Page Title</h1>
   <p>Page content goes here...</p>
+</PageWithTags>
+```
+
+## Specific Tags
+
+Display specific tags by ID:
+
+```astro
+<PageWithTags tagIds={['authentication', 'rest-api']}>
+  <p>Content with specific tags...</p>
 </PageWithTags>
 ```
 
@@ -62,7 +70,7 @@ const pageTags = getTagsForPage('guides/authentication');
 Tags appear after the content with a separator:
 
 ```astro
-<PageWithTags tags={pageTags} position="bottom">
+<PageWithTags position="bottom">
   <slot />
 </PageWithTags>
 ```
@@ -72,7 +80,7 @@ Tags appear after the content with a separator:
 Tags appear before the content:
 
 ```astro
-<PageWithTags tags={pageTags} position="top">
+<PageWithTags position="top">
   <slot />
 </PageWithTags>
 ```
@@ -82,7 +90,7 @@ Tags appear before the content:
 Tags appear at both top and bottom:
 
 ```astro
-<PageWithTags tags={pageTags} position="both">
+<PageWithTags position="both">
   <slot />
 </PageWithTags>
 ```
@@ -92,35 +100,22 @@ Tags appear at both top and bottom:
 Hide the "Tags" heading at the bottom:
 
 ```astro
-<PageWithTags tags={pageTags} showTitle={false}>
+<PageWithTags showTitle={false}>
   <slot />
 </PageWithTags>
 ```
 
-## Complete Example
+## Combined Options
 
 ```astro
----
-import { PageWithTags } from 'starlight-tags/components';
-import { initTags, getTag } from 'virtual:starlight-tagging/tags';
-
-// Get page data
-const { entry } = Astro.props;
-const frontmatterTags = entry.data.tags || [];
-
-// Initialize tags store (memoized - safe to call multiple times)
-await initTags();
-
-// Get processed tag objects
-const pageTags = frontmatterTags
-  .map(tagId => getTag(tagId))
-  .filter(Boolean);
----
-
-<PageWithTags tags={pageTags} position="both" showTitle={true}>
+<PageWithTags
+  tagIds={['stable', 'sdk-python', 'advanced']}
+  position="both"
+  showTitle={false}
+>
   <article>
-    <h1>{entry.data.title}</h1>
-    <slot />
+    <h1>API Guide</h1>
+    <p>Content here...</p>
   </article>
 </PageWithTags>
 ```
@@ -137,15 +132,15 @@ The component adds margin and border styling:
 Override the default styles:
 
 ```css
-.page-tags {
+.fb-page-tags {
   margin: 1rem 0;
 }
 
-.page-tags--top {
+.fb-page-tags--top {
   margin-bottom: 2rem;
 }
 
-.page-tags--bottom {
+.fb-page-tags--bottom {
   border-top: 2px solid var(--sl-color-accent);
   padding-top: 1rem;
 }
@@ -157,8 +152,8 @@ Wondering which component to use? Here's a quick comparison:
 
 | Feature | `PageWithTags` | `PageTags` |
 |---------|----------------|-----------|
-| Auto-reads frontmatter | ❌ No | ✅ Yes |
-| Requires tags prop | ✅ Yes | ❌ No |
+| Auto-reads frontmatter | ✅ Yes | ✅ Yes |
+| Accepts tagIds | ✅ Yes | ❌ No |
 | Wraps content | ✅ Yes (via slot) | ❌ No |
 | Position control | ✅ `top` / `bottom` / `both` | ❌ Manual placement |
 | Separator line | ✅ Yes (bottom position) | ❌ No |
@@ -171,11 +166,11 @@ Choose `PageWithTags` when you need:
 
 - **Content wrapping** - Tags frame your content automatically
 - **Consistent positioning** - Enforce same layout across pages (great for layout components)
-- **Custom tag data** - You control which tags display, with filtering or custom ordering
+- **Custom tag selection** - Specify which tags to display via `tagIds`
 - **Visual separation** - Built-in separator line and optional "Tags" title
 
 ```astro
-<PageWithTags tags={pageTags} position="both">
+<PageWithTags position="both">
   <article>
     <slot />
   </article>
@@ -188,7 +183,7 @@ Choose [`PageTags`](/components/page-tags) when you want:
 
 - **Simplicity** - Just drop `<PageTags />` anywhere in your MDX
 - **Flexibility** - Place tags exactly where you want in your content
-- **No setup** - Automatically reads tags from the page's frontmatter
+- **Inline display** - Tags as part of content flow
 
 ```mdx
 <PageTags />  <!-- That's it! -->
@@ -203,19 +198,9 @@ It's important to understand the difference between **components** you use in yo
 | **Type** | Component you import | Auto-generated route |
 | **Purpose** | Wrap content with tags | List all tags in system |
 | **Shows** | Tags for a single page | All tags with stats & cloud |
-| **Data** | You provide pre-processed tags | Fetches all tags automatically |
+| **Data** | Auto-fetched or via tagIds | Fetches all tags automatically |
 | **Localization** | Hardcoded title (customizable) | Fully localized UI |
-| **Usage** | `<PageWithTags tags={...}>` | Visit `/tags` URL |
-
-### Component (PageWithTags)
-
-A wrapper you control - add it to your pages or layouts to display tags around content:
-
-```astro
-<PageWithTags tags={pageTags} position="bottom">
-  <slot />
-</PageWithTags>
-```
+| **Usage** | `<PageWithTags>...</PageWithTags>` | Visit `/tags` URL |
 
 ### Auto-Generated Pages
 

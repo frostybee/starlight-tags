@@ -5,8 +5,8 @@ description: Astro components for displaying tags in your Starlight documentatio
 
 The `starlight-tags` plugin exports several Astro components for displaying tags in your documentation pages. All components can be imported from `starlight-tags/components`.
 
-:::note
-The examples on this page use API/SDK documentation scenarios. These patterns apply to any documentation type.
+:::tip[Self-contained components]
+All components handle data fetching automatically. Just pass a `tagId` or `tagIds` prop and they fetch the tag data for you. No manual data fetching required!
 :::
 
 ## Available Components
@@ -50,36 +50,42 @@ import { PageTags } from 'starlight-tags/components';
 <PageTags />
 ```
 
-### Custom Tag Badge
+### Single Tag Badge
 
-Display a specific tag with custom styling:
+Display a specific tag:
 
 ```astro
----
 import { TagBadge } from 'starlight-tags/components';
-import { initTags, getTag } from 'virtual:starlight-tagging/tags';
 
-await initTags();
-const tag = getTag('authentication');
----
-
-<TagBadge tag={tag} variant="outline" size="large" />
+<TagBadge tagId="authentication" />
+<TagBadge tagId="rest-api" variant="outline" size="large" />
 ```
 
 ### Tags List
 
-Display multiple tags with sorting:
+Display multiple tags:
 
 ```astro
----
 import { TagsList } from 'starlight-tags/components';
-import { initTags, getAllTagsSorted } from 'virtual:starlight-tagging/tags';
 
-await initTags();
-const tags = getAllTagsSorted();
----
+<!-- Show all tags -->
+<TagsList />
 
-<TagsList tags={tags} layout="grid" showCount={true} />
+<!-- Show specific tags -->
+<TagsList tagIds={['authentication', 'webhooks', 'rest-api']} />
+
+<!-- With options -->
+<TagsList layout="grid" showCount limit={6} />
+```
+
+### Prerequisite Chain
+
+Show learning path for a topic:
+
+```astro
+import { PrerequisiteChain } from 'starlight-tags/components';
+
+<PrerequisiteChain tagId="oauth2" />
 ```
 
 ## Component Props
@@ -90,6 +96,7 @@ Each component accepts different props for customization:
 
 | Prop | Description |
 |------|-------------|
+| `tagId` / `tagIds` | Tag ID(s) to display (fetches data automatically) |
 | `variant` | Visual style: `'solid'`, `'outline'`, or `'ghost'` |
 | `size` | Size: `'small'`, `'medium'`, or `'large'` |
 | `showIcon` | Whether to show tag icons |
@@ -103,26 +110,22 @@ All tag components support three visual variants:
 - **`outline`** - Bordered with transparent background
 - **`ghost`** - Subtle background tint
 
-## Getting Tag Data
+## Advanced: Manual Data Fetching
 
-Components that display specific tags need `ProcessedTag` data. Use the virtual module for efficient, memoized access:
+For advanced use cases (custom filtering, caching, etc.), you can fetch tag data manually:
 
 ```astro
 ---
-import { initTags, getTag, getAllTagsSorted } from 'virtual:starlight-tagging/tags';
+import { TagsList } from 'starlight-tags/components';
+import { initTags, getAllTagsSorted } from 'virtual:starlight-tagging/tags';
 
-// Initialize once (memoized - safe to call multiple times)
 await initTags();
-
-// Get a single tag
-const authTag = getTag('authentication');
-
-// Get all tags sorted by popularity
 const allTags = getAllTagsSorted();
+const popularTags = allTags.filter(tag => tag.count >= 3);
 ---
-```
 
-The `initTags()` function is memoized, so calling it multiple times (e.g., in multiple components on the same page) only initializes once. This ensures efficient builds regardless of how many components use tag data.
+<TagsList tags={popularTags} />
+```
 
 ## Next Steps
 

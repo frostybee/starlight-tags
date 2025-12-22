@@ -41,15 +41,10 @@ declare module 'virtual:starlight-tagging/tags' {
   ): ProcessedTag[];
 
   /**
-   * Get tags filtered by subject.
-   */
-  export function getTagsBySubject(subject: string): ProcessedTag[];
-
-  /**
    * Get tags filtered by content type.
    */
   export function getTagsByContentType(
-    contentType: 'lecture' | 'tutorial' | 'exercise' | 'reference' | 'assessment'
+    contentType: 'lecture' | 'lab' | 'assignment' | 'project' | 'reference' | 'tutorial' | 'assessment'
   ): ProcessedTag[];
 
   /**

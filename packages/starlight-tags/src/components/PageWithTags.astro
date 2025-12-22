@@ -1,29 +1,76 @@
 ---
+/**
+ * PageWithTags: Wrapper that displays tags around page content
+ *
+ * Usage in MDX:
+ * ```mdx
+ * import { PageWithTags } from 'starlight-tags/components';
+ *
+ * <PageWithTags>
+ *   Your page content here...
+ * </PageWithTags>
+ *
+ * <!-- With options -->
+ * <PageWithTags position="both" tagIds={['api', 'auth']}>
+ *   Content with specific tags shown at top and bottom
+ * </PageWithTags>
+ * ```
+ */
 import TagsList from './TagsList.astro';
+import { initTags, getTag, getAllTagsSorted } from 'virtual:starlight-tagging/tags';
 import type { ProcessedTag } from '../schemas/tags.js';
 
 interface Props {
-  tags: ProcessedTag[];
+  /** Specific tag IDs to display (defaults to current page's tags) */
+  tagIds?: string[];
+  /** Pre-fetched tag objects (for internal/advanced use) */
+  tags?: ProcessedTag[];
   position?: 'top' | 'bottom' | 'both';
   showTitle?: boolean;
 }
 
-const { 
-  tags, 
+const {
+  tagIds,
+  tags: tagsProp,
   position = 'bottom',
-  showTitle = true 
+  showTitle = true
 } = Astro.props;
+
+// Resolve tags: use provided tags, fetch by IDs, or get from frontmatter
+let tags: ProcessedTag[] = tagsProp || [];
+
+if (!tagsProp) {
+  await initTags();
+
+  if (tagIds && tagIds.length > 0) {
+    // Fetch specific tags by ID
+    tags = tagIds
+      .map(id => getTag(id))
+      .filter((t): t is ProcessedTag => t !== undefined);
+  } else {
+    // Try to get tags from current page's frontmatter
+    const frontmatterTags: string[] = Astro.props.frontmatter?.tags ||
+      (Astro as any).locals?.starlightRoute?.entry?.data?.tags ||
+      [];
+
+    if (frontmatterTags.length > 0) {
+      tags = frontmatterTags
+        .map(id => getTag(id))
+        .filter((t): t is ProcessedTag => t !== undefined);
+    }
+  }
+}
 
 const shouldShowTop = position === 'top' || position === 'both';
 const shouldShowBottom = position === 'bottom' || position === 'both';
 ---
 
 {shouldShowTop && tags.length > 0 && (
-  <div class="page-tags page-tags--top">
-    <TagsList 
-      tags={tags} 
-      layout="inline" 
-      variant="outline" 
+  <div class="fb-page-tags fb-page-tags--top">
+    <TagsList
+      tags={tags}
+      layout="inline"
+      variant="outline"
     />
   </div>
 )}
@@ -31,25 +78,25 @@ const shouldShowBottom = position === 'bottom' || position === 'both';
 <slot />
 
 {shouldShowBottom && tags.length > 0 && (
-  <div class="page-tags page-tags--bottom">
-    <TagsList 
-      tags={tags} 
+  <div class="fb-page-tags fb-page-tags--bottom">
+    <TagsList
+      tags={tags}
       title={showTitle ? "Tags" : undefined}
-      layout="inline" 
+      layout="inline"
     />
   </div>
 )}
 
 <style>
-  .page-tags {
+  .fb-page-tags {
     margin: 2rem 0;
-    
-    &.page-tags--top {
+
+    &.fb-page-tags--top {
       margin-bottom: 2rem;
       margin-top: 0;
     }
-    
-    &.page-tags--bottom {
+
+    &.fb-page-tags--bottom {
       margin-top: 2rem;
       margin-bottom: 0;
       padding-top: 2rem;

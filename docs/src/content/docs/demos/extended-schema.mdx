@@ -1,0 +1,228 @@
+---
+title: Extended Schema Demo
+description: Live demo showing how to extend the tag schema with custom fields
+tags:
+  - authentication
+  - webhooks
+---
+
+import ProductTagBadge from '../../../components/ProductTagBadge.astro';
+import FilterableTagsList from '../../../components/FilterableTagsList.astro';
+
+This page demonstrates how to create custom components that render extended schema fields. The `ProductTagBadge` component shows **plan tier** badges and **product** grouping.
+
+
+## Interactive Filtering
+
+Use the dropdown to filter tags by plan tier. This demonstrates how to build interactive UI for custom schema fields:
+
+<FilterableTagsList />
+
+## Basic Usage
+
+Tags with plan tier badges:
+
+<div style="display: flex; gap: 0.75rem; flex-wrap: wrap; align-items: center;">
+  <ProductTagBadge tagId="authentication" />
+  <ProductTagBadge tagId="rest-api" />
+  <ProductTagBadge tagId="webhooks" />
+</div>
+
+```astro
+import ProductTagBadge from '../components/ProductTagBadge.astro';
+
+<ProductTagBadge tagId="authentication" />
+<ProductTagBadge tagId="webhooks" />
+```
+
+## With Product Label
+
+Show the product name above the badge:
+
+<div style="display: flex; gap: 1rem; flex-wrap: wrap; align-items: flex-start;">
+  <ProductTagBadge tagId="authentication" showProduct />
+  <ProductTagBadge tagId="webhooks" showProduct />
+  <ProductTagBadge tagId="sdk-python" showProduct />
+</div>
+
+```astro
+<ProductTagBadge tagId="authentication" showProduct />
+<ProductTagBadge tagId="webhooks" showProduct />
+```
+
+## Without Plan Tier
+
+Hide the plan tier badge:
+
+<div style="display: flex; gap: 0.75rem; flex-wrap: wrap; align-items: center;">
+  <ProductTagBadge tagId="authentication" showPlanTier={false} />
+  <ProductTagBadge tagId="webhooks" showPlanTier={false} />
+</div>
+
+```astro
+<ProductTagBadge tagId="authentication" showPlanTier={false} />
+```
+
+## Non-Clickable
+
+Render as a span instead of a link:
+
+<div style="display: flex; gap: 0.75rem; flex-wrap: wrap; align-items: center;">
+  <ProductTagBadge tagId="authentication" clickable={false} />
+  <ProductTagBadge tagId="webhooks" clickable={false} />
+</div>
+
+```astro
+<ProductTagBadge tagId="authentication" clickable={false} />
+```
+
+## Plan Tiers
+
+The component renders different tier badges based on the `planTier` field:
+
+<div style="display: flex; gap: 0.75rem; flex-wrap: wrap; align-items: center;">
+  <ProductTagBadge tagId="rest-api" />
+  <ProductTagBadge tagId="authentication" />
+  <ProductTagBadge tagId="webhooks" />
+</div>
+
+- **Free** (green): Basic features available to all users
+- **Pro** (blue): Features requiring a paid plan
+- **Enterprise** (purple): Advanced features for enterprise customers
+
+
+```astro
+---
+// FilterableTagsList.astro - Key implementation details
+
+import { initTags, getTags } from 'virtual:starlight-tagging/tags';
+import type { ProcessedTag } from 'starlight-tags/schemas/tags';
+import type { ProductTag } from '../config/product-tag-schema';
+
+type ExtendedTag = ProcessedTag & ProductTag;
+
+await initTags();
+const allTags = Array.from(getTags().values()) as ExtendedTag[];
+const tagsWithPlanTier = allTags.filter(tag => tag.planTier);
+---
+
+<div class="filterable-tags-container">
+  <select id="plan-tier-filter">
+    <option value="">All Plans</option>
+    <option value="free">Free</option>
+    <option value="pro">Pro</option>
+    <option value="enterprise">Enterprise</option>
+  </select>
+
+  <div class="tags-grid">
+    {tagsWithPlanTier.map(tag => (
+      <div data-plan-tier={tag.planTier}>
+        <ProductTagBadge tagId={tag.id} />
+      </div>
+    ))}
+  </div>
+</div>
+
+<script>
+  const dropdown = document.querySelector('#plan-tier-filter');
+  const tagItems = document.querySelectorAll('.tag-item');
+
+  dropdown.addEventListener('change', () => {
+    const selectedTier = dropdown.value;
+    tagItems.forEach(item => {
+      const shouldShow = !selectedTier || item.dataset.planTier === selectedTier;
+      item.classList.toggle('hidden', !shouldShow);
+    });
+  });
+</script>
+```
+
+---
+
+## How It Works
+
+### 1. Extend the Schema
+
+Create a custom schema that adds your fields:
+
+```typescript
+// src/config/product-tag-schema.ts
+import { z } from 'astro/zod';
+import { tagDefinitionSchema } from 'starlight-tags/schemas/tags';
+
+export const productTagSchema = tagDefinitionSchema.extend({
+  product: z.string().optional(),
+  planTier: z.enum(['free', 'pro', 'enterprise']).optional(),
+});
+
+export type ProductTag = z.infer<typeof productTagSchema>;
+```
+
+### 2. Add Fields to tags.yml
+
+```yaml
+# tags.yml
+tags:
+  authentication:
+    label: "Authentication"
+    product: "Platform"
+    planTier: "free"
+
+  webhooks:
+    label: "Webhooks"
+    product: "Platform"
+    planTier: "pro"
+```
+
+### 3. Create a Custom Component
+
+```astro
+---
+// src/components/ProductTagBadge.astro
+import { initTags, getTag } from 'virtual:starlight-tagging/tags';
+import type { ProcessedTag } from 'starlight-tags/schemas/tags';
+import type { ProductTag } from '../config/product-tag-schema';
+
+const { tagId } = Astro.props;
+
+await initTags();
+const baseTag = getTag(tagId);
+
+// Cast to extended type to access custom fields
+const tag = baseTag as ProcessedTag & ProductTag;
+---
+
+<span class="tag">
+  {tag.label}
+  {tag.planTier && <span class="tier">{tag.planTier}</span>}
+</span>
+```
+
+### 4. Filter by Custom Fields
+
+```typescript
+// src/utils/product-filters.ts
+import { getTags } from 'virtual:starlight-tagging/tags';
+import type { ProcessedTag } from 'starlight-tags/schemas/tags';
+import type { ProductTag, PlanTier } from '../config/product-tag-schema';
+
+type ExtendedTag = ProcessedTag & ProductTag;
+
+export function getTagsByPlanTier(tier: PlanTier): ExtendedTag[] {
+  return Array.from(getTags().values())
+    .filter((tag): tag is ExtendedTag =>
+      (tag as ExtendedTag).planTier === tier
+    );
+}
+
+export function getTagsByProduct(product: string): ExtendedTag[] {
+  return Array.from(getTags().values())
+    .filter((tag): tag is ExtendedTag =>
+      (tag as ExtendedTag).product === product
+    );
+}
+```
+
+---
+
+See the [Extending the Schema guide](/extending-schema) for more details.

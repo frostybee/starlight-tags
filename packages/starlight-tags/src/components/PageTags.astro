@@ -19,6 +19,18 @@ import TagBadge from './TagBadge.astro';
 import { initTags, getTag } from 'virtual:starlight-tagging/tags';
 import type { ProcessedTag } from '../schemas/tags.js';
 
+// Type for accessing Starlight's internal route data
+// This matches Starlight's locals structure for route data
+interface StarlightLocals {
+  starlightRoute?: {
+    entry?: {
+      data?: {
+        tags?: string[];
+      };
+    };
+  };
+}
+
 interface Props {
   /** Position of tags: 'inline' flows with text, 'block' takes full width */
   layout?: 'inline' | 'block';
@@ -47,8 +59,10 @@ const t = Astro.locals.t;
 const displayLabel = label === true ? t('starlightTags.pageTags') : (typeof label === 'string' ? label : undefined);
 
 // Get frontmatter tags from the current page
+// First try props.frontmatter (passed explicitly), then Starlight's route data
+const starlightLocals = Astro.locals as StarlightLocals;
 const frontmatterTags: string[] = Astro.props.frontmatter?.tags ||
-  (Astro as any).locals?.starlightRoute?.entry?.data?.tags ||
+  starlightLocals.starlightRoute?.entry?.data?.tags ||
   [];
 
 // Fetch processed tags
@@ -73,9 +87,9 @@ if (frontmatterTags.length > 0) {
 ---
 
 {pageTags.length > 0 && (
-  <div class:list={['page-tags', `page-tags--${layout}`]}>
-    {displayLabel && <span class="page-tags__label">{displayLabel}</span>}
-    <div class="page-tags__list">
+  <div class:list={['fb-page-tags', `fb-page-tags--${layout}`]}>
+    {displayLabel && <span class="fb-page-tags__label">{displayLabel}</span>}
+    <div class="fb-page-tags__list">
       {pageTags.map(tag => (
         <TagBadge
           tag={tag}
@@ -89,31 +103,31 @@ if (frontmatterTags.length > 0) {
 )}
 
 <style>
-  .page-tags {
+  .fb-page-tags {
     display: flex;
     align-items: center;
     gap: 0.5rem;
     flex-wrap: wrap;
   }
 
-  .page-tags--block {
+  .fb-page-tags--block {
     margin: 1rem 0;
     padding: 0.75rem 0;
     border-top: 1px solid var(--sl-color-hairline);
     border-bottom: 1px solid var(--sl-color-hairline);
   }
 
-  .page-tags--inline {
+  .fb-page-tags--inline {
     display: inline-flex;
   }
 
-  .page-tags__label {
+  .fb-page-tags__label {
     font-size: var(--sl-text-sm);
     color: var(--sl-color-gray-3);
     font-weight: 500;
   }
 
-  .page-tags__list {
+  .fb-page-tags__list {
     display: flex;
     flex-wrap: wrap;
     gap: 0.375rem;

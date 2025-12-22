@@ -44,19 +44,11 @@ export function createTagsIntegration(
         const tagPagePath = fileURLToPath(new URL('../pages/tag-page.astro', import.meta.url));
 
         // Inject routes with optional locale prefix for i18n support
-        injectRoute({
-          pattern: `/${config.tagsIndexSlug}`,
-          entrypoint: tagsIndexPath
-        });
-
+        // Using [...locale] rest parameter handles both localized (/en/tags/...)
+        // and non-localized (/tags/...) paths in a single route
         injectRoute({
           pattern: `/[...locale]/${config.tagsIndexSlug}`,
           entrypoint: tagsIndexPath
-        });
-
-        injectRoute({
-          pattern: `/${config.tagsPagesPrefix}/[tag]`,
-          entrypoint: tagPagePath
         });
 
         injectRoute({

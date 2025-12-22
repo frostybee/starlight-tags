@@ -2,8 +2,10 @@
 import StarlightPage from '@astrojs/starlight/components/StarlightPage.astro';
 import TagBadge from '../components/TagBadge.astro';
 import { initTags, getAllTagsSorted, getTag } from 'virtual:starlight-tagging/tags';
-import { translations } from '../translations.js';
+import { buildUrl } from '../libs/url.js';
 import type { ProcessedTag, PageReference } from '../schemas/tags.js';
+// @ts-expect-error - virtual module provided by Starlight
+import starlightConfig from 'virtual:starlight/user-config';
 
 interface Props {
   tag: ProcessedTag;
@@ -15,21 +17,30 @@ export async function getStaticPaths() {
   await initTags();
 
   const tags = getAllTagsSorted();
-  const locales = Object.keys(translations);
+
+  // Get configured locales from Starlight config (not plugin translations)
+  // If no locales configured, only generate root paths
+  const configuredLocales = starlightConfig.locales
+    ? Object.keys(starlightConfig.locales)
+    : [];
 
   // Generate paths for each tag + locale combination
   const paths: Array<{
     params: { tag: string; locale: string | undefined };
     props: Props;
   }> = [];
+
   for (const tag of tags) {
-    // Root path (no locale)
+    // Root path (no locale prefix - for default/root locale)
     paths.push({
       params: { tag: tag.slug, locale: undefined },
       props: { tag, pages: tag.pages }
     });
-    // Locale-prefixed paths
-    for (const locale of locales) {
+
+    // Locale-prefixed paths (only if i18n is configured)
+    for (const locale of configuredLocales) {
+      // Skip 'root' locale as it uses the non-prefixed path
+      if (locale === 'root') continue;
       paths.push({
         params: { tag: tag.slug, locale },
         props: { tag, pages: tag.pages }
@@ -42,8 +53,16 @@ export async function getStaticPaths() {
 
 const { tag, pages } = Astro.props;
 
+// Guard against missing tag data (shouldn't happen, but ensures type safety)
+if (!tag) {
+  throw new Error('[starlight-tags] Tag data not found in props');
+}
+
 // Access translations via Astro.locals.t
 const t = Astro.locals.t;
+
+// Get locale from params for building URLs
+const { locale } = Astro.params;
 
 // Initialize tags store (memoized - already initialized in getStaticPaths, this is a no-op)
 await initTags();
@@ -127,7 +146,7 @@ function getPopularityTier(count: number): 'tier-1' | 'tier-2' | 'tier-3' | 'tie
         <div class="related-tags-cloud">
           {relatedTagsData.map(relatedTag => (
             <a
-              href={relatedTag.url}
+              href={buildUrl(relatedTag.url, locale)}
               class={`cloud-tag ${getPopularityTier(relatedTag.count)}`}
               title={`${relatedTag.label}: ${relatedTag.count} ${relatedTag.count === 1 ? t('starlightTags.page') : t('starlightTags.pages')}`}
             >
@@ -148,7 +167,7 @@ function getPopularityTier(count: number): 'tier-1' | 'tier-2' | 'tier-3' | 'tie
       </h2>
       <div class="pages-grid">
         {pages.map((page, index) => (
-          <a href={`/${page.slug || page.id}/`} class="page-card">
+          <a href={buildUrl(`/${page.slug || page.id}/`, locale)} class="page-card">
             <div class="page-card-header">
               <h3 class="page-card-title">{page.title}</h3>
               <span class="page-card-index">{index + 1}</span>

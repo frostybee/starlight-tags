@@ -17,25 +17,27 @@ import { TagBadge } from 'starlight-tags/components';
 
 | Prop | Type | Default | Description |
 |------|------|---------|-------------|
-| `tag` | `ProcessedTag` | Required | The tag data object |
+| `tagId` | `string` | - | Tag ID to display (fetches data automatically) |
+| `tag` | `ProcessedTag` | - | Pre-fetched tag object (for advanced use) |
 | `size` | `'small' \| 'medium' \| 'large'` | `'medium'` | Badge size |
 | `variant` | `'solid' \| 'outline' \| 'ghost'` | `'solid'` | Visual style |
 | `showCount` | `boolean` | `false` | Show page count |
 | `showIcon` | `boolean` | `true` | Show tag icon |
 | `clickable` | `boolean` | `true` | Render as link |
 
+:::note
+You must provide either `tagId` or `tag`. Using `tagId` is recommended as it handles data fetching automatically.
+:::
+
 ## Basic Usage
 
 ```astro
----
 import { TagBadge } from 'starlight-tags/components';
 
-// Get tag from processor
-const tag = processor.getTag('authentication');
----
-
-<TagBadge tag={tag} />
+<TagBadge tagId="authentication" />
 ```
+
+That's it! The component fetches tag data automatically.
 
 ## Variants
 
@@ -44,7 +46,7 @@ const tag = processor.getTag('authentication');
 Filled background with the tag's color:
 
 ```astro
-<TagBadge tag={tag} variant="solid" />
+<TagBadge tagId="authentication" variant="solid" />
 ```
 
 ### Outline
@@ -52,7 +54,7 @@ Filled background with the tag's color:
 Bordered with transparent background:
 
 ```astro
-<TagBadge tag={tag} variant="outline" />
+<TagBadge tagId="authentication" variant="outline" />
 ```
 
 ### Ghost
@@ -60,15 +62,15 @@ Bordered with transparent background:
 Subtle background tint:
 
 ```astro
-<TagBadge tag={tag} variant="ghost" />
+<TagBadge tagId="authentication" variant="ghost" />
 ```
 
 ## Sizes
 
 ```astro
-<TagBadge tag={tag} size="small" />
-<TagBadge tag={tag} size="medium" />
-<TagBadge tag={tag} size="large" />
+<TagBadge tagId="authentication" size="small" />
+<TagBadge tagId="authentication" size="medium" />
+<TagBadge tagId="authentication" size="large" />
 ```
 
 ## With Count
@@ -76,7 +78,7 @@ Subtle background tint:
 Show the number of pages with this tag:
 
 ```astro
-<TagBadge tag={tag} showCount={true} />
+<TagBadge tagId="authentication" showCount />
 ```
 
 ## Without Icon
@@ -84,7 +86,7 @@ Show the number of pages with this tag:
 Hide the tag icon:
 
 ```astro
-<TagBadge tag={tag} showIcon={false} />
+<TagBadge tagId="authentication" showIcon={false} />
 ```
 
 ## Non-Clickable
@@ -92,27 +94,37 @@ Hide the tag icon:
 Render as a span instead of a link:
 
 ```astro
-<TagBadge tag={tag} clickable={false} />
+<TagBadge tagId="authentication" clickable={false} />
 ```
 
-## Complete Example
+## Multiple Tags
+
+Display several tags together:
+
+```astro
+import { TagBadge } from 'starlight-tags/components';
+
+<div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+  <TagBadge tagId="authentication" />
+  <TagBadge tagId="rest-api" />
+  <TagBadge tagId="webhooks" variant="outline" />
+</div>
+```
+
+## Advanced: Pre-fetched Tag
+
+For advanced use cases where you already have tag data:
 
 ```astro
 ---
 import { TagBadge } from 'starlight-tags/components';
 import { initTags, getTag } from 'virtual:starlight-tagging/tags';
 
-// Initialize tags store (memoized - safe to call multiple times)
 await initTags();
-
 const authTag = getTag('authentication');
-const apiTag = getTag('rest-api');
 ---
 
-<div class="tags">
-  <TagBadge tag={authTag} variant="solid" size="medium" />
-  <TagBadge tag={apiTag} variant="outline" showCount={true} />
-</div>
+<TagBadge tag={authTag} variant="outline" showCount />
 ```
 
 ## Styling
@@ -128,11 +140,11 @@ Override styles using CSS:
 
 ```css
 /* In your custom CSS */
-.sl-tag {
+.fb-tag {
   font-family: var(--sl-font-mono);
 }
 
-.sl-tag--solid {
+.fb-tag--solid {
   box-shadow: none;
 }
 ```
