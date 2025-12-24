@@ -7,6 +7,10 @@ tags:
   - intermediate
 ---
 
+import { PageTags } from 'starlight-tags/components';
+
+<PageTags />
+
 The Acme API supports multiple authentication methods depending on your use case.
 
 ## API Keys
@@ -27,7 +31,7 @@ curl -X GET "https://api.acme.com/v2/users" \
 
 ## OAuth 2.0
 
-For applications that act on behalf of users. See [OAuth 2.0 Flow](/examples/oauth2-flow) for implementation details.
+For applications that act on behalf of users.
 
 ```bash
 curl -X GET "https://api.acme.com/v2/users/me" \

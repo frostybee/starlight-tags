@@ -1,8 +1,8 @@
 {
   "name": "starlight-tags",
-  "version": "0.0.1",
+  "version": "0.0.0",
   "license": "MIT",
-  "description": "A plugin to add tags to your Starlight docs.",
+  "description": "A Starlight plugin for organizing docs with tags and auto-generated tag pages.",
   "author": "frostybee",
   "type": "module",
   "exports": {
@@ -21,20 +21,9 @@
     "src/",
     "virtual.d.ts"
   ],
-  "keywords": [
-    "astro",
-    "starlight",
-    "astro-integration",
-    "documentation",
-    "tags",
-    "plugin"
-  ],
   "scripts": {
-    "build": "tsc",
-    "dev": "tsc --watch",
     "test": "vitest",
-    "lint": "eslint .",
-    "prepublishOnly": "npm run build && npm test"
+    "lint": "eslint . --cache --max-warnings=0"
   },
   "dependencies": {
     "js-yaml": "^4.1.1"
@@ -49,15 +38,23 @@
     "vitest": "^4.0.16"
   },
   "peerDependencies": {
-    "@astrojs/starlight": ">=0.35",
-    "astro": ">=5.13.0"
+    "@astrojs/starlight": ">=0.35.0"
   },
   "engines": {
-    "node": "^18.17.1 || ^20.3.0 || >=21.0.0"
+    "node": ">=18.17.1"
   },
   "publishConfig": {
     "access": "public"
   },
+  "sideEffects": false,
+  "keywords": [
+    "astro",
+    "starlight",
+    "astro-integration",
+    "documentation",
+    "tags",
+    "plugin"
+  ],
   "homepage": "https://github.com/frostybee/starlight-tags",
   "repository": {
     "type": "git",

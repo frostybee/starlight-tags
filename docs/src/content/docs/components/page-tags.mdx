@@ -5,7 +5,7 @@ description: Auto-display tags for the current page
 
 The `PageTags` component automatically displays tags from the current page's frontmatter. It's the easiest way to show tags on your documentation pages.
 
-**[See live demo →](/demos/page-tags)**
+**[See live demo →](/starlight-tags/demos/page-tags/)**
 
 :::tip[Self-contained, automatic tag display]
 - **Reads tags automatically** from the current page's frontmatter
@@ -208,7 +208,7 @@ Before starting, make sure you understand:
 The `PageTags` component:
 
 1. Reads the `tags` array from the current page's frontmatter
-2. Fetches tag data from the [virtual tags module](/guides/virtual-tags-module) (memoized for efficiency)
+2. Fetches tag data from the [virtual tags module](/starlight-tags/guides/virtual-tags-module/) (memoized for efficiency)
 3. Renders each tag using the `TagBadge` component
 
 If no tags are defined in the frontmatter, the component renders nothing.
@@ -241,7 +241,7 @@ Choose `PageTags` when you want:
 
 ### When to Use `PageWithTags`
 
-Choose [`PageWithTags`](/components/page-with-tags) when you need:
+Choose [`PageWithTags`](/starlight-tags/components/page-with-tags/) when you need:
 
 - **Content wrapping** - Tags frame your content
 - **Consistent positioning** - Same layout across pages

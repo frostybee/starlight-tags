@@ -1,9 +1,11 @@
 import starlight from '@astrojs/starlight'
 import { defineConfig } from 'astro/config'
+import starlightLinksValidator from 'starlight-links-validator'
 import starlightTags from 'starlight-tags'
+import starlightThemeGalaxy from 'starlight-theme-galaxy'
 
 export default defineConfig({
-  base: '/docs',
+  base: '/starlight-tags',
   integrations: [
     starlight({
       defaultLocale: 'root',      
@@ -17,6 +19,9 @@ export default defineConfig({
         baseUrl: 'https://github.com/frostybee/starlight-tags/edit/main/docs/',
       },
       plugins: [
+        starlightLinksValidator({
+          exclude: ['/starlight-tags/tags/', '/starlight-tags/tags/**'],
+        }),
         starlightTags({
           configPath: 'tags.yml',
           tagsPagesPrefix: 'tags',
@@ -24,6 +29,7 @@ export default defineConfig({
           onInlineTagsNotFound: 'warn',
           enableFrontmatterTags: true
         }),
+        //starlightThemeGalaxy()
       ],
       sidebar: [
         {
@@ -32,22 +38,22 @@ export default defineConfig({
         },
         {
           label: 'Guides',
-          items: ['configuration', 'tags-definition', 'frontmatter', 'routes', 'extending-schema', 'guides/virtual-tags-module', 'guides/i18n'],
+          items: ['guides/configuration', 'guides/tags-definition', 'guides/frontmatter', 'guides/routes', 'guides/extending-schema', 'guides/virtual-tags-module', 'guides/i18n'],
         },
         {
-          label: 'Components',
+          label: 'Plugin Components',
           autogenerate: {
             directory: 'components/',
           },
         },
         {
-          label: 'Demos',
+          label: 'Demos: Plugin Components',
           autogenerate: {
             directory: 'demos/',
           },
         },
         {
-          label: 'Examples',
+          label: 'Examples: Tagged Pages',
           autogenerate: {
             directory: 'examples/',
           },
@@ -56,7 +62,7 @@ export default defineConfig({
       social: [
         { href: 'https://github.com/frostybee/starlight-tags', icon: 'github', label: 'GitHub' },
       ],
-      title: 'starlight-tags',
+      title: 'Starlight Tags',
     }),
   ],
 })

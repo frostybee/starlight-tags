@@ -1,9 +1,9 @@
 ---
-title: starlight-tags
-description: A plugin to add tags to your Starlight docs.
+title: Starlight Tags
+description: A Starlight plugin for organizing docs with tags and auto-generated tag pages.
 head:
   - tag: title
-    content: starlight-tags
+    content: Starlight Tags
   - tag: style
     content: |
       .hero-html {
@@ -15,13 +15,18 @@ head:
 template: splash
 editUrl: false
 hero:
-  tagline: A plugin to add tags to your Starlight docs.
+  tagline: A Starlight plugin for organizing docs with tags and auto-generated tag pages.
   image:
     html: '🔋'
   actions:
     - text: Get Started
-      link: /getting-started/
-      icon: right-arrow
+      link: /starlight-tags/getting-started/
+      icon: rocket
+    - text: Star on GitHub
+      link: https://github.com/frostybee/starlight-tags
+      icon: star
+      variant: secondary
+      external: true
 ---
 
 import { Card, CardGrid } from '@astrojs/starlight/components'
@@ -30,9 +35,9 @@ import { Card, CardGrid } from '@astrojs/starlight/components'
 
 <CardGrid stagger>
   <Card title="Install the plugin" icon="puzzle">
-    Check the [getting started guide](/getting-started/) for installation instructions.
+    Check the [getting started guide](/starlight-tags/getting-started/) for installation instructions.
   </Card>
   <Card title="Configure the plugin" icon="setting">
-    Edit your config in the `astro.config.mjs` file.
+    Edit your config in the `astro.config.mjs` file. See the [configuration options](/starlight-tags/guides/configuration/).
   </Card>
 </CardGrid>
