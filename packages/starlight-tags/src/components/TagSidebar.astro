@@ -29,8 +29,8 @@ interface Props {
   title?: string;
   /** Enable collapsible behavior */
   collapsible?: boolean;
-  /** Default open state (only used if collapsible is true) */
-  defaultOpen?: boolean;
+  /** Start with sidebar collapsed (only used if collapsible is true) */
+  collapsed?: boolean;
 }
 
 const {
@@ -39,7 +39,7 @@ const {
   showCount = true,
   title = 'Popular Tags',
   collapsible = true,
-  defaultOpen = true
+  collapsed = false
 } = Astro.props;
 
 await initTags();
@@ -61,13 +61,13 @@ const tagsIndexUrl = buildUrlFromCurrentPage('/tags/', Astro.url);
   <div
     class="sl-tag-sidebar"
     data-collapsible={collapsible}
-    data-open={defaultOpen}
+    data-open={!collapsed}
   >
     {title && (
       <button
         type="button"
         class="sl-tag-sidebar__header"
-        aria-expanded={defaultOpen}
+        aria-expanded={!collapsed}
         disabled={!collapsible}
       >
         <span class="sl-tag-sidebar__title">{title}</span>

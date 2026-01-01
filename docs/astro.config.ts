@@ -61,15 +61,20 @@ export default defineConfig({
         },
         {
           label: 'Examples: Tagged Pages',
-          autogenerate: {
-            directory: 'examples/',
-          },
-        },
-        {
-          label: 'JavaScript Tutorial',
-          autogenerate: {
-            directory: 'educational/',
-          },
+          items: [
+            {
+              label: 'API Documentation',
+              autogenerate: {
+                directory: 'examples/',
+              },
+            },
+            {
+              label: 'Educational Content',
+              autogenerate: {
+                directory: 'educational/',
+              },
+            },
+          ],
         },
       ],
       social: [
