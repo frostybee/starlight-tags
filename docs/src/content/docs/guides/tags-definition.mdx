@@ -1,5 +1,5 @@
 ---
-title: Tags Definition
+title: Defining Tags Schema
 description: Define tags in your tags.yml configuration file
 ---
 
@@ -17,6 +17,25 @@ Defining tags in a central schema file provides several benefits over using inli
 - All tag definitions live in one place, making it easy to audit, update, or reorganize your taxonomy.
 - Prerequisites, difficulty levels, and content types require schema definitions to work.
 - New contributors can browse `tags.yml` to understand the available taxonomy without searching through pages.
+
+## Tag Validation
+
+When a page references a tag that isn't defined in your schema, the plugin can respond in different ways. Configure this behavior with the `onInlineTagsNotFound` option:
+
+```js
+// astro.config.mjs
+starlightTagsPlugin({
+  onInlineTagsNotFound: 'warn', // 'ignore' | 'warn' | 'error'
+})
+```
+
+| Value | Behavior |
+|-------|----------|
+| `'ignore'` | Silently skip undefined tags |
+| `'warn'` | Log a warning but continue the build |
+| `'error'` | Fail the build with an error |
+
+Using `'warn'` or `'error'` helps catch typos early and enforces your predefined taxonomy, preventing tag sprawl across your documentation.
 
 ## Basic Structure
 

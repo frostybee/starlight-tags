@@ -27,7 +27,7 @@ import { TagSidebar } from 'starlight-tags/components';
 | `showCount` | `boolean` | `true` | Show page count badge next to each tag |
 | `title` | `string` | `'Popular Tags'` | Section heading |
 
-## Basic Usage
+## Adding Tags to Starlight Sidebar
 
 To add the TagSidebar to your Starlight site, create a sidebar component override:
 
@@ -39,7 +39,7 @@ import { TagSidebar } from 'starlight-tags/components';
 ---
 
 <Default {...Astro.props} />
-<TagSidebar />
+<TagSidebar limit={8} sortBy="count" title="Popular Tags" />
 ```
 
 Then register the override in your `astro.config.mjs`:

@@ -69,28 +69,34 @@ import { Steps, Tabs, TabItem } from '@astrojs/starlight/components'
    ```yaml
    # tags.yml
    tags:
-     authentication:
-       label: "Authentication"
-       description: "API authentication and security"
-       color: "#10b981"
-       icon: "🔐"
-
-     rest-api:
-       label: "REST API"
-       description: "RESTful API endpoints"
-       color: "#3b82f6"
-
-     stable:
-       label: "Stable"
-       description: "Production-ready features"
+     getting-started:
+       label: "Getting Started"
+       description: "Essential first steps"
        color: "#22c55e"
+       icon: "🚀"
+       priority: 100
+
+     components:
+       label: "Components"
+       description: "UI building blocks"
+       color: "#3b82f6"
+       icon: "🧩"
+
+     advanced:
+       label: "Advanced"
+       description: "For experienced users"
+       color: "#f59e0b"
+       icon: "⚡"
+       difficulty: advanced
+       prerequisites:
+         - getting-started
 
    defaults:
      color: "#6b7280"
    ```
 
-   :::note[Example Tags]
-   These examples use API/SDK documentation tags, but the same patterns work for any documentation type—libraries, frameworks, applications, tutorials, or product guides. Adapt the tag names and descriptions to match your content.
+   :::tip[Feature Highlights]
+   This example showcases `priority` for tag ordering, `difficulty` and `prerequisites` for learning paths, and icons for visual distinction. See [Defining Tags Schema](/starlight-tags/guides/tags-definition/) for all available properties.
    :::
 
 4. Add tags to your pages using frontmatter:
@@ -120,9 +126,9 @@ After installation, the plugin automatically creates:
 
 ## Next Steps
 
-- [Configuration](/starlight-tags/guides/configuration/) - Customize plugin options
-- [Tags Definition](/starlight-tags/guides/tags-definition/) - Learn about all tag properties
-- [Page Frontmatter](/starlight-tags/guides/frontmatter/) - Add tags to your pages
-- [Components](/starlight-tags/components/) - Display tags in your content
-- [Auto-Generated Routes](/starlight-tags/guides/routes/) - Understand the tag pages
-- [Extending the Schema](/starlight-tags/guides/extending-schema/) - Add custom fields to tags
+- [Configuring the Plugin](/starlight-tags/guides/configuration/) - all available options and defaults
+- [Defining Tags Schema](/starlight-tags/guides/tags-definition/) - colors, icons, priorities, and more
+- [Using Page Frontmatter](/starlight-tags/guides/frontmatter/) - tag your documentation pages
+- [Components](/starlight-tags/components/) - render tags anywhere in your content
+- [Understanding Auto-Generated Routes](/starlight-tags/guides/routes/) - how tag index and detail pages work
+- [Extending the Schema](/starlight-tags/guides/extending-schema/) - add custom fields for your use case
