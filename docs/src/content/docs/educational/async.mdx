@@ -1,0 +1,265 @@
+---
+title: Async JavaScript
+description: Promises, async/await, and the event loop
+tags:
+  - js-async
+  - advanced
+---
+
+import { PageTags, PrerequisiteChain } from 'starlight-tags/components';
+import DifficultyTagBadge from '../../../components/DifficultyTagBadge.astro';
+
+<PageTags />
+
+<DifficultyTagBadge difficulty="advanced" />
+
+**Prerequisites:**
+<PrerequisiteChain tag="js-async" />
+
+JavaScript is single-threaded but handles asynchronous operations elegantly through the event loop.
+
+## The Event Loop
+
+JavaScript uses an event loop to handle async operations:
+
+1. **Call Stack** - Executes synchronous code
+2. **Web APIs** - Handle async operations (timers, fetch, etc.)
+3. **Callback Queue** - Queues completed async callbacks
+4. **Event Loop** - Moves callbacks to stack when empty
+
+```javascript
+console.log("1");
+setTimeout(() => console.log("2"), 0);
+console.log("3");
+// Output: 1, 3, 2
+```
+
+## Callbacks (The Old Way)
+
+```javascript
+function fetchData(callback) {
+  setTimeout(() => {
+    callback(null, { id: 1, name: "Data" });
+  }, 1000);
+}
+
+fetchData((error, data) => {
+  if (error) {
+    console.error(error);
+    return;
+  }
+  console.log(data);
+});
+```
+
+:::caution[Callback Hell]
+Nested callbacks become hard to read and maintain. Promises solve this.
+:::
+
+## Promises
+
+A Promise represents an eventual result of an async operation.
+
+```javascript
+const promise = new Promise((resolve, reject) => {
+  setTimeout(() => {
+    const success = true;
+    if (success) {
+      resolve({ id: 1, data: "Success!" });
+    } else {
+      reject(new Error("Something went wrong"));
+    }
+  }, 1000);
+});
+
+promise
+  .then(result => console.log(result))
+  .catch(error => console.error(error))
+  .finally(() => console.log("Done"));
+```
+
+### Promise States
+
+- **Pending** - Initial state
+- **Fulfilled** - Operation completed successfully
+- **Rejected** - Operation failed
+
+### Chaining Promises
+
+```javascript
+fetch("/api/user")
+  .then(response => response.json())
+  .then(user => fetch(`/api/posts/${user.id}`))
+  .then(response => response.json())
+  .then(posts => console.log(posts))
+  .catch(error => console.error(error));
+```
+
+### Promise Static Methods
+
+```javascript
+// Wait for all (fails if any fails)
+Promise.all([
+  fetch("/api/users"),
+  fetch("/api/posts")
+])
+  .then(([users, posts]) => {
+    // Both completed
+  });
+
+// Wait for all (never rejects)
+Promise.allSettled([
+  fetch("/api/users"),
+  fetch("/api/posts")
+])
+  .then(results => {
+    results.forEach(result => {
+      if (result.status === "fulfilled") {
+        console.log(result.value);
+      } else {
+        console.log(result.reason);
+      }
+    });
+  });
+
+// First to resolve
+Promise.race([
+  fetch("/api/fast"),
+  fetch("/api/slow")
+])
+  .then(first => console.log(first));
+
+// First to fulfill (ignores rejections)
+Promise.any([
+  fetch("/api/primary"),
+  fetch("/api/fallback")
+])
+  .then(first => console.log(first));
+```
+
+## Async/Await
+
+Syntactic sugar for Promises that makes async code look synchronous.
+
+```javascript
+async function fetchUserPosts(userId) {
+  try {
+    const userResponse = await fetch(`/api/users/${userId}`);
+    const user = await userResponse.json();
+
+    const postsResponse = await fetch(`/api/posts?author=${user.id}`);
+    const posts = await postsResponse.json();
+
+    return { user, posts };
+  } catch (error) {
+    console.error("Failed to fetch:", error);
+    throw error;
+  }
+}
+
+// Usage
+const data = await fetchUserPosts(1);
+```
+
+### Parallel Execution
+
+```javascript
+// Sequential (slow)
+const user = await fetchUser();
+const posts = await fetchPosts();
+
+// Parallel (fast)
+const [user, posts] = await Promise.all([
+  fetchUser(),
+  fetchPosts()
+]);
+```
+
+### Error Handling
+
+```javascript
+// Try/catch
+async function getData() {
+  try {
+    const data = await riskyOperation();
+    return data;
+  } catch (error) {
+    console.error(error);
+    return null;
+  }
+}
+
+// .catch() on the call
+getData().catch(console.error);
+
+// Error handling utility
+async function tryCatch(promise) {
+  try {
+    const data = await promise;
+    return [data, null];
+  } catch (error) {
+    return [null, error];
+  }
+}
+
+const [data, error] = await tryCatch(fetchData());
+if (error) {
+  console.error(error);
+}
+```
+
+## Real-World Example
+
+```javascript
+class ApiClient {
+  constructor(baseUrl) {
+    this.baseUrl = baseUrl;
+  }
+
+  async request(endpoint, options = {}) {
+    const url = `${this.baseUrl}${endpoint}`;
+
+    try {
+      const response = await fetch(url, {
+        headers: { "Content-Type": "application/json" },
+        ...options
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}`);
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error(`API Error: ${endpoint}`, error);
+      throw error;
+    }
+  }
+
+  get(endpoint) {
+    return this.request(endpoint);
+  }
+
+  post(endpoint, data) {
+    return this.request(endpoint, {
+      method: "POST",
+      body: JSON.stringify(data)
+    });
+  }
+}
+
+// Usage
+const api = new ApiClient("https://api.example.com");
+const users = await api.get("/users");
+const newUser = await api.post("/users", { name: "Alice" });
+```
+
+## Summary
+
+| Approach | Use Case |
+|----------|----------|
+| Callbacks | Legacy code, simple one-off operations |
+| Promises | When you need `.then()` chaining or static methods |
+| Async/Await | Most cases - cleaner, more readable code |
+
+Congratulations! You've completed the JavaScript learning path.

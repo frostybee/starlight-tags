@@ -61,11 +61,14 @@ if (!tagsProp) {
   }
 }
 
+// Check if tags should be hidden on this page
+const hideTags = (Astro as any).locals?.starlightRoute?.entry?.data?.hideTags ?? false;
+
 const shouldShowTop = position === 'top' || position === 'both';
 const shouldShowBottom = position === 'bottom' || position === 'both';
 ---
 
-{shouldShowTop && tags.length > 0 && (
+{!hideTags && shouldShowTop && tags.length > 0 && (
   <div class="fb-page-tags fb-page-tags--top">
     <TagsList
       tags={tags}
@@ -77,7 +80,7 @@ const shouldShowBottom = position === 'bottom' || position === 'both';
 
 <slot />
 
-{shouldShowBottom && tags.length > 0 && (
+{!hideTags && shouldShowBottom && tags.length > 0 && (
   <div class="fb-page-tags fb-page-tags--bottom">
     <TagsList
       tags={tags}

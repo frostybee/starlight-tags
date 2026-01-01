@@ -12,8 +12,8 @@ export interface StarlightTagsConfig {
   tagsIndexSlug?: string;
   // Validation behavior for inline tags.
   onInlineTagsNotFound?: 'ignore' | 'warn' | 'error';
-  // Enable tags in frontmatter.
-  enableFrontmatterTags?: boolean;
+  // Number of items per page on tag pages.
+  itemsPerPage?: number;
 }
 
 export default function starlightTagsPlugin(

@@ -1,15 +1,21 @@
 ---
 import StarlightPage from '@astrojs/starlight/components/StarlightPage.astro';
 import TagBadge from '../components/TagBadge.astro';
+import TagPagination from '../components/TagPagination.astro';
 import { initTags, getAllTagsSorted, getTag } from 'virtual:starlight-tagging/tags';
+// @ts-expect-error - virtual module provided by plugin
+import { config } from 'virtual:starlight-tagging/config';
 import { buildUrl } from '../libs/url.js';
+import { calculatePagination, paginateArray, type PaginationInfo } from '../libs/pagination.js';
 import type { ProcessedTag, PageReference } from '../schemas/tags.js';
+import { createTierCalculator } from '../libs/popularity.js';
 // @ts-expect-error - virtual module provided by Starlight
 import starlightConfig from 'virtual:starlight/user-config';
 
 interface Props {
   tag: ProcessedTag;
   pages: PageReference[];
+  pagination: PaginationInfo;
 }
 
 export async function getStaticPaths() {
@@ -17,41 +23,67 @@ export async function getStaticPaths() {
   await initTags();
 
   const tags = getAllTagsSorted();
+  const itemsPerPage = config.itemsPerPage;
 
   // Get configured locales from Starlight config (not plugin translations)
   // If no locales configured, only generate root paths
   const configuredLocales = starlightConfig.locales
-    ? Object.keys(starlightConfig.locales)
+    ? Object.keys(starlightConfig.locales).filter(l => l !== 'root')
     : [];
 
-  // Generate paths for each tag + locale combination
+  // Pre-calculate total path count to avoid array resizing during iteration
+  // Formula: sum of (pages_per_tag * (1 + non_root_locales)) for each tag
+  const localeMultiplier = 1 + configuredLocales.length;
+  let totalPathCount = 0;
+  for (const tag of tags) {
+    const totalPages = Math.max(1, Math.ceil(tag.pages.length / itemsPerPage));
+    totalPathCount += totalPages * localeMultiplier;
+  }
+
+  // Pre-allocate array with known size for memory efficiency
   const paths: Array<{
-    params: { tag: string; locale: string | undefined };
+    params: { tag: string; locale: string | undefined; page: string | undefined };
     props: Props;
-  }> = [];
+  }> = new Array(totalPathCount);
+
+  let pathIndex = 0;
 
   for (const tag of tags) {
-    // Root path (no locale prefix - for default/root locale)
-    paths.push({
-      params: { tag: tag.slug, locale: undefined },
-      props: { tag, pages: tag.pages }
-    });
+    const totalPages = Math.max(1, Math.ceil(tag.pages.length / itemsPerPage));
 
-    // Locale-prefixed paths (only if i18n is configured)
-    for (const locale of configuredLocales) {
-      // Skip 'root' locale as it uses the non-prefixed path
-      if (locale === 'root') continue;
-      paths.push({
-        params: { tag: tag.slug, locale },
-        props: { tag, pages: tag.pages }
-      });
+    for (let pageNum = 1; pageNum <= totalPages; pageNum++) {
+      const pagination = calculatePagination(tag.pages.length, pageNum, itemsPerPage);
+      const paginatedPages = paginateArray(tag.pages, pagination);
+      const pageParam = pageNum === 1 ? undefined : String(pageNum);
+
+      // Root path (no locale prefix - for default/root locale)
+      paths[pathIndex++] = {
+        params: {
+          tag: tag.slug,
+          locale: undefined,
+          page: pageParam
+        },
+        props: { tag, pages: paginatedPages, pagination }
+      };
+
+      // Locale-prefixed paths (only if i18n is configured)
+      for (const locale of configuredLocales) {
+        paths[pathIndex++] = {
+          params: {
+            tag: tag.slug,
+            locale,
+            page: pageParam
+          },
+          props: { tag, pages: paginatedPages, pagination }
+        };
+      }
     }
   }
 
   return paths;
 }
 
-const { tag, pages } = Astro.props;
+const { tag, pages, pagination } = Astro.props;
 
 // Guard against missing tag data (shouldn't happen, but ensures type safety)
 if (!tag) {
@@ -62,7 +94,8 @@ if (!tag) {
 const t = Astro.locals.t;
 
 // Get locale from params for building URLs
-const { locale } = Astro.params;
+// In Astro's [...param] rest routes, the param is string | undefined (not an array)
+const { locale } = Astro.params as { locale?: string };
 
 // Initialize tags store (memoized - already initialized in getStaticPaths, this is a no-op)
 await initTags();
@@ -70,14 +103,17 @@ await initTags();
 // Find related tags from the pages that have this tag
 const relatedTags = new Set<string>();
 
-pages.forEach((page: { id: string; slug?: string; tags?: string[] }) => {
+for (const page of pages) {
   // Use tags from the page data (already available from the processor)
-  if (page.tags) {
-    page.tags.forEach((tagId: string) => {
-      if (tagId !== tag.id) relatedTags.add(tagId);
-    });
+  const pageTags = page.tags;
+  if (pageTags && Array.isArray(pageTags)) {
+    for (const tagId of pageTags) {
+      if (tagId !== tag.id) {
+        relatedTags.add(tagId);
+      }
+    }
   }
-});
+}
 
 const relatedTagsData = Array.from(relatedTags)
   .map(tagId => getTag(tagId))
@@ -87,17 +123,7 @@ const relatedTagsData = Array.from(relatedTags)
 // Calculate popularity tiers for related tags
 const maxRelatedCount = Math.max(...relatedTagsData.map(t => t.count), 1);
 const minRelatedCount = Math.min(...relatedTagsData.map(t => t.count), 1);
-
-function getPopularityTier(count: number): 'tier-1' | 'tier-2' | 'tier-3' | 'tier-4' | 'tier-5' {
-  const range = maxRelatedCount - minRelatedCount;
-  if (range === 0) return 'tier-3';
-  const normalized = (count - minRelatedCount) / range;
-  if (normalized >= 0.8) return 'tier-5';
-  if (normalized >= 0.6) return 'tier-4';
-  if (normalized >= 0.4) return 'tier-3';
-  if (normalized >= 0.2) return 'tier-2';
-  return 'tier-1';
-}
+const getPopularityTier = createTierCalculator(minRelatedCount, maxRelatedCount);
 ---
 
 <StarlightPage
@@ -119,8 +145,8 @@ function getPopularityTier(count: number): 'tier-1' | 'tier-2' | 'tier-3' | 'tie
         <div class="tag-stats">
           <div class="stat-pill">
             <svg class="stat-icon" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/></svg>
-            <span class="stat-number">{pages.length}</span>
-            <span class="stat-label">{pages.length === 1 ? t('starlightTags.page') : t('starlightTags.pages')}</span>
+            <span class="stat-number">{pagination.totalItems}</span>
+            <span class="stat-label">{pagination.totalItems === 1 ? t('starlightTags.page') : t('starlightTags.pages')}</span>
           </div>
           {relatedTagsData.length > 0 && (
             <div class="stat-pill">
@@ -170,7 +196,7 @@ function getPopularityTier(count: number): 'tier-1' | 'tier-2' | 'tier-3' | 'tie
           <a href={buildUrl(`/${page.slug || page.id}/`, locale)} class="page-card">
             <div class="page-card-header">
               <h3 class="page-card-title">{page.title}</h3>
-              <span class="page-card-index">{index + 1}</span>
+              <span class="page-card-index">{pagination.startIndex + index + 1}</span>
             </div>
             {page.description && (
               <p class="page-card-description">{page.description}</p>
@@ -182,6 +208,14 @@ function getPopularityTier(count: number): 'tier-1' | 'tier-2' | 'tier-3' | 'tie
           </a>
         ))}
       </div>
+
+      {/* Pagination */}
+      <TagPagination
+        pagination={pagination}
+        tagSlug={tag.slug}
+        tagsPagesPrefix={config.tagsPagesPrefix}
+        locale={locale}
+      />
     </section>
   </div>
 </StarlightPage>

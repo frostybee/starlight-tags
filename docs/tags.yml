@@ -1,113 +1,181 @@
-# Tags configuration for API/SDK Documentation
+# Tags for Software Library Documentation
 defaults:
   color: "#6b7280"
-  showInSidebar: true
 
 tags:
-  # Core API tags
-  authentication:
-    label: "Authentication"
-    description: "API authentication and authorization methods"
-    color: "#10b981"
-    icon: "🔐"
-    difficulty: "intermediate"
-    product: "Platform"
-    planTier: "free"
+  # ===== Core (Feature Area) =====
+  components:
+    label: "Components"
+    description: "UI components and their usage patterns"
+    color: "#3b82f6"
+    icon: "🧩"
+    planTier: free
 
-  rest-api:
-    label: "REST API"
-    description: "RESTful API endpoints and usage"
+  configuration:
+    label: "Configuration"
+    description: "Setup options and config files"
+    color: "#3b82f6"
+    icon: "⚙️"
+    planTier: free
+
+  theming:
+    label: "Theming"
+    description: "Styling, colors, and visual customization"
+    color: "#3b82f6"
+    icon: "🎨"
+    planTier: pro
+
+  routing:
+    label: "Routing"
+    description: "Navigation, URLs, and page structure"
+    color: "#3b82f6"
+    icon: "🔀"
+    planTier: pro
+
+  i18n:
+    label: "i18n"
+    description: "Internationalization and localization"
     color: "#3b82f6"
     icon: "🌐"
-    difficulty: "beginner"
-    product: "Platform"
-    planTier: "free"
+    planTier: enterprise
 
-  webhooks:
-    label: "Webhooks"
-    description: "Event-driven integrations and callbacks"
-    color: "#8b5cf6"
-    icon: "🔔"
-    difficulty: "intermediate"
-    prerequisites: ["authentication", "rest-api"]
-    product: "Platform"
-    planTier: "pro"
-
-  # SDK tags
-  sdk-python:
-    label: "Python SDK"
-    description: "Python SDK usage and examples"
-    color: "#3776ab"
-    icon: "🐍"
-    difficulty: "beginner"
-    product: "SDKs"
-    planTier: "free"
-
-  sdk-node:
-    label: "Node.js SDK"
-    description: "Node.js SDK usage and examples"
-    color: "#339933"
-    icon: "📦"
-    difficulty: "beginner"
-    product: "SDKs"
-    planTier: "free"
-
-  # Status tags
-  stable:
-    label: "Stable"
-    description: "Production-ready, fully supported features"
-    color: "#22c55e"
-    icon: "✓"
-
-  beta:
-    label: "Beta"
-    description: "Features in beta testing, may change"
-    color: "#f59e0b"
-    icon: "β"
-
-  deprecated:
-    label: "Deprecated"
-    description: "Features scheduled for removal"
-    color: "#ef4444"
-    icon: "⚠"
-    hidden: true
-
-  # Version tags
-  api-v1:
-    label: "API v1"
-    description: "Version 1 API endpoints (legacy)"
-    color: "#94a3b8"
-    icon: "1"
-    product: "Platform"
-    planTier: "free"
-
-  api-v2:
-    label: "API v2"
-    description: "Version 2 API endpoints (current)"
+  markdown:
+    label: "Markdown"
+    description: "Content authoring and MDX features"
     color: "#3b82f6"
-    icon: "2"
-    prerequisites: ["api-v1"]
-    product: "Platform"
-    planTier: "pro"
+    icon: "📝"
+    planTier: free
 
-  # Difficulty tags
-  beginner:
-    label: "Beginner"
-    description: "Introductory content for new users"
-    color: "#22c55e"
-    icon: "🌱"
-    difficulty: "beginner"
+  # ===== Integrations =====
+  plugins:
+    label: "Plugins"
+    description: "Extending functionality with plugins"
+    color: "#8b5cf6"
+    icon: "🔌"
+    planTier: pro
 
-  intermediate:
-    label: "Intermediate"
-    description: "Content for users with basic knowledge"
+  cms:
+    label: "CMS"
+    description: "Content management system integrations"
+    color: "#8b5cf6"
+    icon: "📦"
+    planTier: enterprise
+
+  frameworks:
+    label: "Frameworks"
+    description: "Framework-specific usage (React, Vue, etc.)"
+    color: "#8b5cf6"
+    icon: "🏗️"
+    planTier: enterprise
+
+  deployment:
+    label: "Deployment"
+    description: "Hosting and deployment platforms"
+    color: "#8b5cf6"
+    icon: "🚀"
+    planTier: pro
+
+  # ===== Content Types =====
+  guide:
+    label: "Guide"
+    description: "Step-by-step instructions"
+    color: "#10b981"
+    icon: "📖"
+
+  reference:
+    label: "Reference"
+    description: "API and configuration reference"
+    color: "#10b981"
+    icon: "📚"
+
+  tutorial:
+    label: "Tutorial"
+    description: "Learn by building projects"
+    color: "#10b981"
+    icon: "🎓"
+
+  example:
+    label: "Example"
+    description: "Code samples and demos"
+    color: "#10b981"
+    icon: "💡"
+
+  # ===== Audience =====
+  getting-started:
+    label: "Getting Started"
+    description: "For new users starting out"
     color: "#f59e0b"
-    icon: "📈"
-    difficulty: "intermediate"
+    icon: "🌱"
 
   advanced:
     label: "Advanced"
-    description: "Complex topics for experienced users"
-    color: "#ef4444"
-    icon: "🚀"
-    difficulty: "advanced"
+    description: "For experienced users"
+    color: "#f59e0b"
+    icon: "⚡"
+    prerequisites: ["getting-started"]
+
+  migration:
+    label: "Migration"
+    description: "Upgrading between versions"
+    color: "#f59e0b"
+    icon: "📦"
+
+  troubleshooting:
+    label: "Troubleshooting"
+    description: "Common issues and solutions"
+    color: "#f59e0b"
+    icon: "🔧"
+
+  # ===== JavaScript Educational (Showcases Extended Schema) =====
+  js-basics:
+    label: "JS Basics"
+    description: "Introduction to JavaScript fundamentals"
+    color: "#f7df1e"
+    icon: "📘"
+    difficulty: beginner
+    contentType: lecture
+
+  js-variables:
+    label: "Variables"
+    description: "Variables, data types, and scope"
+    color: "#f7df1e"
+    icon: "📦"
+    difficulty: beginner
+    contentType: tutorial
+    prerequisites: ["js-basics"]
+
+  js-functions:
+    label: "Functions"
+    description: "Function declarations, expressions, and arrow functions"
+    color: "#f7df1e"
+    icon: "⚡"
+    difficulty: beginner
+    contentType: tutorial
+    prerequisites: ["js-variables"]
+
+  js-arrays:
+    label: "Arrays"
+    description: "Array methods and iteration"
+    color: "#f7df1e"
+    icon: "📋"
+    difficulty: intermediate
+    contentType: tutorial
+    prerequisites: ["js-functions"]
+
+  js-objects:
+    label: "Objects"
+    description: "Objects, classes, and prototypes"
+    color: "#f7df1e"
+    icon: "🧱"
+    difficulty: intermediate
+    contentType: tutorial
+    prerequisites: ["js-arrays"]
+
+  js-async:
+    label: "Async JS"
+    description: "Promises, async/await, and event loop"
+    color: "#f7df1e"
+    icon: "⏳"
+    difficulty: advanced
+    contentType: tutorial
+    prerequisites: ["js-functions"]

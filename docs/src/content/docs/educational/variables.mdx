@@ -1,0 +1,128 @@
+---
+title: Variables & Data Types
+description: Learn about variables, data types, and scope in JavaScript
+tags:
+  - js-variables
+  - tutorial
+---
+
+import { PageTags, PrerequisiteChain } from 'starlight-tags/components';
+import DifficultyTagBadge from '../../../components/DifficultyTagBadge.astro';
+
+<PageTags />
+
+<DifficultyTagBadge difficulty="beginner" />
+
+**Prerequisites:**
+<PrerequisiteChain tag="js-variables" />
+
+Variables are containers for storing data values. JavaScript has three ways to declare variables.
+
+## Variable Declarations
+
+### `let` - Block-scoped, reassignable
+
+```javascript
+let message = "Hello";
+message = "World"; // OK - can be reassigned
+```
+
+### `const` - Block-scoped, not reassignable
+
+```javascript
+const PI = 3.14159;
+// PI = 3; // Error! Cannot reassign const
+```
+
+### `var` - Function-scoped (legacy)
+
+```javascript
+var oldStyle = "Avoid using var";
+```
+
+:::tip[Best Practice]
+Use `const` by default. Use `let` only when you need to reassign. Avoid `var`.
+:::
+
+## Data Types
+
+### Primitive Types
+
+```javascript
+// String
+const name = "JavaScript";
+
+// Number
+const age = 25;
+const price = 99.99;
+
+// Boolean
+const isActive = true;
+
+// Undefined
+let notAssigned;
+
+// Null
+const empty = null;
+
+// Symbol (ES6)
+const id = Symbol("id");
+
+// BigInt (ES2020)
+const bigNumber = 9007199254740991n;
+```
+
+### Checking Types
+
+```javascript
+typeof "hello"     // "string"
+typeof 42          // "number"
+typeof true        // "boolean"
+typeof undefined   // "undefined"
+typeof null        // "object" (historical bug)
+typeof Symbol()    // "symbol"
+typeof {}          // "object"
+typeof []          // "object"
+```
+
+## Type Coercion
+
+JavaScript automatically converts types in certain situations:
+
+```javascript
+// String concatenation
+"5" + 3        // "53" (number becomes string)
+
+// Numeric operations
+"5" - 3        // 2 (string becomes number)
+"5" * "2"      // 10
+
+// Boolean context
+Boolean("")    // false
+Boolean("hi")  // true
+Boolean(0)     // false
+Boolean(1)     // true
+```
+
+## Scope
+
+```javascript
+// Global scope
+const global = "I'm everywhere";
+
+function example() {
+  // Function scope
+  const local = "I'm local";
+
+  if (true) {
+    // Block scope
+    let blockScoped = "Only here";
+    const alsoBlock = "Also only here";
+  }
+  // blockScoped is not accessible here
+}
+```
+
+## Next Steps
+
+With variables mastered, learn about [Functions](/starlight-tags/educational/functions/) to write reusable code.

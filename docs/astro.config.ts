@@ -5,9 +5,15 @@ import starlightTags from 'starlight-tags'
 import starlightThemeGalaxy from 'starlight-theme-galaxy'
 
 export default defineConfig({
-  base: '/starlight-tags',
+  site: 'https://frostybee.github.io',
+  base: '/starlight-tags',  
   integrations: [
     starlight({
+      title: 'Starlight Tags',
+      favicon: '/images/tag-icon.svg',
+      components: {
+        Sidebar: './src/components/Sidebar.astro',
+      },
       defaultLocale: 'root',      
       locales: {
         root: { label: 'English', lang: 'en' },
@@ -27,7 +33,8 @@ export default defineConfig({
           tagsPagesPrefix: 'tags',
           tagsIndexSlug: 'tags',
           onInlineTagsNotFound: 'warn',
-          enableFrontmatterTags: true
+          enableFrontmatterTags: true,
+          itemsPerPage: 2,
         }),
         //starlightThemeGalaxy()
       ],
@@ -38,7 +45,7 @@ export default defineConfig({
         },
         {
           label: 'Guides',
-          items: ['guides/configuration', 'guides/tags-definition', 'guides/frontmatter', 'guides/routes', 'guides/extending-schema', 'guides/virtual-tags-module', 'guides/i18n'],
+          items: ['guides/configuration', 'guides/tags-definition', 'guides/frontmatter', 'guides/routes', 'guides/extending-schema', 'guides/virtual-tags-module', 'guides/i18n', 'guides/architecture'],
         },
         {
           label: 'Plugin Components',
@@ -58,11 +65,17 @@ export default defineConfig({
             directory: 'examples/',
           },
         },
+        {
+          label: 'JavaScript Tutorial',
+          autogenerate: {
+            directory: 'educational/',
+          },
+        },
       ],
       social: [
         { href: 'https://github.com/frostybee/starlight-tags', icon: 'github', label: 'GitHub' },
       ],
-      title: 'Starlight Tags',
+
     }),
   ],
 })

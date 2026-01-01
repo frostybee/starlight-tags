@@ -46,9 +46,24 @@ export function getLocaleFromPath(path: string): string | undefined {
 
   // Fallback: check if it looks like a locale code (e.g., 'en', 'fr', 'en-us', 'pt-br')
   // This handles cases where we can't access the config
-  // Pattern: 2-3 lowercase letters, optionally followed by hyphen and 2-4 lowercase letters/digits
-  // Examples: en, fra, en-us, pt-br, zh-hans
-  if (/^[a-z]{2,3}(-[a-z0-9]{2,4})?$/.test(firstSegment)) {
+  //
+  // We use a stricter pattern to avoid false positives with common path segments.
+  // Valid patterns:
+  // - Exactly 2 lowercase letters (ISO 639-1): en, fr, de, es, ja, zh
+  // - 2 letters + hyphen + 2 letters/digits (regional): en-us, pt-br, zh-cn
+  // - 2 letters + hyphen + 4 letters (script variants): zh-hans, zh-hant
+  //
+  // Explicitly excluded common false positives: api, src, css, img, lib, etc.
+  const commonPathSegments = new Set([
+    'api', 'src', 'css', 'img', 'lib', 'app', 'bin', 'doc', 'log', 'tmp', 'var', 'opt', 'usr', 'etc'
+  ]);
+
+  if (commonPathSegments.has(firstSegment)) {
+    return undefined;
+  }
+
+  // Match strict locale patterns: xx or xx-xx or xx-xxxx
+  if (/^[a-z]{2}(-[a-z]{2,4})?$/.test(firstSegment)) {
     return firstSegment;
   }
 

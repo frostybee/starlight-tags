@@ -1,0 +1,232 @@
+---
+title: Objects & Classes
+description: Working with objects, classes, and prototypes
+tags:
+  - js-objects
+  - tutorial
+---
+
+import { PageTags, PrerequisiteChain } from 'starlight-tags/components';
+import DifficultyTagBadge from '../../../components/DifficultyTagBadge.astro';
+
+<PageTags />
+
+<DifficultyTagBadge difficulty="intermediate" />
+
+**Prerequisites:**
+<PrerequisiteChain tag="js-objects" />
+
+Objects are collections of key-value pairs. They're fundamental to JavaScript programming.
+
+## Creating Objects
+
+```javascript
+// Object literal
+const user = {
+  name: "Alice",
+  age: 30,
+  isAdmin: false
+};
+
+// Object constructor
+const obj = new Object();
+obj.name = "Bob";
+
+// Object.create()
+const proto = { greet() { return "Hello!"; } };
+const child = Object.create(proto);
+```
+
+## Accessing Properties
+
+```javascript
+const user = { name: "Alice", age: 30 };
+
+// Dot notation
+user.name; // "Alice"
+
+// Bracket notation
+user["age"]; // 30
+
+// Dynamic keys
+const key = "name";
+user[key]; // "Alice"
+
+// Optional chaining
+user.address?.city; // undefined (no error)
+```
+
+## Modifying Objects
+
+```javascript
+const user = { name: "Alice" };
+
+// Add/update properties
+user.age = 30;
+user["email"] = "alice@example.com";
+
+// Delete properties
+delete user.email;
+
+// Prevent modifications
+Object.freeze(user);     // Can't add, delete, or modify
+Object.seal(user);       // Can't add or delete, but can modify
+Object.preventExtensions(user); // Can't add new properties
+```
+
+## Object Methods
+
+```javascript
+const user = { name: "Alice", age: 30 };
+
+// Get keys, values, entries
+Object.keys(user);    // ["name", "age"]
+Object.values(user);  // ["Alice", 30]
+Object.entries(user); // [["name", "Alice"], ["age", 30]]
+
+// Merge objects
+const defaults = { theme: "dark", lang: "en" };
+const settings = { theme: "light" };
+const merged = { ...defaults, ...settings };
+// { theme: "light", lang: "en" }
+
+// Or with Object.assign
+Object.assign({}, defaults, settings);
+
+// Check properties
+"name" in user;                    // true
+user.hasOwnProperty("name");       // true
+Object.hasOwn(user, "name");       // true (ES2022)
+```
+
+## Destructuring
+
+```javascript
+const user = {
+  name: "Alice",
+  age: 30,
+  address: { city: "NYC", zip: "10001" }
+};
+
+// Basic destructuring
+const { name, age } = user;
+
+// Rename variables
+const { name: userName } = user;
+
+// Default values
+const { role = "user" } = user;
+
+// Nested destructuring
+const { address: { city } } = user;
+
+// Rest operator
+const { name, ...rest } = user;
+// rest = { age: 30, address: {...} }
+```
+
+## Shorthand Syntax
+
+```javascript
+const name = "Alice";
+const age = 30;
+
+// Property shorthand
+const user = { name, age };
+// Same as: { name: name, age: age }
+
+// Method shorthand
+const obj = {
+  greet() {
+    return "Hello!";
+  }
+};
+// Same as: greet: function() {...}
+
+// Computed property names
+const key = "dynamic";
+const obj2 = {
+  [key]: "value",
+  [`${key}Method`]() { return "Hi"; }
+};
+```
+
+## Classes (ES6)
+
+```javascript
+class User {
+  // Private field (ES2022)
+  #password;
+
+  // Constructor
+  constructor(name, email) {
+    this.name = name;
+    this.email = email;
+    this.#password = "";
+  }
+
+  // Instance method
+  greet() {
+    return `Hello, I'm ${this.name}`;
+  }
+
+  // Getter
+  get displayName() {
+    return this.name.toUpperCase();
+  }
+
+  // Setter
+  set password(value) {
+    if (value.length >= 8) {
+      this.#password = value;
+    }
+  }
+
+  // Static method
+  static createGuest() {
+    return new User("Guest", "guest@example.com");
+  }
+}
+
+const alice = new User("Alice", "alice@example.com");
+alice.greet();        // "Hello, I'm Alice"
+alice.displayName;    // "ALICE"
+User.createGuest();   // User { name: "Guest", ... }
+```
+
+## Inheritance
+
+```javascript
+class Animal {
+  constructor(name) {
+    this.name = name;
+  }
+
+  speak() {
+    return `${this.name} makes a sound`;
+  }
+}
+
+class Dog extends Animal {
+  constructor(name, breed) {
+    super(name); // Call parent constructor
+    this.breed = breed;
+  }
+
+  speak() {
+    return `${this.name} barks!`;
+  }
+
+  fetch() {
+    return `${this.name} fetches the ball`;
+  }
+}
+
+const dog = new Dog("Rex", "German Shepherd");
+dog.speak(); // "Rex barks!"
+dog.fetch(); // "Rex fetches the ball"
+```
+
+## Next Steps
+
+Ready for advanced topics? Learn about [Async JavaScript](/starlight-tags/educational/async/) to handle asynchronous operations.

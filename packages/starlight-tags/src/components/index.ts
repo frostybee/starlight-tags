@@ -5,3 +5,4 @@ export { default as PageTags } from './PageTags.astro';
 export { default as PageWithTags } from './PageWithTags.astro';
 
 export { default as PrerequisiteChain } from './PrerequisiteChain.astro';
+export { default as TagSidebar } from './TagSidebar.astro';

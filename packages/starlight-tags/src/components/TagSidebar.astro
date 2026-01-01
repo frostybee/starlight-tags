@@ -1,0 +1,292 @@
+---
+/**
+ * TagSidebar: A sidebar widget showing popular tags for navigation
+ *
+ * Usage in a Starlight sidebar override:
+ * ```astro
+ * ---
+ * // src/components/Sidebar.astro
+ * import Default from '@astrojs/starlight/components/Sidebar.astro';
+ * import { TagSidebar } from 'starlight-tags/components';
+ * ---
+ *
+ * <Default {...Astro.props} />
+ * <TagSidebar />
+ * ```
+ */
+import { initTags, getAllTagsSorted } from 'virtual:starlight-tagging/tags';
+import { buildUrlFromCurrentPage } from '../libs/url.js';
+import type { ProcessedTag } from '../schemas/tags.js';
+
+interface Props {
+  /** Maximum number of tags to display */
+  limit?: number;
+  /** Sort order for tags */
+  sortBy?: 'count' | 'priority' | 'alphabetical';
+  /** Show page count badge next to each tag */
+  showCount?: boolean;
+  /** Section heading */
+  title?: string;
+  /** Enable collapsible behavior */
+  collapsible?: boolean;
+  /** Default open state (only used if collapsible is true) */
+  defaultOpen?: boolean;
+}
+
+const {
+  limit = 10,
+  sortBy = 'count',
+  showCount = true,
+  title = 'Popular Tags',
+  collapsible = true,
+  defaultOpen = true
+} = Astro.props;
+
+await initTags();
+let tags: ProcessedTag[] = getAllTagsSorted();
+
+// Sort based on sortBy prop
+if (sortBy === 'count') {
+  tags = [...tags].sort((a, b) => b.count - a.count);
+} else if (sortBy === 'alphabetical') {
+  tags = [...tags].sort((a, b) => a.label.localeCompare(b.label));
+}
+// 'priority' uses default from getAllTagsSorted()
+
+const popularTags = tags.slice(0, limit);
+const tagsIndexUrl = buildUrlFromCurrentPage('/tags/', Astro.url);
+---
+
+{popularTags.length > 0 && (
+  <div
+    class="sl-tag-sidebar"
+    data-collapsible={collapsible}
+    data-open={defaultOpen}
+  >
+    {title && (
+      <button
+        type="button"
+        class="sl-tag-sidebar__header"
+        aria-expanded={defaultOpen}
+        disabled={!collapsible}
+      >
+        <span class="sl-tag-sidebar__title">{title}</span>
+        {collapsible && (
+          <svg
+            class="sl-tag-sidebar__chevron"
+            xmlns="http://www.w3.org/2000/svg"
+            width="16"
+            height="16"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <polyline points="6 9 12 15 18 9"></polyline>
+          </svg>
+        )}
+      </button>
+    )}
+    <div class="sl-tag-sidebar__content">
+      <ul class="sl-tag-sidebar__list">
+        {popularTags.map(tag => (
+          <li>
+            <a href={buildUrlFromCurrentPage(tag.url, Astro.url)} class="sl-tag-sidebar__item">
+              <span class="sl-tag-sidebar__name">{tag.label}</span>
+              {showCount && (
+                <span class="sl-tag-sidebar__count">{tag.count}</span>
+              )}
+            </a>
+          </li>
+        ))}
+      </ul>
+      <a href={tagsIndexUrl} class="sl-tag-sidebar__all">
+        View all tags &rarr;
+      </a>
+    </div>
+  </div>
+)}
+
+<!-- Inline script to prevent hydration flash - runs before first paint -->
+<script is:inline>
+  (function() {
+    const STORAGE_KEY = 'starlight-tag-sidebar-open';
+    const savedState = localStorage.getItem(STORAGE_KEY);
+    if (savedState !== null) {
+      const isOpen = savedState === 'true';
+      document.querySelectorAll('.sl-tag-sidebar[data-collapsible="true"]').forEach(function(el) {
+        // Disable transitions during initial state restore
+        el.style.setProperty('--_transition', 'none');
+        el.dataset.open = String(isOpen);
+        var header = el.querySelector('.sl-tag-sidebar__header');
+        if (header) header.setAttribute('aria-expanded', String(isOpen));
+        // Re-enable transitions after a frame
+        requestAnimationFrame(function() {
+          requestAnimationFrame(function() {
+            el.style.removeProperty('--_transition');
+          });
+        });
+      });
+    }
+  })();
+</script>
+
+<script>
+  class TagSidebarToggle {
+    private static STORAGE_KEY = 'starlight-tag-sidebar-open';
+
+    static init() {
+      const sidebars = document.querySelectorAll<HTMLElement>('.sl-tag-sidebar[data-collapsible="true"]');
+
+      sidebars.forEach(sidebar => {
+        const header = sidebar.querySelector<HTMLButtonElement>('.sl-tag-sidebar__header');
+        if (!header) return;
+
+        // Remove any existing listeners (for SPA navigation)
+        const newHeader = header.cloneNode(true) as HTMLButtonElement;
+        header.parentNode?.replaceChild(newHeader, header);
+
+        newHeader.addEventListener('click', () => {
+          const isOpen = sidebar.dataset.open === 'true';
+          const newState = !isOpen;
+
+          sidebar.dataset.open = String(newState);
+          newHeader.setAttribute('aria-expanded', String(newState));
+          localStorage.setItem(this.STORAGE_KEY, String(newState));
+        });
+      });
+    }
+  }
+
+  // Initialize on page load and after Astro page transitions
+  TagSidebarToggle.init();
+  document.addEventListener('astro:after-swap', () => TagSidebarToggle.init());
+</script>
+
+<style>
+  .sl-tag-sidebar {
+    background: var(--sl-color-bg-nav);
+    border: 1px solid var(--sl-color-gray-5);
+    border-radius: 0.5rem;
+    padding: 1rem;
+    margin: 1rem 0;
+  }
+
+  .sl-tag-sidebar__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    padding: 0;
+    margin: 0 0 0.75rem 0;
+    background: none;
+    border: none;
+    cursor: pointer;
+    text-align: left;
+  }
+
+  .sl-tag-sidebar__header:disabled {
+    cursor: default;
+  }
+
+  .sl-tag-sidebar[data-collapsible="true"] .sl-tag-sidebar__header:hover {
+    opacity: 0.8;
+  }
+
+  .sl-tag-sidebar__title {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--sl-color-white);
+  }
+
+  .sl-tag-sidebar__chevron {
+    color: var(--sl-color-gray-3);
+    transition: var(--_transition, transform 0.2s ease);
+  }
+
+  .sl-tag-sidebar[data-open="false"] .sl-tag-sidebar__chevron {
+    transform: rotate(-90deg);
+  }
+
+  .sl-tag-sidebar__content {
+    display: grid;
+    grid-template-rows: 1fr;
+    transition: var(--_transition, grid-template-rows 0.2s ease);
+  }
+
+  .sl-tag-sidebar[data-open="false"] .sl-tag-sidebar__content {
+    grid-template-rows: 0fr;
+  }
+
+  .sl-tag-sidebar[data-open="false"] .sl-tag-sidebar__content > * {
+    overflow: hidden;
+  }
+
+  .sl-tag-sidebar[data-open="false"] .sl-tag-sidebar__header {
+    margin-bottom: 0;
+  }
+
+  .sl-tag-sidebar__list {
+    list-style: none;
+    margin: 0 0 1rem 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+
+  .sl-tag-sidebar__item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.375rem 0;
+    color: var(--sl-color-gray-2);
+    text-decoration: none;
+    border-bottom: 1px solid var(--sl-color-gray-6);
+    transition: color 0.15s ease;
+  }
+
+  .sl-tag-sidebar__item:hover {
+    color: var(--sl-color-accent);
+  }
+
+  .sl-tag-sidebar__list li:last-child .sl-tag-sidebar__item {
+    border-bottom: none;
+  }
+
+  .sl-tag-sidebar__name {
+    font-size: var(--sl-text-sm);
+  }
+
+  .sl-tag-sidebar__count {
+    font-size: 0.75rem;
+    background: var(--sl-color-gray-5);
+    color: var(--sl-color-white);
+    padding: 0.125rem 0.5rem;
+    border-radius: 1rem;
+    min-width: 1.5rem;
+    text-align: center;
+  }
+
+  .sl-tag-sidebar__all {
+    display: inline-block;
+    color: var(--sl-color-accent);
+    text-decoration: none;
+    font-size: var(--sl-text-sm);
+    font-weight: 500;
+  }
+
+  .sl-tag-sidebar__all:hover {
+    text-decoration: underline;
+  }
+
+  /* Reduced motion */
+  @media (prefers-reduced-motion: reduce) {
+    .sl-tag-sidebar__chevron,
+    .sl-tag-sidebar__content {
+      transition: none;
+    }
+  }
+</style>

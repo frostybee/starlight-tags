@@ -1,0 +1,236 @@
+---
+import type { PaginationInfo } from '../libs/pagination.js';
+import { buildTagPageUrl, getPageNumbers } from '../libs/pagination.js';
+import { buildUrl } from '../libs/url.js';
+
+interface Props {
+  pagination: PaginationInfo;
+  tagSlug: string;
+  tagsPagesPrefix: string;
+  locale: string | undefined;
+}
+
+const { pagination, tagSlug, tagsPagesPrefix, locale } = Astro.props;
+const { currentPage, totalPages, hasPrev, hasNext, totalItems } = pagination;
+
+const t = Astro.locals.t;
+
+// Generate page numbers with ellipsis
+const pageNumbers = getPageNumbers(currentPage, totalPages);
+
+// Build URLs for prev/next
+const prevUrl = hasPrev
+  ? buildUrl(buildTagPageUrl(tagSlug, currentPage - 1, tagsPagesPrefix), locale)
+  : null;
+const nextUrl = hasNext
+  ? buildUrl(buildTagPageUrl(tagSlug, currentPage + 1, tagsPagesPrefix), locale)
+  : null;
+
+// Helper to build URL for a specific page
+function getPageUrl(pageNum: number): string {
+  return buildUrl(buildTagPageUrl(tagSlug, pageNum, tagsPagesPrefix), locale);
+}
+---
+
+{totalPages > 1 && (
+  <nav class="tag-pagination" aria-label={t('starlightTags.pagination.label')}>
+    <div class="pagination-info">
+      <span class="pagination-text">{`${t('starlightTags.pagination.page')} `}<strong>{currentPage}</strong>{` ${t('starlightTags.pagination.of')} `}<strong>{totalPages}</strong></span>
+      <span class="pagination-items">{`${totalItems} ${totalItems === 1 ? t('starlightTags.pagination.item') : t('starlightTags.pagination.items')}`}</span>
+    </div>
+
+    <div class="pagination-controls">
+      {/* Previous Button */}
+      {prevUrl ? (
+        <a href={prevUrl} class="pagination-btn pagination-prev" rel="prev">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="m15 18-6-6 6-6"/>
+          </svg>
+          <span class="sr-only">{t('starlightTags.pagination.previous')}</span>
+        </a>
+      ) : (
+        <span class="pagination-btn pagination-prev disabled" aria-disabled="true">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="m15 18-6-6 6-6"/>
+          </svg>
+        </span>
+      )}
+
+      {/* Page Numbers */}
+      <div class="pagination-pages">
+        {pageNumbers.map((item, index) => (
+          item === 'ellipsis' ? (
+            <span class="pagination-ellipsis" key={`ellipsis-${index}`}>...</span>
+          ) : item === currentPage ? (
+            <span class="pagination-page current" aria-current="page">{item}</span>
+          ) : (
+            <a href={getPageUrl(item)} class="pagination-page">{item}</a>
+          )
+        ))}
+      </div>
+
+      {/* Next Button */}
+      {nextUrl ? (
+        <a href={nextUrl} class="pagination-btn pagination-next" rel="next">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="m9 18 6-6-6-6"/>
+          </svg>
+          <span class="sr-only">{t('starlightTags.pagination.next')}</span>
+        </a>
+      ) : (
+        <span class="pagination-btn pagination-next disabled" aria-disabled="true">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="m9 18 6-6-6-6"/>
+          </svg>
+        </span>
+      )}
+    </div>
+  </nav>
+)}
+
+<style>
+  .tag-pagination {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1rem;
+    padding: 1.5rem;
+    margin-top: 2rem;
+    background: var(--sl-color-bg-nav);
+    border-radius: 0.75rem;
+    border: 1px solid var(--sl-color-hairline);
+  }
+
+  .pagination-info {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    font-size: var(--sl-text-sm);
+    color: var(--sl-color-gray-2);
+  }
+
+  .pagination-text strong {
+    color: var(--sl-color-white);
+    font-weight: 600;
+  }
+
+  .pagination-items {
+    color: var(--sl-color-gray-3);
+    padding-left: 0.75rem;
+    border-left: 1px solid var(--sl-color-gray-5);
+  }
+
+  .pagination-controls {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .pagination-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.25rem;
+    height: 2.25rem;
+    border-radius: 0.5rem;
+    border: 1px solid var(--sl-color-hairline);
+    background: var(--sl-color-bg-sidebar);
+    color: var(--sl-color-text);
+    text-decoration: none;
+    transition: all 0.2s ease;
+  }
+
+  .pagination-btn:hover:not(.disabled) {
+    border-color: var(--sl-color-accent);
+    color: var(--sl-color-accent);
+  }
+
+  .pagination-btn.disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+
+  .pagination-pages {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+  }
+
+  .pagination-page,
+  .pagination-ellipsis {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 2.25rem;
+    height: 2.25rem;
+    padding: 0 0.5rem;
+    font-size: var(--sl-text-sm);
+    font-weight: 500;
+    border-radius: 0.5rem;
+    text-decoration: none;
+  }
+
+  .pagination-page:not(.current) {
+    color: var(--sl-color-text);
+    background: var(--sl-color-bg-sidebar);
+    border: 1px solid var(--sl-color-hairline);
+    transition: all 0.2s ease;
+  }
+
+  .pagination-page:not(.current):hover {
+    border-color: var(--sl-color-accent);
+    color: var(--sl-color-accent);
+  }
+
+  .pagination-page.current {
+    background: var(--sl-color-accent);
+    color: white;
+    font-weight: 600;
+  }
+
+  .pagination-ellipsis {
+    color: var(--sl-color-gray-3);
+  }
+
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
+
+  /* Responsive - hide page numbers on mobile */
+  @media (max-width: 480px) {
+    .pagination-pages {
+      display: none;
+    }
+
+    .pagination-controls {
+      width: 100%;
+      justify-content: space-between;
+    }
+  }
+
+  /* Dark mode */
+  :global([data-theme='dark']) .tag-pagination {
+    background: rgba(20, 20, 30, 0.6);
+  }
+
+  :global([data-theme='dark']) .pagination-btn,
+  :global([data-theme='dark']) .pagination-page:not(.current) {
+    background: rgba(30, 30, 40, 0.6);
+  }
+
+  /* Reduced motion */
+  @media (prefers-reduced-motion: reduce) {
+    .pagination-btn,
+    .pagination-page {
+      transition: none;
+    }
+  }
+</style>

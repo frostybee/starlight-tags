@@ -22,7 +22,7 @@ export default defineConfig({
           tagsPagesPrefix: 'tags',
           tagsIndexSlug: 'tags',
           onInlineTagsNotFound: 'warn',
-          enableFrontmatterTags: true
+          itemsPerPage: 12
         }),
       ],
       title: 'My Docs',
@@ -91,18 +91,23 @@ starlightTags({
 })
 ```
 
-### `enableFrontmatterTags`
+### `itemsPerPage`
 
-- **Type:** `boolean`
-- **Default:** `true`
+- **Type:** `number`
+- **Default:** `12`
 
-Whether to enable reading tags from page frontmatter. When enabled, pages can specify tags using the `tags` field in their frontmatter.
+Number of items to display per page on individual tag pages. When a tag has more items than this limit, pagination controls will appear.
 
 ```js
 starlightTags({
-  enableFrontmatterTags: false, // Disable frontmatter tags
+  itemsPerPage: 20, // Show 20 items per page
 })
 ```
+
+**URL structure with pagination:**
+- First page: `/tags/javascript/` (clean URL)
+- Page 2: `/tags/javascript/2`
+- Page 3: `/tags/javascript/3`
 
 ## Example Configuration
 
@@ -129,8 +134,8 @@ export default defineConfig({
           // Validation
           onInlineTagsNotFound: 'warn',
 
-          // Features
-          enableFrontmatterTags: true
+          // Pagination
+          itemsPerPage: 12
         }),
       ],
       title: 'My Documentation',

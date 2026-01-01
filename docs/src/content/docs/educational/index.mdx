@@ -1,0 +1,55 @@
+---
+title: JavaScript Learning Path
+description: Learn JavaScript from basics to advanced concepts
+tags:
+  - js-basics
+  - tutorial
+---
+
+import { PageTags, PrerequisiteChain } from 'starlight-tags/components';
+import DifficultyTagBadge from '../../../components/DifficultyTagBadge.astro';
+import FilterableByDifficulty from '../../../components/FilterableByDifficulty.astro';
+
+<PageTags />
+
+Welcome to the JavaScript learning path! This series of tutorials demonstrates how the **educational tag schema** works with difficulty levels and prerequisites.
+
+## Learning Path Overview
+
+Each topic builds on the previous one, with clear difficulty levels and prerequisites:
+
+| Topic | Difficulty | Prerequisites |
+|-------|------------|---------------|
+| [Basics](/starlight-tags/educational/basics/) | Beginner | None |
+| [Variables](/starlight-tags/educational/variables/) | Beginner | Basics |
+| [Functions](/starlight-tags/educational/functions/) | Beginner | Variables |
+| [Arrays](/starlight-tags/educational/arrays/) | Intermediate | Functions |
+| [Objects](/starlight-tags/educational/objects/) | Intermediate | Arrays |
+| [Async JS](/starlight-tags/educational/async/) | Advanced | Functions |
+
+## Filter by Difficulty
+
+Use the filter below to find content matching your skill level:
+
+<FilterableByDifficulty />
+
+## Prerequisite Chain Example
+
+The `PrerequisiteChain` component shows what you need to learn before tackling advanced topics:
+
+<PrerequisiteChain tag="js-async" />
+
+## How This Works
+
+This learning path uses the **extended tag schema** with educational fields:
+
+```yaml
+# In tags.yml
+js-functions:
+  label: "Functions"
+  difficulty: beginner        # Educational field
+  contentType: tutorial       # Educational field
+  prerequisites: ["js-variables"]  # Educational field
+```
+
+See the [Extended Schema Demo](/starlight-tags/demos/extended-schema/) for implementation details.

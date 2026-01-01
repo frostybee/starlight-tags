@@ -1,0 +1,10 @@
+---
+/**
+ * Custom Sidebar component that includes the TagSidebar widget
+ */
+import Default from '@astrojs/starlight/components/Sidebar.astro';
+import { TagSidebar } from 'starlight-tags/components';
+---
+
+<Default {...Astro.props} />
+<TagSidebar limit={8} sortBy="count" title="Popular Tags" />

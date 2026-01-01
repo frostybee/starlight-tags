@@ -1,0 +1,72 @@
+---
+title: JavaScript Basics
+description: Introduction to JavaScript fundamentals
+tags:
+  - js-basics
+  - getting-started
+---
+
+import { PageTags } from 'starlight-tags/components';
+import DifficultyTagBadge from '../../../components/DifficultyTagBadge.astro';
+
+<PageTags />
+
+<DifficultyTagBadge difficulty="beginner" />
+
+JavaScript is a versatile programming language that powers the interactive web. Let's start with the fundamentals.
+
+## What is JavaScript?
+
+JavaScript is a high-level, interpreted programming language that runs in web browsers and on servers (via Node.js).
+
+```javascript
+// Your first JavaScript code
+console.log("Hello, World!");
+```
+
+## Where JavaScript Runs
+
+1. **Browser** - Client-side scripting
+2. **Node.js** - Server-side applications
+3. **Electron** - Desktop applications
+4. **React Native** - Mobile applications
+
+## Adding JavaScript to HTML
+
+### Inline Script
+
+```html
+<script>
+  console.log("Hello from inline script!");
+</script>
+```
+
+### External File
+
+```html
+<script src="app.js"></script>
+```
+
+## Comments
+
+```javascript
+// Single-line comment
+
+/*
+  Multi-line
+  comment
+*/
+```
+
+## Console Methods
+
+```javascript
+console.log("Regular message");
+console.warn("Warning message");
+console.error("Error message");
+console.table({ name: "John", age: 30 });
+```
+
+## Next Steps
+
+Now that you understand the basics, move on to [Variables](/starlight-tags/educational/variables/) to learn about data storage in JavaScript.

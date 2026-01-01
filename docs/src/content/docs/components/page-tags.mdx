@@ -36,16 +36,16 @@ Simply drop the component into any MDX page that has tags in its frontmatter:
 
 ```mdx
 ---
-title: Authentication Overview
+title: Configuration Guide
 tags:
-  - authentication
-  - rest-api
-  - stable
+  - configuration
+  - guide
+  - getting-started
 ---
 
 import { PageTags } from 'starlight-tags/components';
 
-# Authentication Overview
+# Configuration Guide
 
 <PageTags />
 
@@ -114,15 +114,15 @@ Place the component where you want tags to appear:
 
 ```mdx
 ---
-title: Webhooks Guide
-tags: [webhooks, rest-api]
+title: Plugin Development Guide
+tags: [plugins, guide]
 ---
 
 import { PageTags } from 'starlight-tags/components';
 
 <PageTags layout="block" />
 
-# Webhooks Guide
+# Plugin Development Guide
 
 Content here...
 ```
@@ -131,13 +131,13 @@ Content here...
 
 ```mdx
 ---
-title: Webhooks Guide
-tags: [webhooks, rest-api]
+title: Plugin Development Guide
+tags: [plugins, guide]
 ---
 
 import { PageTags } from 'starlight-tags/components';
 
-# Webhooks Guide
+# Plugin Development Guide
 
 Content here...
 
@@ -150,15 +150,15 @@ Content here...
 
 ```mdx
 ---
-title: Webhooks Guide
-tags: [webhooks, rest-api]
+title: Plugin Development Guide
+tags: [plugins, guide]
 ---
 
 import { PageTags } from 'starlight-tags/components';
 
 <PageTags layout="block" variant="ghost" />
 
-# Webhooks Guide
+# Plugin Development Guide
 
 Content here...
 
@@ -171,28 +171,28 @@ Content here...
 
 ```mdx
 ---
-title: OAuth 2.0 Implementation
-description: Complete guide to implementing OAuth 2.0 authentication
+title: Advanced Plugin Development
+description: Complete guide to building custom plugins
 tags:
-  - authentication
-  - oauth2
-  - rest-api
-  - stable
+  - plugins
+  - advanced
+  - guide
+  - components
 ---
 
 import { PageTags } from 'starlight-tags/components';
 
 <PageTags layout="block" variant="outline" size="medium" label="This guide covers:" />
 
-# OAuth 2.0 Implementation
+# Advanced Plugin Development
 
-In this guide, you'll learn how to implement OAuth 2.0...
+In this guide, you'll learn how to build custom plugins...
 
 ## Prerequisites
 
 Before starting, make sure you understand:
-- API authentication basics
-- HTTP fundamentals
+- Basic configuration
+- Component fundamentals
 
 ## Getting Started
 
@@ -208,10 +208,36 @@ Before starting, make sure you understand:
 The `PageTags` component:
 
 1. Reads the `tags` array from the current page's frontmatter
-2. Fetches tag data from the [virtual tags module](/starlight-tags/guides/virtual-tags-module/) (memoized for efficiency)
-3. Renders each tag using the `TagBadge` component
+2. Checks the `hideTags` frontmatter property
+3. Fetches tag data from the [virtual tags module](/starlight-tags/guides/virtual-tags-module/) (memoized for efficiency)
+4. Renders each tag using the `TagBadge` component
 
-If no tags are defined in the frontmatter, the component renders nothing.
+The component renders nothing if:
+- No tags are defined in the frontmatter
+- `hideTags: true` is set in the frontmatter
+
+## Hiding Tags
+
+Use the [`hideTags` frontmatter property](/starlight-tags/guides/frontmatter/#hidetags) to hide tags on specific pages while still associating the page with those tags:
+
+```mdx
+---
+title: Internal Configuration Reference
+tags:
+  - configuration
+  - reference
+hideTags: true
+---
+
+import { PageTags } from 'starlight-tags/components';
+
+<PageTags />  <!-- Renders nothing because hideTags is true -->
+
+This page is still listed on the /tags/configuration and /tags/reference pages,
+but tags aren't displayed here.
+```
+
+This is useful when you want pages to appear in tag listings without displaying the tags on the page itself.
 
 ## PageTags vs PageWithTags
 

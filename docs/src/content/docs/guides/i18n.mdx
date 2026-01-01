@@ -29,6 +29,13 @@ The plugin uses the following translation keys for its UI components:
 | `starlightTags.pagesWithTag` | Pages with this tag |
 | `starlightTags.related` | related |
 | `starlightTags.path` | Path: |
+| `starlightTags.pagination.label` | Pagination |
+| `starlightTags.pagination.page` | Page |
+| `starlightTags.pagination.of` | of |
+| `starlightTags.pagination.previous` | Previous page |
+| `starlightTags.pagination.next` | Next page |
+| `starlightTags.pagination.item` | tagged item |
+| `starlightTags.pagination.items` | tagged items |
 
 ## Customizing Translations
 
@@ -56,7 +63,7 @@ Create JSON files in `src/content/i18n/` for each language you want to customize
 ```json
 // src/content/i18n/en.json
 {
-  "starlightTags.totalTags": "Categories",
+  "starlightTags.totalTags": "Topics",
   "starlightTags.tagsApplied": "Total References"
 }
 ```
@@ -88,7 +95,14 @@ To add a language not included in the plugin's built-in translations, create a t
   "starlightTags.relatedTags": "関連タグ",
   "starlightTags.pagesWithTag": "このタグのページ",
   "starlightTags.related": "関連",
-  "starlightTags.path": "パス："
+  "starlightTags.path": "パス：",
+  "starlightTags.pagination.label": "ページネーション",
+  "starlightTags.pagination.page": "ページ",
+  "starlightTags.pagination.of": "/",
+  "starlightTags.pagination.previous": "前のページ",
+  "starlightTags.pagination.next": "次のページ",
+  "starlightTags.pagination.item": "タグ付きアイテム",
+  "starlightTags.pagination.items": "タグ付きアイテム"
 }
 ```
 

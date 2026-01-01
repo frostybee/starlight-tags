@@ -1,0 +1,263 @@
+---
+title: Plugin Architecture
+description: Understanding how starlight-tags works internally
+tags:
+  - advanced
+  - reference
+---
+
+This guide explains the internal architecture of the `starlight-tags` plugin. Understanding these internals helps when debugging, extending, or contributing to the plugin.
+
+## Data Flow Overview
+
+```
+┌─────────────┐     ┌──────────────────┐     ┌─────────────────┐
+│  tags.yml   │────▶│ tags-processor   │────▶│ Virtual Module  │
+└─────────────┘     └──────────────────┘     └─────────────────┘
+                            │                        │
+                            ▼                        ▼
+                    ┌──────────────┐         ┌─────────────────┐
+                    │ Validation   │         │ getStaticPaths  │
+                    │ (Zod Schema) │         └─────────────────┘
+                    └──────────────┘                 │
+                                                     ▼
+                                            ┌─────────────────┐
+                                            │ Generated Pages │
+                                            │ /tags/[slug]/   │
+                                            └─────────────────┘
+```
+
+### 1. Configuration Loading
+
+The plugin reads your `tags.yml` file at build time:
+
+```yaml
+# tags.yml
+tags:
+  authentication:
+    label: "Authentication"
+    description: "Auth-related content"
+    color: "#3b82f6"
+```
+
+### 2. Processing & Validation
+
+`tags-processor.ts` handles:
+
+- **YAML Parsing** - Converts YAML to JavaScript objects
+- **Schema Validation** - Validates against Zod schemas
+- **Page Collection** - Scans content files for tag references
+- **URL Generation** - Creates slugs and URLs for each tag
+
+### 3. Virtual Module
+
+Processed data is exposed via Vite virtual modules:
+
+```typescript
+// Available in your components
+import { initTags, getTag, getTags } from 'virtual:starlight-tagging/tags';
+import { config } from 'virtual:starlight-tagging/config';
+```
+
+### 4. Page Generation
+
+Astro's `getStaticPaths()` generates all tag pages at build time.
+
+## Tag Page Generation
+
+### Static Path Generation
+
+Tag pages are generated for every combination of:
+
+- **Each tag** defined in `tags.yml`
+- **Each locale** configured in Starlight (en, fr, es, etc.)
+- **Each page number** based on `itemsPerPage` setting
+
+```typescript
+// Simplified example of generated paths
+[
+  { params: { tag: 'js-basics', locale: undefined, page: undefined } },
+  { params: { tag: 'js-basics', locale: undefined, page: '2' } },
+  { params: { tag: 'js-basics', locale: 'fr', page: undefined } },
+  { params: { tag: 'js-basics', locale: 'fr', page: '2' } },
+  // ... for every tag × locale × page combination
+]
+```
+
+### Props Passed to Tag Pages
+
+Each generated tag page receives these props:
+
+| Prop | Type | Description |
+|------|------|-------------|
+| `tag` | `ProcessedTag` | Tag data (label, icon, color, description, url) |
+| `pages` | `PageReference[]` | Paginated subset of pages with this tag |
+| `pagination` | `PaginationInfo` | Current page, total pages, start/end index |
+
+### ProcessedTag Type
+
+```typescript
+interface ProcessedTag {
+  id: string;           // Tag identifier (key in tags.yml)
+  label: string;        // Display name
+  description?: string; // Optional description
+  color?: string;       // Hex color code
+  icon?: string;        // Emoji or icon
+  slug: string;         // URL-safe slug
+  url: string;          // Full URL path
+  count: number;        // Number of pages with this tag
+  pages: PageReference[]; // All pages with this tag
+  hidden?: boolean;     // Whether to hide from index
+}
+```
+
+### PageReference Type
+
+```typescript
+interface PageReference {
+  id: string;           // Content collection ID
+  slug: string;         // Page URL slug
+  title: string;        // Page title
+  description?: string; // Page description
+  tags?: string[];      // All tags on this page
+}
+```
+
+## Related Tags Calculation
+
+The "Related Tags" section on tag pages shows tags that co-occur with the current tag:
+
+```typescript
+// Find other tags that appear on the same pages
+const relatedTags = new Set<string>();
+
+pages.forEach(page => {
+  page.tags?.forEach(tagId => {
+    if (tagId !== currentTag.id) {
+      relatedTags.add(tagId);
+    }
+  });
+});
+
+// Sort by usage count (most used first)
+const sortedRelatedTags = Array.from(relatedTags)
+  .map(tagId => getTag(tagId))
+  .filter(tag => tag && !tag.hidden)
+  .sort((a, b) => b.count - a.count);
+```
+
+### Example
+
+If the "authentication" tag appears on pages that also have:
+- "api" (5 pages)
+- "security" (3 pages)
+- "oauth" (2 pages)
+
+The related tags section will show these three tags, sized by frequency.
+
+## Popularity Tiers (Tag Cloud Sizing)
+
+Related tags are displayed with different sizes based on usage frequency:
+
+| Tier | CSS Class | Usage Percentile | Visual Size |
+|------|-----------|------------------|-------------|
+| 5 | `tier-5` | Top 20% | Largest |
+| 4 | `tier-4` | 60-80% | Large |
+| 3 | `tier-3` | 40-60% | Medium |
+| 2 | `tier-2` | 20-40% | Small |
+| 1 | `tier-1` | Bottom 20% | Smallest |
+
+### Tier Calculation
+
+```typescript
+function getPopularityTier(count: number): 'tier-1' | ... | 'tier-5' {
+  const range = maxCount - minCount;
+  if (range === 0) return 'tier-3'; // All same count
+
+  const normalized = (count - minCount) / range;
+
+  if (normalized >= 0.8) return 'tier-5';
+  if (normalized >= 0.6) return 'tier-4';
+  if (normalized >= 0.4) return 'tier-3';
+  if (normalized >= 0.2) return 'tier-2';
+  return 'tier-1';
+}
+```
+
+## i18n Support
+
+Tag pages automatically support Starlight's i18n configuration.
+
+### Route Generation
+
+- **Root locale:** `/tags/authentication/`
+- **French:** `/fr/tags/authentication/`
+- **Spanish:** `/es/tags/authentication/`
+
+### Translation Loading
+
+UI strings are loaded from the plugin's translation files:
+
+```typescript
+// Access via Astro.locals.t
+const t = Astro.locals.t;
+
+t('starlightTags.relatedTags');  // "Related Tags"
+t('starlightTags.pages');        // "pages"
+t('starlightTags.taggedPrefix'); // "Tagged:"
+```
+
+### Adding Translations
+
+See the [i18n Guide](/starlight-tags/guides/i18n/) for adding custom translations.
+
+## File Structure
+
+Key files in the plugin:
+
+```
+packages/starlight-tags/
+├── index.ts                 # Plugin entry point
+├── src/
+│   ├── components/          # Astro components
+│   │   ├── TagBadge.astro
+│   │   ├── PageTags.astro
+│   │   └── ...
+│   ├── libs/
+│   │   ├── integration.ts   # Astro integration setup
+│   │   ├── tags-processor.ts # YAML processing & validation
+│   │   ├── tags-store.ts    # In-memory tag storage
+│   │   ├── vite.ts          # Virtual module definitions
+│   │   ├── pagination.ts    # Pagination logic
+│   │   └── url.ts           # URL building utilities
+│   ├── pages/
+│   │   ├── tags-index.astro # /tags/ index page
+│   │   └── tag-page.astro   # /tags/[slug]/ pages
+│   ├── schemas/
+│   │   ├── config.ts        # Plugin config schema
+│   │   ├── tags.ts          # tags.yml schema
+│   │   └── frontmatter.ts   # Frontmatter extension
+│   └── translations.ts      # i18n strings
+```
+
+## Extending the Plugin
+
+### Custom Tag Fields
+
+You can extend the tag schema with custom fields. See the [Extending Schema Guide](/starlight-tags/guides/extending-schema/).
+
+### Virtual Module Access
+
+Access tag data programmatically in your components:
+
+```typescript
+import { initTags, getTag, getTags, getAllTagsSorted } from 'virtual:starlight-tagging/tags';
+
+await initTags(); // Initialize (memoized, safe to call multiple times)
+
+const allTags = getTags();           // Map<string, ProcessedTag>
+const sorted = getAllTagsSorted();   // ProcessedTag[] sorted by count
+const single = getTag('auth');       // ProcessedTag | undefined
+```
+
+See the [Virtual Module Guide](/starlight-tags/guides/virtual-tags-module/) for more details.

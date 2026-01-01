@@ -3,59 +3,35 @@ import StarlightPage from '@astrojs/starlight/components/StarlightPage.astro';
 import TagsList from '../components/TagsList.astro';
 import { initTags, getAllTagsSorted } from 'virtual:starlight-tagging/tags';
 import { buildUrl } from '../libs/url.js';
+import { createTierCalculator } from '../libs/popularity.js';
 // @ts-expect-error - virtual module provided by Starlight
 import starlightConfig from 'virtual:starlight/user-config';
 
 // Generate static paths for all supported locales
-// The [...locale] rest parameter requires:
-// - undefined for the root/default locale path
-// - locale string for other locales
 export function getStaticPaths() {
-  // Get configured locales from Starlight config (not plugin translations)
-  // If no locales configured, only generate root path
   const configuredLocales = starlightConfig.locales
     ? Object.keys(starlightConfig.locales).filter(l => l !== 'root')
     : [];
 
   return [
-    // Root path (default locale - no prefix)
     { params: { locale: undefined } },
-    // Localized paths (only if i18n is configured)
     ...configuredLocales.map(locale => ({
       params: { locale }
     }))
   ];
 }
 
-// Initialize tags store (memoized - only runs once across all components)
 await initTags();
 
-// Filter out hidden tags from the index
 const allTags = getAllTagsSorted().filter(tag => !tag.hidden);
 const totalTagUsages = allTags.reduce((sum, tag) => sum + tag.count, 0);
-
-// Access translations via Astro.locals.t
 const t = Astro.locals.t;
-
-// Get locale from params for building URLs
 const { locale } = Astro.params;
 
-// Calculate tag popularity tiers for tag cloud effect
 const maxCount = Math.max(...allTags.map(tag => tag.count), 1);
 const minCount = Math.min(...allTags.map(tag => tag.count), 1);
+const getPopularityTier = createTierCalculator(minCount, maxCount);
 
-function getPopularityTier(count: number): 'tier-1' | 'tier-2' | 'tier-3' | 'tier-4' | 'tier-5' {
-  const range = maxCount - minCount;
-  if (range === 0) return 'tier-3';
-  const normalized = (count - minCount) / range;
-  if (normalized >= 0.8) return 'tier-5';
-  if (normalized >= 0.6) return 'tier-4';
-  if (normalized >= 0.4) return 'tier-3';
-  if (normalized >= 0.2) return 'tier-2';
-  return 'tier-1';
-}
-
-// Group tags alphabetically
 const tagsByLetter = allTags.reduce((acc, tag) => {
   const letter = tag.label.charAt(0).toUpperCase();
   if (!acc[letter]) acc[letter] = [];
@@ -78,79 +54,71 @@ const sortedLetters = Object.keys(tagsByLetter).sort();
   hasSidebar={true}
 >
   <div class="tags-index">
-    <!-- Stats Card -->
-    <div class="tags-stats">
-      <div class="stats-content">
-        <div class="stat-item">
-          <span class="stat-number">{allTags.length}</span>
-          <span class="stat-label">{t('starlightTags.totalTags')}</span>
-        </div>
-        <div class="stat-divider"></div>
-        <div class="stat-item">
-          <span class="stat-number">{totalTagUsages}</span>
-          <span class="stat-label">{t('starlightTags.tagsApplied')}</span>
-        </div>
+    <!-- Stats -->
+    <div class="stats">
+      <div class="stat">
+        <span class="stat-value">{allTags.length}</span>
+        <span class="stat-label">{t('starlightTags.totalTags')}</span>
+      </div>
+      <span class="stat-separator">/</span>
+      <div class="stat">
+        <span class="stat-value">{totalTagUsages}</span>
+        <span class="stat-label">{t('starlightTags.tagsApplied')}</span>
       </div>
     </div>
 
-    <!-- Tag Cloud Section -->
-    <section class="tag-cloud-section">
-      <h2 class="section-title">
-        <svg class="title-icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z"/></svg>
-        {t('starlightTags.tagCloud')}
-      </h2>
-      <div class="tag-cloud">
+    <!-- Tag Cloud -->
+    <section class="section">
+      <h2 class="section-title">{t('starlightTags.tagCloud')}</h2>
+      <div class="cloud">
         {allTags.map(tag => (
           <a
             href={buildUrl(tag.url, locale)}
             class={`cloud-tag ${getPopularityTier(tag.count)}`}
-            title={`${tag.label}: ${tag.count} ${tag.count === 1 ? 'page' : 'pages'}`}
+            title={`${tag.count} ${tag.count === 1 ? t('starlightTags.page') : t('starlightTags.pages')}`}
           >
-            {tag.icon && <span class="tag-icon">{tag.icon}</span>}
-            <span class="tag-name">{tag.label}</span>
-            <span class="tag-badge">{tag.count}</span>
+            {tag.icon && <span class="icon">{tag.icon}</span>}
+            <span>{tag.label}</span>
+            <span class="count">{tag.count}</span>
           </a>
         ))}
       </div>
     </section>
 
-    <!-- Alphabetical Index Section -->
-    <section class="alphabetical-section">
-      <h2 class="section-title">
-        <svg class="title-icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M3 12h18"/><path d="M3 18h18"/></svg>
-        {t('starlightTags.alphabeticalIndex')}
-      </h2>
+    <!-- Alphabetical Index -->
+    <section class="section">
+      <h2 class="section-title">{t('starlightTags.alphabeticalIndex')}</h2>
 
-      <!-- Letter Navigation -->
       <nav class="letter-nav" aria-label="Jump to letter">
         {sortedLetters.map(letter => (
           <a href={`#letter-${letter}`} class="letter-link">{letter}</a>
         ))}
       </nav>
 
-      <!-- Tags by Letter -->
-      <div class="tags-by-letter">
+      <div class="index">
         {sortedLetters.map(letter => (
-          <div class="letter-group" id={`letter-${letter}`}>
-            <h3 class="letter-header">
+          <div class="letter-section" id={`letter-${letter}`}>
+            <div class="letter-header">
               <span class="letter">{letter}</span>
+              <span class="letter-line"></span>
               <span class="letter-count">{tagsByLetter[letter].length}</span>
-            </h3>
-            <div class="letter-tags">
+            </div>
+
+            <div class="cards">
               {tagsByLetter[letter].map(tag => (
-                <a href={buildUrl(tag.url, locale)} class={`tag-card ${getPopularityTier(tag.count)}`}>
-                  <div class="tag-card-header">
-                    <strong class="tag-card-name">
-                      {tag.icon && <span class="tag-icon">{tag.icon}</span>}
+                <a href={buildUrl(tag.url, locale)} class={`card ${getPopularityTier(tag.count)}`}>
+                  <div class="card-main">
+                    <span class="card-name">
+                      {tag.icon && <span class="icon">{tag.icon}</span>}
                       {tag.label}
-                    </strong>
-                    <span class="tag-card-count">{tag.count}</span>
+                    </span>
+                    <span class="card-count">{tag.count}</span>
                   </div>
                   {tag.description && (
-                    <p class="tag-card-description">{tag.description}</p>
+                    <p class="card-desc">{tag.description}</p>
                   )}
-                  <div class="tag-card-bar">
-                    <div class="tag-card-bar-fill" style={`width: ${(tag.count / maxCount) * 100}%`}></div>
+                  <div class="card-bar">
+                    <div class="card-bar-fill" style={`--w: ${(tag.count / maxCount) * 100}%`}></div>
                   </div>
                 </a>
               ))}
@@ -163,209 +131,127 @@ const sortedLetters = Object.keys(tagsByLetter).sort();
 </StarlightPage>
 
 <style>
-  /* ===== Base Container ===== */
   .tags-index {
-    container-type: inline-size;
     display: flex;
     flex-direction: column;
-    gap: 2.5rem;
+    gap: 3rem;
   }
 
-  /* ===== Stats Card ===== */
-  .tags-stats {
-    background: linear-gradient(135deg, var(--sl-color-bg-sidebar) 0%, var(--sl-color-bg-nav) 100%);
-    border-radius: 1rem;
-    border: 1px solid var(--sl-color-hairline);
-    padding: 1.5rem 2rem;
-    box-shadow:
-      0 4px 6px -1px rgba(0, 0, 0, 0.1),
-      0 2px 4px -1px rgba(0, 0, 0, 0.06);
-  }
-
-  .stats-content {
+  /* ===== Stats ===== */
+  .stats {
     display: flex;
-    align-items: center;
+    align-items: baseline;
     justify-content: center;
-    gap: 2rem;
+    gap: 1.5rem;
+    padding: 2rem 0;
   }
 
-  .stat-item {
+  .stat {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 0.25rem;
   }
 
-  .stat-number {
-    font-size: 2.5rem;
+  .stat-value {
+    font-size: 3rem;
     font-weight: 700;
-    background: linear-gradient(135deg, var(--sl-color-accent) 0%, var(--sl-color-accent-high) 100%);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
     line-height: 1;
+    color: var(--sl-color-white);
+    letter-spacing: -0.02em;
   }
 
   .stat-label {
-    font-size: var(--sl-text-sm);
-    color: var(--sl-color-gray-2);
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
+    margin-top: 0.5rem;
+    font-size: 0.75rem;
     font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--sl-color-gray-3);
   }
 
-  .stat-divider {
-    width: 1px;
-    height: 3rem;
-    background: linear-gradient(180deg, transparent 0%, var(--sl-color-hairline) 50%, transparent 100%);
-  }
-
-  /* ===== Section Titles ===== */
-  .section-title {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
+  .stat-separator {
     font-size: 1.5rem;
+    font-weight: 300;
+    color: var(--sl-color-gray-4);
+    margin-bottom: 1rem;
+  }
+
+  /* ===== Sections ===== */
+  .section {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+
+  .section-title {
+    font-size: 0.7rem;
     font-weight: 600;
-    color: var(--sl-color-white);
-    margin-bottom: 1.5rem;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    color: var(--sl-color-gray-3);
+    margin: 0;
     padding-bottom: 0.75rem;
-    border-bottom: 2px solid var(--sl-color-hairline);
+    border-bottom: 1px solid var(--sl-color-hairline);
   }
 
-  .title-icon {
-    width: 1.25rem;
-    height: 1.25rem;
-    opacity: 0.7;
-    flex-shrink: 0;
-  }
-
-  /* ===== Tag Cloud Section ===== */
-  .tag-cloud-section {
-    padding: 1.5rem;
-    background: var(--sl-color-bg-nav);
-    border-radius: 1rem;
-    border: 1px solid var(--sl-color-hairline);
-  }
-
-  .tag-cloud {
+  /* ===== Tag Cloud ===== */
+  .cloud {
     display: flex;
     flex-wrap: wrap;
-    gap: 0.75rem;
-    justify-content: center;
+    gap: 0.5rem;
     align-items: center;
-    padding: 1rem;
   }
 
   .cloud-tag {
     display: inline-flex;
     align-items: center;
-    gap: 0.5rem;
-    padding: 0.5rem 1rem;
-    background: var(--sl-color-bg-sidebar);
-    border-radius: 2rem;
-    border: 1px solid var(--sl-color-hairline);
-    text-decoration: none;
+    gap: 0.4rem;
+    padding: 0.4rem 0.75rem;
+    font-weight: 500;
     color: var(--sl-color-text);
-    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+    text-decoration: none;
+    border: 1px solid var(--sl-color-hairline);
+    border-radius: 0.375rem;
+    transition: border-color 0.15s, background-color 0.15s;
   }
 
   .cloud-tag:hover {
-    transform: translateY(-3px) scale(1.05);
-    box-shadow:
-      0 10px 20px -5px rgba(0, 0, 0, 0.15),
-      0 4px 6px -2px rgba(0, 0, 0, 0.1);
     border-color: var(--sl-color-accent);
-    background: var(--sl-color-bg-sidebar);
+    background: var(--sl-color-accent-low);
   }
 
-  .cloud-tag:focus {
+  .cloud-tag:focus-visible {
     outline: 2px solid var(--sl-color-accent);
     outline-offset: 2px;
   }
 
-  .cloud-tag:active {
-    transform: translateY(-1px) scale(1.02);
-  }
-
-  /* Tag Cloud - Popularity Tiers (size variation) */
-  .cloud-tag.tier-1 {
-    font-size: 0.8rem;
-    padding: 0.35rem 0.75rem;
-  }
-
-  .cloud-tag.tier-2 {
-    font-size: 0.9rem;
-    padding: 0.4rem 0.85rem;
-  }
-
-  .cloud-tag.tier-3 {
-    font-size: 1rem;
-    padding: 0.5rem 1rem;
-  }
-
-  .cloud-tag.tier-4 {
-    font-size: 1.1rem;
-    padding: 0.55rem 1.1rem;
-    font-weight: 500;
-  }
-
-  .cloud-tag.tier-5 {
-    font-size: 1.25rem;
-    padding: 0.6rem 1.25rem;
+  .cloud-tag .count {
+    font-size: 0.7em;
     font-weight: 600;
+    color: var(--sl-color-gray-3);
+    padding: 0.1em 0.4em;
+    background: var(--sl-color-gray-6);
+    border-radius: 0.25rem;
   }
 
-  /* Tag Cloud - Color coding by frequency */
-  .cloud-tag.tier-1 { --tag-accent: #6b7280; }
-  .cloud-tag.tier-2 { --tag-accent: #3b82f6; }
-  .cloud-tag.tier-3 { --tag-accent: #8b5cf6; }
-  .cloud-tag.tier-4 { --tag-accent: #ec4899; }
-  .cloud-tag.tier-5 { --tag-accent: #f59e0b; }
+  .cloud-tag.tier-1 { font-size: 0.8rem; }
+  .cloud-tag.tier-2 { font-size: 0.875rem; }
+  .cloud-tag.tier-3 { font-size: 0.95rem; }
+  .cloud-tag.tier-4 { font-size: 1.05rem; font-weight: 600; }
+  .cloud-tag.tier-5 { font-size: 1.15rem; font-weight: 600; }
 
-  .cloud-tag:hover {
-    border-color: var(--tag-accent);
-    box-shadow:
-      0 10px 20px -5px rgba(0, 0, 0, 0.15),
-      0 0 0 1px var(--tag-accent);
-  }
-
-  .tag-icon {
+  .icon {
     font-style: normal;
     line-height: 1;
   }
 
-  .tag-badge {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    min-width: 1.5em;
-    padding: 0.15em 0.5em;
-    font-size: 0.75em;
-    font-weight: 600;
-    background: var(--tag-accent, var(--sl-color-accent));
-    color: white;
-    border-radius: 1rem;
-    line-height: 1;
-  }
-
-  /* ===== Alphabetical Section ===== */
-  .alphabetical-section {
-    padding: 1.5rem;
-    background: var(--sl-color-bg-nav);
-    border-radius: 1rem;
-    border: 1px solid var(--sl-color-hairline);
-  }
-
-  /* Letter Navigation */
+  /* ===== Letter Navigation ===== */
   .letter-nav {
     display: flex;
     flex-wrap: wrap;
     gap: 0.5rem;
     justify-content: center;
     padding: 1rem;
-    margin-bottom: 1.5rem;
     background: var(--sl-color-bg-sidebar);
     border-radius: 0.75rem;
     border: 1px solid var(--sl-color-hairline);
@@ -388,194 +274,154 @@ const sortedLetters = Object.keys(tagsByLetter).sort();
   }
 
   .letter-link:hover {
-    background: var(--sl-color-accent);
-    color: white;
     border-color: var(--sl-color-accent);
     transform: translateY(-2px);
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
   }
 
-  .letter-link:focus {
+  .letter-link:focus-visible {
     outline: 2px solid var(--sl-color-accent);
     outline-offset: 2px;
   }
 
-  /* Tags by Letter */
-  .tags-by-letter {
+  /* ===== Index ===== */
+  .index {
     display: flex;
     flex-direction: column;
-    gap: 2rem;
+    gap: 2.5rem;
   }
 
-  .letter-group {
+  .letter-section {
     scroll-margin-top: 2rem;
   }
 
   .letter-header {
     display: flex;
     align-items: center;
-    gap: 0.75rem;
+    gap: 1rem;
     margin-bottom: 1rem;
-    padding-bottom: 0.5rem;
-    border-bottom: 1px solid var(--sl-color-hairline);
   }
 
   .letter {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 2.5rem;
-    height: 2.5rem;
     font-size: 1.25rem;
     font-weight: 700;
-    background: var(--sl-color-accent);
-    color: white;
-    border-radius: 0.5rem;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    color: var(--sl-color-white);
+  }
+
+  .letter-line {
+    flex: 1;
+    height: 1px;
+    background: var(--sl-color-hairline);
   }
 
   .letter-count {
-    font-size: var(--sl-text-sm);
-    color: var(--sl-color-gray-3);
+    font-size: 0.7rem;
     font-weight: 500;
+    color: var(--sl-color-gray-4);
+    font-variant-numeric: tabular-nums;
   }
 
-  .letter-tags {
+  /* ===== Cards ===== */
+  .cards {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-    gap: 1rem;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 0.75rem;
   }
 
-  /* Tag Cards */
-  .tag-card {
+  .card {
     display: flex;
     flex-direction: column;
     gap: 0.5rem;
     padding: 1rem 1.25rem;
-    background: var(--sl-color-bg-sidebar);
-    border-radius: 0.75rem;
-    border: 1px solid var(--sl-color-hairline);
     text-decoration: none;
     color: var(--sl-color-text);
-    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
-    position: relative;
-    overflow: hidden;
+    background: var(--sl-color-bg-nav);
+    border: 1px solid var(--sl-color-hairline);
+    border-radius: 0.5rem;
+    transition: border-color 0.15s, box-shadow 0.15s;
   }
 
-  .tag-card::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 4px;
-    height: 100%;
-    background: var(--tag-accent, var(--sl-color-accent));
-    opacity: 0;
-    transition: opacity 0.2s ease;
+  .card:hover {
+    border-color: var(--sl-color-gray-4);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
   }
 
-  .tag-card:hover {
-    transform: translateY(-4px) translateX(2px);
-    box-shadow:
-      0 12px 24px -8px rgba(0, 0, 0, 0.15),
-      0 4px 8px -2px rgba(0, 0, 0, 0.1);
-    border-color: var(--tag-accent, var(--sl-color-accent));
-  }
-
-  .tag-card:hover::before {
-    opacity: 1;
-  }
-
-  .tag-card:focus {
+  .card:focus-visible {
     outline: 2px solid var(--sl-color-accent);
     outline-offset: 2px;
   }
 
-  .tag-card:active {
-    transform: translateY(-2px) translateX(1px);
-  }
-
-  .tag-card-header {
+  .card-main {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 0.5rem;
+    gap: 0.75rem;
   }
 
-  .tag-card-name {
-    font-size: 1rem;
+  .card-name {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
     font-weight: 600;
     color: var(--sl-color-white);
   }
 
-  .tag-card-count {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    min-width: 1.75rem;
-    padding: 0.2rem 0.6rem;
+  .card-count {
     font-size: 0.75rem;
     font-weight: 600;
-    background: var(--tag-accent, var(--sl-color-accent));
-    color: white;
-    border-radius: 1rem;
+    color: var(--sl-color-gray-3);
+    font-variant-numeric: tabular-nums;
   }
 
-  .tag-card-description {
-    font-size: var(--sl-text-sm);
+  .card-desc {
+    font-size: 0.8rem;
     color: var(--sl-color-gray-2);
     line-height: 1.5;
     margin: 0;
-  }
-
-  /* Progress bar showing relative popularity */
-  .tag-card-bar {
-    height: 3px;
-    background: var(--sl-color-hairline);
-    border-radius: 2px;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
     overflow: hidden;
+  }
+
+  .card-bar {
+    height: 2px;
+    background: var(--sl-color-gray-6);
+    border-radius: 1px;
     margin-top: auto;
+    overflow: hidden;
   }
 
-  .tag-card-bar-fill {
+  .card-bar-fill {
+    width: var(--w);
     height: 100%;
-    background: linear-gradient(90deg, var(--tag-accent, var(--sl-color-accent)) 0%, var(--sl-color-accent-high) 100%);
-    border-radius: 2px;
-    transition: width 0.3s ease;
+    background: var(--sl-color-accent);
+    border-radius: inherit;
   }
 
-  /* Tag card tier colors */
-  .tag-card.tier-1 { --tag-accent: #6b7280; }
-  .tag-card.tier-2 { --tag-accent: #3b82f6; }
-  .tag-card.tier-3 { --tag-accent: #8b5cf6; }
-  .tag-card.tier-4 { --tag-accent: #ec4899; }
-  .tag-card.tier-5 { --tag-accent: #f59e0b; }
+  /* Tier accents on cards */
+  .card.tier-4 .card-bar-fill,
+  .card.tier-5 .card-bar-fill {
+    background: linear-gradient(90deg, var(--sl-color-accent), var(--sl-color-accent-high));
+  }
 
-  /* ===== Responsive Adjustments ===== */
-  @container (max-width: 600px) {
-    .stats-content {
-      flex-direction: column;
+  /* ===== Responsive ===== */
+  @media (max-width: 640px) {
+    .tags-index {
+      gap: 2rem;
+    }
+
+    .stats {
       gap: 1rem;
+      padding: 1.5rem 0;
     }
 
-    .stat-divider {
-      width: 4rem;
-      height: 1px;
-      background: linear-gradient(90deg, transparent 0%, var(--sl-color-hairline) 50%, transparent 100%);
+    .stat-value {
+      font-size: 2.25rem;
     }
 
-    .stat-number {
-      font-size: 2rem;
-    }
-
-    .letter-tags {
+    .cards {
       grid-template-columns: 1fr;
-    }
-
-    .tag-cloud {
-      gap: 0.5rem;
-      padding: 0.5rem;
     }
 
     .letter-nav {
@@ -589,48 +435,36 @@ const sortedLetters = Object.keys(tagsByLetter).sort();
     }
   }
 
-  /* ===== Dark Mode Refinements ===== */
-  :global([data-theme='dark']) .tags-stats {
-    background: linear-gradient(135deg, rgba(30, 30, 40, 0.8) 0%, rgba(20, 20, 30, 0.9) 100%);
+  /* ===== Light Mode ===== */
+  :global([data-theme='light']) .letter-nav {
+    background: var(--sl-color-gray-6);
   }
 
-  :global([data-theme='dark']) .cloud-tag,
-  :global([data-theme='dark']) .tag-card {
+  :global([data-theme='light']) .letter-link {
+    background: white;
+  }
+
+  /* ===== Dark Mode ===== */
+  :global([data-theme='dark']) .letter-nav {
     background: rgba(30, 30, 40, 0.6);
   }
 
-  :global([data-theme='dark']) .cloud-tag:hover,
-  :global([data-theme='dark']) .tag-card:hover {
-    background: rgba(40, 40, 55, 0.8);
-  }
-
-  :global([data-theme='dark']) .letter-nav {
-    background: rgba(20, 20, 30, 0.6);
-  }
-
   :global([data-theme='dark']) .letter-link {
-    background: rgba(30, 30, 40, 0.8);
+    background: rgba(45, 45, 60, 0.8);
   }
 
-  /* ===== Smooth Scroll ===== */
-  @media (prefers-reduced-motion: no-preference) {
-    .tags-index {
-      scroll-behavior: smooth;
-    }
-  }
-
-  /* ===== Accessibility: Reduced Motion ===== */
+  /* ===== Accessibility ===== */
   @media (prefers-reduced-motion: reduce) {
     .cloud-tag,
-    .tag-card,
-    .letter-link {
+    .letter-link,
+    .card {
       transition: none;
     }
+  }
 
-    .cloud-tag:hover,
-    .tag-card:hover,
-    .letter-link:hover {
-      transform: none;
+  @media (prefers-reduced-motion: no-preference) {
+    html {
+      scroll-behavior: smooth;
     }
   }
 </style>

@@ -1,0 +1,187 @@
+---
+/**
+ * FilterableByDifficulty: Interactive tag list with difficulty filter
+ *
+ * Demonstrates how to create an interactive filter for custom schema fields.
+ * Uses vanilla JS for client-side filtering (no framework required).
+ *
+ * Usage:
+ * ```astro
+ * <FilterableByDifficulty />
+ * ```
+ */
+import { initTags, getTags } from 'virtual:starlight-tagging/tags';
+import type { ProcessedTag } from 'starlight-tags/schemas/tags';
+import type { EducationalTag, DifficultyLevel } from '../config/educational-tag-schema';
+import DifficultyTagBadge from './DifficultyTagBadge.astro';
+
+type ExtendedTag = ProcessedTag & EducationalTag;
+
+// Fetch all tags
+await initTags();
+const allTags = Array.from(getTags().values()) as ExtendedTag[];
+
+// Filter to only tags that have difficulty defined
+const tagsWithDifficulty = allTags.filter(tag => tag.difficulty);
+
+// Get unique difficulty levels for dropdown options
+const difficultyLevels: DifficultyLevel[] = ['beginner', 'intermediate', 'advanced'];
+
+const difficultyLabels: Record<DifficultyLevel, string> = {
+  beginner: 'Beginner',
+  intermediate: 'Intermediate',
+  advanced: 'Advanced'
+};
+---
+
+<div class="filterable-difficulty-container">
+  <div class="filter-controls">
+    <label for="difficulty-filter" class="filter-label">Filter by Difficulty:</label>
+    <select id="difficulty-filter" class="filter-dropdown">
+      <option value="">All Levels</option>
+      {difficultyLevels.map(level => (
+        <option value={level}>{difficultyLabels[level]}</option>
+      ))}
+    </select>
+    <span class="filter-count">
+      Showing <span class="count-value">{tagsWithDifficulty.length}</span> of {tagsWithDifficulty.length} tags
+    </span>
+  </div>
+
+  <div class="tags-grid">
+    {tagsWithDifficulty.map(tag => (
+      <div class="tag-item" data-difficulty={tag.difficulty}>
+        <DifficultyTagBadge tagId={tag.id} showPrerequisites />
+      </div>
+    ))}
+  </div>
+
+  {tagsWithDifficulty.length === 0 && (
+    <p class="no-tags">No tags with difficulty level defined.</p>
+  )}
+</div>
+
+<script>
+  function initFilterableByDifficulty() {
+    const container = document.querySelector('.filterable-difficulty-container');
+    if (!container) return;
+
+    const dropdown = container.querySelector<HTMLSelectElement>('#difficulty-filter');
+    const tagItems = container.querySelectorAll<HTMLElement>('.tag-item');
+    const countValue = container.querySelector<HTMLElement>('.count-value');
+
+    if (!dropdown || !tagItems.length) return;
+
+    dropdown.addEventListener('change', () => {
+      const selectedLevel = dropdown.value;
+      let visibleCount = 0;
+
+      tagItems.forEach(item => {
+        const itemDifficulty = item.dataset.difficulty;
+        const shouldShow = !selectedLevel || itemDifficulty === selectedLevel;
+
+        if (shouldShow) {
+          item.classList.remove('hidden');
+          visibleCount++;
+        } else {
+          item.classList.add('hidden');
+        }
+      });
+
+      if (countValue) {
+        countValue.textContent = String(visibleCount);
+      }
+    });
+  }
+
+  // Initialize on page load
+  initFilterableByDifficulty();
+
+  // Re-initialize on Astro page transitions (View Transitions)
+  document.addEventListener('astro:page-load', initFilterableByDifficulty);
+</script>
+
+<style>
+  .filterable-difficulty-container {
+    margin: 1.5rem 0;
+  }
+
+  .filter-controls {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+    margin-bottom: 1rem;
+    padding: 0.75rem 1rem;
+    background: var(--sl-color-gray-6);
+    border-radius: 0.5rem;
+  }
+
+  .filter-label {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--sl-color-gray-2);
+  }
+
+  .filter-dropdown {
+    padding: 0.5rem 2rem 0.5rem 0.75rem;
+    font-size: 0.875rem;
+    border: 1px solid var(--sl-color-gray-5);
+    border-radius: 0.375rem;
+    background: var(--sl-color-bg);
+    color: var(--sl-color-text);
+    cursor: pointer;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%236b7280' d='M3 4.5L6 7.5L9 4.5'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 0.5rem center;
+  }
+
+  .filter-dropdown:hover {
+    border-color: var(--sl-color-gray-4);
+  }
+
+  .filter-dropdown:focus {
+    outline: 2px solid var(--sl-color-accent);
+    outline-offset: 2px;
+  }
+
+  .filter-count {
+    font-size: 0.8125rem;
+    color: var(--sl-color-gray-3);
+    margin-left: auto;
+  }
+
+  .count-value {
+    font-weight: 600;
+    color: var(--sl-color-accent);
+  }
+
+  .tags-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 1rem;
+  }
+
+  .tag-item {
+    transition: opacity 0.2s ease, transform 0.2s ease;
+  }
+
+  .tag-item.hidden {
+    display: none;
+  }
+
+  .no-tags {
+    color: var(--sl-color-gray-3);
+    font-style: italic;
+  }
+
+  /* Dark mode adjustments */
+  :global([data-theme='dark']) .filter-controls {
+    background: var(--sl-color-gray-6);
+  }
+
+  :global([data-theme='dark']) .filter-dropdown {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%239ca3af' d='M3 4.5L6 7.5L9 4.5'/%3E%3C/svg%3E");
+  }
+</style>

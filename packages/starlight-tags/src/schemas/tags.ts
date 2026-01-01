@@ -50,6 +50,8 @@ export const tagDefinitionSchema = z.object({
   permalink: z.string().regex(permalinkRegex, 'Permalink must be URL-safe (lowercase letters, numbers, hyphens)').optional(),
   /** Hide from tag index page but still functional on content pages */
   hidden: z.boolean().optional(),
+  /** Sort priority (higher numbers appear first, default: 0) */
+  priority: z.number().int().default(0),
 
   // Educational metadata (optional)
   /** Difficulty level: beginner, intermediate, or advanced */
@@ -75,9 +77,7 @@ export const tagsConfigSchema = z.object({
   /** Default settings applied to all tags */
   defaults: z.object({
     /** Default color for tags without explicit color */
-    color: z.string().regex(colorRegex, 'Invalid color format').optional(),
-    /** Whether to show tags in the sidebar navigation */
-    showInSidebar: z.boolean().default(true)
+    color: z.string().regex(colorRegex, 'Invalid color format').optional()
   }).optional()
 });
 

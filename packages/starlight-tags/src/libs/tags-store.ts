@@ -34,8 +34,8 @@ const buildLogger: MinimalLogger = {
  *
  * Race condition handling:
  * - All concurrent callers share the same promise
- * - On failure, the error is cached so all callers get the same error
- * - After failure, subsequent calls can retry initialization
+ * - On success, the promise is kept to prevent any race windows
+ * - On failure, the promise is cleared to allow retry attempts
  */
 export async function initializeTagsStore(
   config: PluginConfig,
@@ -73,19 +73,30 @@ export async function initializeTagsStore(
       const processor = new TagsProcessor(config, logger, docsEntries);
       await processor.initialize();
 
-      // Only set cached processor after successful initialization
+      // Get tag count before setting cached processor to avoid any throws after assignment
+      const tagCount = processor.getTags().size;
+
+      // Set cached processor - this is the critical assignment
       cachedProcessor = processor;
 
+      // Logging after successful assignment (non-critical, wrapped in try-catch)
       if (options?.verbose || import.meta.env.DEV) {
-        logger.info(`Tags store initialized with ${cachedProcessor.getTags().size} tags`);
+        try {
+          logger.info(`Tags store initialized with ${tagCount} tags`);
+        } catch {
+          // Ignore logging errors - initialization succeeded
+        }
       }
+
+      // On success, keep the promise around - callers checking cachedProcessor first
+      // will return early, and any concurrent callers waiting on this promise will
+      // complete successfully
     } catch (error) {
       // Cache the error for concurrent callers
       initializationError = error instanceof Error ? error : new Error(String(error));
-      throw initializationError;
-    } finally {
-      // Always clear the promise so retries are possible after the current batch completes
+      // Clear the promise on failure to allow retry attempts
       initializationPromise = null;
+      throw initializationError;
     }
   })();
 

@@ -51,8 +51,10 @@ export function createTagsIntegration(
           entrypoint: tagsIndexPath
         });
 
+        // Route pattern supports pagination: /tags/[tag]/ and /tags/[tag]/2, /tags/[tag]/3, etc.
+        // The [...page] rest param is empty for page 1, or contains page number for page 2+
         injectRoute({
-          pattern: `/[...locale]/${config.tagsPagesPrefix}/[tag]`,
+          pattern: `/[...locale]/${config.tagsPagesPrefix}/[tag]/[...page]`,
           entrypoint: tagPagePath
         });
 

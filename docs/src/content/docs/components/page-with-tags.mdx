@@ -58,7 +58,7 @@ import { PageWithTags } from 'starlight-tags/components';
 Display specific tags by ID:
 
 ```astro
-<PageWithTags tagIds={['authentication', 'rest-api']}>
+<PageWithTags tagIds={['configuration', 'guide']}>
   <p>Content with specific tags...</p>
 </PageWithTags>
 ```
@@ -109,12 +109,12 @@ Hide the "Tags" heading at the bottom:
 
 ```astro
 <PageWithTags
-  tagIds={['stable', 'sdk-python', 'advanced']}
+  tagIds={['components', 'reference', 'advanced']}
   position="both"
   showTitle={false}
 >
   <article>
-    <h1>API Guide</h1>
+    <h1>Component Guide</h1>
     <p>Content here...</p>
   </article>
 </PageWithTags>
@@ -145,6 +145,29 @@ Override the default styles:
   padding-top: 1rem;
 }
 ```
+
+## Hiding Tags
+
+The component respects the [`hideTags` frontmatter property](/starlight-tags/guides/frontmatter/#hidetags). When `hideTags: true` is set in a page's frontmatter, the component renders nothing (only the slotted content is displayed):
+
+```mdx
+---
+title: Internal Documentation
+tags:
+  - configuration
+  - troubleshooting
+hideTags: true
+---
+
+import { PageWithTags } from 'starlight-tags/components';
+
+<PageWithTags position="both">
+  <!-- Tags won't display at top or bottom because hideTags is true -->
+  <p>This content will still render, but without tags.</p>
+</PageWithTags>
+```
+
+The page will still appear in tag listings (e.g., `/tags/configuration`), but tags won't be displayed on the page itself. This is useful for internal documentation or pages where you want tag-based organization without visible tag badges.
 
 ## PageWithTags vs PageTags
 

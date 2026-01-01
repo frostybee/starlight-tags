@@ -26,6 +26,7 @@ interface StarlightLocals {
     entry?: {
       data?: {
         tags?: string[];
+        hideTags?: boolean;
       };
     };
   };
@@ -65,6 +66,9 @@ const frontmatterTags: string[] = Astro.props.frontmatter?.tags ||
   starlightLocals.starlightRoute?.entry?.data?.tags ||
   [];
 
+// Check if tags should be hidden on this page
+const hideTags = starlightLocals.starlightRoute?.entry?.data?.hideTags ?? false;
+
 // Fetch processed tags
 let pageTags: ProcessedTag[] = [];
 
@@ -86,7 +90,7 @@ if (frontmatterTags.length > 0) {
 }
 ---
 
-{pageTags.length > 0 && (
+{!hideTags && pageTags.length > 0 && (
   <div class:list={['fb-page-tags', `fb-page-tags--${layout}`]}>
     {displayLabel && <span class="fb-page-tags__label">{displayLabel}</span>}
     <div class="fb-page-tags__list">

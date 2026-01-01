@@ -1,0 +1,170 @@
+---
+title: Arrays & Methods
+description: Working with arrays and their built-in methods
+tags:
+  - js-arrays
+  - tutorial
+---
+
+import { PageTags, PrerequisiteChain } from 'starlight-tags/components';
+import DifficultyTagBadge from '../../../components/DifficultyTagBadge.astro';
+
+<PageTags />
+
+<DifficultyTagBadge difficulty="intermediate" />
+
+**Prerequisites:**
+<PrerequisiteChain tag="js-arrays" />
+
+Arrays are ordered collections of values. JavaScript provides powerful methods for manipulating them.
+
+## Creating Arrays
+
+```javascript
+// Array literal
+const fruits = ["apple", "banana", "cherry"];
+
+// Array constructor
+const numbers = new Array(1, 2, 3);
+
+// Array.from()
+const chars = Array.from("hello"); // ["h", "e", "l", "l", "o"]
+
+// Array.of()
+const items = Array.of(1, 2, 3);
+```
+
+## Accessing Elements
+
+```javascript
+const arr = ["a", "b", "c", "d"];
+
+arr[0];      // "a"
+arr[arr.length - 1]; // "d" (last element)
+arr.at(-1);  // "d" (ES2022)
+arr.at(-2);  // "c"
+```
+
+## Mutating Methods
+
+These methods modify the original array:
+
+```javascript
+const arr = [1, 2, 3];
+
+// Add/remove at end
+arr.push(4);       // [1, 2, 3, 4]
+arr.pop();         // [1, 2, 3]
+
+// Add/remove at start
+arr.unshift(0);    // [0, 1, 2, 3]
+arr.shift();       // [1, 2, 3]
+
+// Splice (add/remove anywhere)
+arr.splice(1, 1);        // Remove 1 at index 1: [1, 3]
+arr.splice(1, 0, 2);     // Insert 2 at index 1: [1, 2, 3]
+arr.splice(1, 1, "two"); // Replace: [1, "two", 3]
+
+// Sort & reverse
+arr.sort();        // Sorts in place
+arr.reverse();     // Reverses in place
+```
+
+## Non-Mutating Methods
+
+These return new arrays:
+
+```javascript
+const numbers = [1, 2, 3, 4, 5];
+
+// map - transform each element
+const doubled = numbers.map(n => n * 2);
+// [2, 4, 6, 8, 10]
+
+// filter - keep elements that pass test
+const evens = numbers.filter(n => n % 2 === 0);
+// [2, 4]
+
+// reduce - accumulate to single value
+const sum = numbers.reduce((acc, n) => acc + n, 0);
+// 15
+
+// find - first element that passes test
+const found = numbers.find(n => n > 3);
+// 4
+
+// findIndex - index of first match
+const index = numbers.findIndex(n => n > 3);
+// 3
+
+// some - at least one passes?
+const hasEven = numbers.some(n => n % 2 === 0);
+// true
+
+// every - all pass?
+const allPositive = numbers.every(n => n > 0);
+// true
+
+// includes - contains value?
+numbers.includes(3); // true
+
+// slice - extract portion
+numbers.slice(1, 3); // [2, 3]
+
+// concat - merge arrays
+[1, 2].concat([3, 4]); // [1, 2, 3, 4]
+
+// flat - flatten nested arrays
+[[1, 2], [3, 4]].flat(); // [1, 2, 3, 4]
+
+// flatMap - map + flatten
+[1, 2].flatMap(n => [n, n * 2]); // [1, 2, 2, 4]
+```
+
+## Chaining Methods
+
+```javascript
+const users = [
+  { name: "Alice", age: 25, active: true },
+  { name: "Bob", age: 30, active: false },
+  { name: "Charlie", age: 35, active: true }
+];
+
+const activeAdultNames = users
+  .filter(user => user.active)
+  .filter(user => user.age >= 30)
+  .map(user => user.name);
+// ["Charlie"]
+```
+
+## Destructuring Arrays
+
+```javascript
+const [first, second, ...rest] = [1, 2, 3, 4, 5];
+// first = 1, second = 2, rest = [3, 4, 5]
+
+// Swap variables
+let a = 1, b = 2;
+[a, b] = [b, a];
+// a = 2, b = 1
+```
+
+## Spread Operator
+
+```javascript
+const arr1 = [1, 2, 3];
+const arr2 = [4, 5, 6];
+
+// Copy array
+const copy = [...arr1];
+
+// Merge arrays
+const merged = [...arr1, ...arr2];
+
+// Add elements
+const withNew = [...arr1, 4, 5];
+```
+
+## Next Steps
+
+Continue to [Objects](/starlight-tags/educational/objects/) to learn about key-value data structures.

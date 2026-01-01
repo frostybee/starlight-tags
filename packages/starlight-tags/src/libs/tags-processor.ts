@@ -166,12 +166,44 @@ export class TagsProcessor {
       this.processedTags.set(tagId, processedTag);
     }
 
+    // Validate slug uniqueness to prevent URL collisions
+    this.validateSlugUniqueness();
+
     // Calculate educational relationships
     this.calculateEducationalRelationships();
 
     // Validate inline tags if configured
     if (this.config.onInlineTagsNotFound !== 'ignore') {
       await this.validateInlineTags(tagUsage);
+    }
+
+  }
+
+  /**
+   * Validates that all tag slugs are unique to prevent URL collisions.
+   * For example, "C#" and "C" might both generate slug "c".
+   */
+  private validateSlugUniqueness(): void {
+    if (!this.processedTags) return;
+
+    const slugToTags = new Map<string, string[]>();
+
+    for (const [tagId, tag] of this.processedTags) {
+      const slug = tag.slug;
+      if (!slugToTags.has(slug)) {
+        slugToTags.set(slug, []);
+      }
+      slugToTags.get(slug)!.push(tagId);
+    }
+
+    // Report any collisions
+    for (const [slug, tagIds] of slugToTags) {
+      if (tagIds.length > 1) {
+        this.logger.warn(
+          `Slug collision detected: tags [${tagIds.join(', ')}] all resolve to slug "${slug}". ` +
+          `Use the "permalink" field in tags.yml to specify unique slugs.`
+        );
+      }
     }
   }
 
@@ -182,7 +214,7 @@ export class TagsProcessor {
 
     if (undefinedTags.length > 0) {
       const message = `Found undefined tags in frontmatter: ${undefinedTags.join(', ')}`;
-      
+
       if (this.config.onInlineTagsNotFound === 'error') {
         throw new Error(message);
       } else {
@@ -192,13 +224,20 @@ export class TagsProcessor {
   }
 
   private generateTagSlug(tagId: string, permalink?: string): string {
-    if (permalink) return permalink;
+    if (permalink) {
+      // Ensure permalink is URL-safe
+      return encodeURIComponent(permalink).replace(/%2F/g, '/');
+    }
     // Convert to lowercase, replace non-alphanumeric chars with hyphens,
-    // then trim leading/trailing hyphens to avoid malformed URLs
-    return tagId
+    // collapse multiple hyphens, then trim leading/trailing hyphens
+    const slug = tagId
       .toLowerCase()
       .replace(/[^a-z0-9]+/g, '-')
+      .replace(/-+/g, '-')
       .replace(/^-+|-+$/g, '');
+
+    // Return a fallback if slug is empty (e.g., tag was only special chars like "C#")
+    return slug || encodeURIComponent(tagId.toLowerCase());
   }
 
   /**
@@ -220,7 +259,16 @@ export class TagsProcessor {
 
   getAllTagsSorted(): ProcessedTag[] {
     return Array.from(this.getTags().values())
-      .sort((a, b) => b.count - a.count || a.label.localeCompare(b.label));
+      .sort((a, b) => {
+        // Sort by priority first (higher priority first)
+        const priorityDiff = (b.priority ?? 0) - (a.priority ?? 0);
+        if (priorityDiff !== 0) return priorityDiff;
+        // Then by count (more pages first)
+        const countDiff = b.count - a.count;
+        if (countDiff !== 0) return countDiff;
+        // Finally alphabetically by label
+        return a.label.localeCompare(b.label);
+      });
   }
 
   getTagsForPage(pageSlug: string): ProcessedTag[] {
@@ -243,9 +291,17 @@ export class TagsProcessor {
     }
   }
 
-  private buildPrerequisiteChain(tagId: string, visited = new Set<string>()): string[] {
+  private buildPrerequisiteChain(tagId: string, visited = new Set<string>(), path: string[] = []): string[] {
     if (visited.has(tagId)) {
-      this.logger.warn(`Circular prerequisite dependency detected for tag: ${tagId}`);
+      // Build the cycle path for a more informative error message
+      const cycleStart = path.indexOf(tagId);
+      const cyclePath = cycleStart >= 0
+        ? [...path.slice(cycleStart), tagId].join(' → ')
+        : `... → ${tagId}`;
+      this.logger.warn(
+        `Circular prerequisite dependency detected: ${cyclePath}. ` +
+        `Check your tags.yml prerequisites configuration.`
+      );
       return [];
     }
 
@@ -253,6 +309,7 @@ export class TagsProcessor {
     if (!tag || !tag.prerequisites?.length) return [];
 
     const chain: string[] = [];
+    const currentPath = [...path, tagId];
 
     for (const prereqId of tag.prerequisites) {
       if (this.processedTags?.has(prereqId)) {
@@ -262,7 +319,7 @@ export class TagsProcessor {
         // A -> B -> D and A -> C -> D (D can appear in both branches)
         const branchVisited = new Set(visited);
         branchVisited.add(tagId);
-        const subChain = this.buildPrerequisiteChain(prereqId, branchVisited);
+        const subChain = this.buildPrerequisiteChain(prereqId, branchVisited, currentPath);
         chain.push(...subChain);
       }
     }

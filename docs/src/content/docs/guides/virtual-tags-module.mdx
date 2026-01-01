@@ -120,6 +120,19 @@ const path = getLearningPath('basics', 'advanced');
 // Returns string[] (tag IDs)
 ```
 
+### `validatePrerequisites()`
+
+Validate that all prerequisite references in your tags are valid (i.e., point to existing tags).
+
+```ts
+const result = validatePrerequisites();
+// Returns { isValid: boolean; errors: string[] }
+
+if (!result.isValid) {
+  console.error('Invalid prerequisites:', result.errors);
+}
+```
+
 ### `isInitialized()`
 
 Check if the tags store has been initialized.
@@ -128,6 +141,15 @@ Check if the tags store has been initialized.
 if (isInitialized()) {
   // Safe to use sync functions
 }
+```
+
+### `resetTagsStore()`
+
+Reset the tags store. Primarily useful for testing or HMR (Hot Module Replacement) scenarios.
+
+```ts
+resetTagsStore();
+// Store is now uninitialized - must call initTags() again
 ```
 
 ## Complete Example
@@ -155,6 +177,24 @@ const topTags = allTags.slice(0, 10);
   />
 </section>
 ```
+
+## Config Virtual Module
+
+A second virtual module provides access to the plugin configuration:
+
+```ts
+import { config } from 'virtual:starlight-tagging/config';
+
+// config contains:
+// - configPath: string
+// - tagsPagesPrefix: string
+// - tagsIndexSlug: string
+// - onInlineTagsNotFound: 'ignore' | 'warn' | 'error'
+// - itemsPerPage: number
+// - basePath: string
+```
+
+This is useful when building custom components that need to know the plugin's configuration, such as constructing tag URLs or understanding pagination settings.
 
 ## Advanced: Direct TagsProcessor Access
 

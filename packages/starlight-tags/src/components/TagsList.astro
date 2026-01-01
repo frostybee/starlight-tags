@@ -37,7 +37,7 @@ interface Props {
   showCount?: boolean;
   layout?: 'inline' | 'grid' | 'list';
   variant?: 'solid' | 'outline' | 'ghost';
-  sortBy?: 'name' | 'count' | 'recent';
+  sortBy?: 'name' | 'count';
 }
 
 const {
@@ -70,14 +70,11 @@ if (!tagsProp) {
 
 // Sort tags based on sortBy prop
 let sortedTags = [...tags].sort((a, b) => {
-  switch (sortBy) {
-    case 'count':
-      return b.count - a.count || a.label.localeCompare(b.label);
-    case 'name':
-      return a.label.localeCompare(b.label);
-    default:
-      return 0;
+  if (sortBy === 'count') {
+    return b.count - a.count || a.label.localeCompare(b.label);
   }
+  // Default: sort by name
+  return a.label.localeCompare(b.label);
 });
 
 // Apply limit after sorting

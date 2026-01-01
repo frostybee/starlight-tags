@@ -43,11 +43,36 @@ export function vitePluginStarlightTags(
 }
 
 /**
+ * Normalizes a file path for use in ES module imports.
+ * Handles Windows backslashes, mixed separators, and ensures forward slashes.
+ */
+function normalizeImportPath(filePath: string): string {
+  // Normalize all backslashes to forward slashes
+  let normalized = filePath.replace(/\\/g, '/');
+
+  // Resolve any .. or . segments manually for edge cases
+  const parts = normalized.split('/');
+  const result: string[] = [];
+
+  for (const part of parts) {
+    if (part === '..') {
+      result.pop();
+    } else if (part !== '.' && part !== '') {
+      result.push(part);
+    }
+  }
+
+  // Preserve leading slash or drive letter
+  const prefix = normalized.startsWith('/') ? '/' : '';
+  return prefix + result.join('/');
+}
+
+/**
  * Generates the virtual module content for starlight-tagging/tags.
  */
 function getTagsVirtualModule(config: PluginConfig, tagsStorePath: string): string {
-  // Normalize path for cross-platform compatibility
-  const normalizedPath = tagsStorePath.replace(/\\/g, '/');
+  // Normalize path for cross-platform compatibility (especially Windows)
+  const normalizedPath = normalizeImportPath(tagsStorePath);
 
   return `
 import {
@@ -69,9 +94,23 @@ const config = ${JSON.stringify(config)};
 /**
  * Initialize the tags store. Must be called once before using other functions.
  * This is memoized - subsequent calls are no-ops.
+ *
+ * @param {Object} options - Optional configuration
+ * @param {boolean} options.verbose - Enable verbose logging
+ * @returns {Promise<void>}
+ * @throws {Error} If initialization fails (e.g., invalid tags.yml)
  */
 export async function initTags(options) {
-  return initializeTagsStore(config, options);
+  try {
+    return await initializeTagsStore(config, options);
+  } catch (error) {
+    // Provide a helpful error message for debugging
+    const message = error instanceof Error ? error.message : String(error);
+    throw new Error(
+      '[starlight-tags] Failed to initialize tags store: ' + message + '\\n' +
+      'Check your tags.yml configuration and ensure the file exists.'
+    );
+  }
 }
 
 // Re-export all helper functions

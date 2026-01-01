@@ -1,0 +1,156 @@
+---
+title: Functions
+description: Function declarations, expressions, and arrow functions
+tags:
+  - js-functions
+  - tutorial
+---
+
+import { PageTags, PrerequisiteChain } from 'starlight-tags/components';
+import DifficultyTagBadge from '../../../components/DifficultyTagBadge.astro';
+
+<PageTags />
+
+<DifficultyTagBadge difficulty="beginner" />
+
+**Prerequisites:**
+<PrerequisiteChain tag="js-functions" />
+
+Functions are reusable blocks of code that perform specific tasks.
+
+## Function Declaration
+
+```javascript
+function greet(name) {
+  return `Hello, ${name}!`;
+}
+
+greet("Alice"); // "Hello, Alice!"
+```
+
+## Function Expression
+
+```javascript
+const greet = function(name) {
+  return `Hello, ${name}!`;
+};
+```
+
+## Arrow Functions (ES6)
+
+```javascript
+// Full syntax
+const greet = (name) => {
+  return `Hello, ${name}!`;
+};
+
+// Concise syntax (implicit return)
+const greet = (name) => `Hello, ${name}!`;
+
+// Single parameter (no parentheses needed)
+const double = n => n * 2;
+
+// No parameters
+const sayHi = () => "Hi!";
+```
+
+## Parameters & Arguments
+
+### Default Parameters
+
+```javascript
+function greet(name = "Guest") {
+  return `Hello, ${name}!`;
+}
+
+greet();        // "Hello, Guest!"
+greet("Alice"); // "Hello, Alice!"
+```
+
+### Rest Parameters
+
+```javascript
+function sum(...numbers) {
+  return numbers.reduce((a, b) => a + b, 0);
+}
+
+sum(1, 2, 3, 4); // 10
+```
+
+### Destructuring Parameters
+
+```javascript
+function createUser({ name, age, role = "user" }) {
+  return { name, age, role };
+}
+
+createUser({ name: "Alice", age: 30 });
+```
+
+## Return Values
+
+```javascript
+// Single value
+function add(a, b) {
+  return a + b;
+}
+
+// Multiple values (via object)
+function getStats(numbers) {
+  return {
+    min: Math.min(...numbers),
+    max: Math.max(...numbers),
+    avg: numbers.reduce((a, b) => a + b) / numbers.length
+  };
+}
+
+const { min, max, avg } = getStats([1, 2, 3, 4, 5]);
+```
+
+## Higher-Order Functions
+
+Functions that take or return other functions:
+
+```javascript
+// Function as parameter
+function repeat(fn, times) {
+  for (let i = 0; i < times; i++) {
+    fn(i);
+  }
+}
+
+repeat(i => console.log(`Iteration ${i}`), 3);
+
+// Function as return value
+function multiplier(factor) {
+  return (number) => number * factor;
+}
+
+const double = multiplier(2);
+double(5); // 10
+```
+
+## Closures
+
+Functions remember their lexical scope:
+
+```javascript
+function counter() {
+  let count = 0;
+  return {
+    increment: () => ++count,
+    decrement: () => --count,
+    getCount: () => count
+  };
+}
+
+const myCounter = counter();
+myCounter.increment(); // 1
+myCounter.increment(); // 2
+myCounter.getCount();  // 2
+```
+
+## Next Steps
+
+- Learn [Arrays](/starlight-tags/educational/arrays/) to work with collections of data
+- Jump to [Async JS](/starlight-tags/educational/async/) to handle asynchronous operations

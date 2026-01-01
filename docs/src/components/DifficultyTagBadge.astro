@@ -1,0 +1,209 @@
+---
+/**
+ * DifficultyTagBadge: Extended tag badge with difficulty level indicator
+ *
+ * Demonstrates how to create a custom component that renders extended schema fields.
+ * Shows difficulty level badges (beginner/intermediate/advanced) for educational content.
+ *
+ * Usage:
+ * ```astro
+ * <DifficultyTagBadge tagId="getting-started" />
+ * <DifficultyTagBadge tagId="advanced" showPrerequisites />
+ * ```
+ */
+import { initTags, getTag } from 'virtual:starlight-tagging/tags';
+import { buildUrlFromCurrentPage } from 'starlight-tags/libs/url';
+import type { ProcessedTag } from 'starlight-tags/schemas/tags';
+import type { EducationalTag, DifficultyLevel } from '../config/educational-tag-schema';
+
+interface Props {
+  /** Tag ID to display */
+  tagId: string;
+  /** Show the prerequisite tags */
+  showPrerequisites?: boolean;
+  /** Show the difficulty badge */
+  showDifficulty?: boolean;
+  /** Make the badge clickable */
+  clickable?: boolean;
+}
+
+const {
+  tagId,
+  showPrerequisites = false,
+  showDifficulty = true,
+  clickable = true
+} = Astro.props;
+
+// Fetch the tag data
+await initTags();
+const baseTag = getTag(tagId);
+
+if (!baseTag) {
+  if (import.meta.env.DEV) {
+    console.warn(`[DifficultyTagBadge] Tag not found: "${tagId}"`);
+  }
+  return;
+}
+
+// Cast to our extended type to access custom fields
+const tag = baseTag as ProcessedTag & EducationalTag;
+
+// Difficulty level styling
+const difficultyColors: Record<DifficultyLevel, string> = {
+  beginner: '#22c55e',
+  intermediate: '#f59e0b',
+  advanced: '#ef4444'
+};
+
+const difficultyLabels: Record<DifficultyLevel, string> = {
+  beginner: 'Beginner',
+  intermediate: 'Intermediate',
+  advanced: 'Advanced'
+};
+
+const difficulty = tag.difficulty as DifficultyLevel | undefined;
+const difficultyColor = difficulty ? difficultyColors[difficulty] : undefined;
+const difficultyLabel = difficulty ? difficultyLabels[difficulty] : undefined;
+
+const TagElement = clickable ? 'a' : 'span';
+const href = clickable ? buildUrlFromCurrentPage(tag.url, Astro.url) : undefined;
+const tagStyle = tag.color ? `--tag-color: ${tag.color}` : '';
+---
+
+<div class="difficulty-tag-wrapper">
+  <TagElement
+    class:list={['difficulty-tag', { 'difficulty-tag--clickable': clickable }]}
+    href={href}
+    style={tagStyle}
+    title={tag.description || tag.label}
+  >
+    {tag.icon && <span class="difficulty-tag__icon">{tag.icon}</span>}
+    <span class="difficulty-tag__label">{tag.label}</span>
+
+    {showDifficulty && difficulty && (
+      <span
+        class="difficulty-tag__level"
+        style={`--difficulty-color: ${difficultyColor}`}
+      >
+        {difficultyLabel}
+      </span>
+    )}
+  </TagElement>
+
+  {showPrerequisites && tag.prerequisites && tag.prerequisites.length > 0 && (
+    <div class="prerequisites">
+      <span class="prerequisites__label">Requires:</span>
+      {tag.prerequisites.map((prereqId: string) => (
+        <span class="prerequisite-tag">{prereqId}</span>
+      ))}
+    </div>
+  )}
+</div>
+
+<style>
+  .difficulty-tag-wrapper {
+    display: inline-flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.35rem;
+  }
+
+  .difficulty-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.375rem 0.75rem;
+    border-radius: 9999px;
+    font-size: 0.8125rem;
+    font-weight: 500;
+    line-height: 1;
+    text-decoration: none;
+    white-space: nowrap;
+    background: var(--tag-color, var(--sl-color-accent));
+    color: white;
+    border: 1px solid transparent;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+  }
+
+  .difficulty-tag--clickable {
+    cursor: pointer;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .difficulty-tag--clickable:hover {
+    transform: translateY(-2px) scale(1.02);
+    filter: brightness(1.1);
+    box-shadow:
+      0 4px 12px color-mix(in srgb, var(--tag-color, var(--sl-color-accent)) 30%, transparent),
+      0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+
+  .difficulty-tag--clickable:focus-visible {
+    outline: 2px solid var(--tag-color, var(--sl-color-accent));
+    outline-offset: 2px;
+  }
+
+  .difficulty-tag__icon {
+    font-style: normal;
+    line-height: 1;
+  }
+
+  .difficulty-tag__label {
+    line-height: 1.2;
+  }
+
+  .difficulty-tag__level {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.2rem 0.5rem;
+    margin-left: 0.35rem;
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    border-radius: 999px;
+    background: var(--difficulty-color);
+    color: white;
+  }
+
+  .prerequisites {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    font-size: 0.75rem;
+  }
+
+  .prerequisites__label {
+    color: var(--sl-color-gray-3);
+    font-weight: 500;
+  }
+
+  .prerequisite-tag {
+    padding: 0.15rem 0.4rem;
+    background: var(--sl-color-gray-6);
+    border-radius: 0.25rem;
+    color: var(--sl-color-gray-2);
+  }
+
+  /* Dark mode */
+  :global([data-theme='dark']) .difficulty-tag {
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+  }
+
+  :global([data-theme='dark']) .prerequisite-tag {
+    background: var(--sl-color-gray-5);
+    color: var(--sl-color-gray-2);
+  }
+
+  /* Reduced motion */
+  @media (prefers-reduced-motion: reduce) {
+    .difficulty-tag--clickable {
+      transition: none;
+    }
+
+    .difficulty-tag--clickable:hover {
+      transform: none;
+    }
+  }
+</style>

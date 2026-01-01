@@ -3,7 +3,27 @@ title: Page Frontmatter
 description: Add tags to your pages using frontmatter
 ---
 
-Add tags to your documentation pages by including them in the page's frontmatter. The plugin extends Starlight's frontmatter schema to support tag-related properties.
+Add tags to your documentation pages by including them in the page's frontmatter. The plugin provides tag-related frontmatter properties that integrate with Starlight's content schema.
+
+## Schema Setup
+
+To enable tag frontmatter validation and TypeScript support, extend your content collection schema in `src/content.config.ts`:
+
+```ts
+import { defineCollection } from 'astro:content';
+import { docsLoader } from '@astrojs/starlight/loaders';
+import { docsSchema } from '@astrojs/starlight/schema';
+import { starlightTagsExtension } from 'starlight-tags';
+
+export const collections = {
+  docs: defineCollection({
+    loader: docsLoader(),
+    schema: docsSchema({ extend: starlightTagsExtension })
+  })
+};
+```
+
+This step is optional but recommended. Without it, tag frontmatter will still work but you won't get TypeScript validation or autocompletion for tag-related fields.
 
 ## Basic Usage
 
@@ -11,17 +31,17 @@ Add tags to any page by including a `tags` array in the frontmatter:
 
 ```mdx
 ---
-title: Authentication Overview
+title: Configuration Guide
 tags:
-  - authentication
-  - rest-api
-  - stable
+  - configuration
+  - guide
+  - getting-started
 ---
 
 Your page content here...
 ```
 
-You can also use inline array syntax: `tags: [authentication, rest-api, stable]`
+You can also use inline array syntax: `tags: [configuration, guide, getting-started]`
 
 ## Frontmatter Properties
 
@@ -34,11 +54,11 @@ An array of tag IDs to associate with the page. Tag IDs must match those defined
 
 ```mdx
 ---
-title: API Security Best Practices
+title: Plugin Development Guide
 tags:
-  - authentication
-  - security
-  - stable
+  - plugins
+  - advanced
+  - guide
 ---
 ```
 
@@ -51,13 +71,13 @@ Highlight specific tags as featured. Featured tags may be displayed more promine
 
 ```mdx
 ---
-title: Authentication Guide
+title: Configuration Guide
 tags:
-  - authentication
-  - security
-  - api
+  - configuration
+  - guide
+  - getting-started
 featuredTags:
-  - authentication
+  - configuration
 ---
 ```
 
@@ -72,10 +92,16 @@ Hide the tags display on this specific page. The page will still be associated w
 ---
 title: Internal Documentation
 tags:
-  - internal
+  - troubleshooting
 hideTags: true
 ---
 ```
+
+Both the [`PageTags`](/starlight-tags/components/page-tags/#hiding-tags) and [`PageWithTags`](/starlight-tags/components/page-with-tags/#hiding-tags) components respect this property and will render nothing when `hideTags: true`.
+
+:::tip[Use case]
+This is useful for internal or administrative pages that should be discoverable via tag listings but don't need visible tag badges on the page itself.
+:::
 
 ### `tagsPosition`
 
@@ -86,9 +112,9 @@ Control where tags are displayed on the page.
 
 ```mdx
 ---
-title: Webhooks Reference
+title: Components Reference
 tags:
-  - webhooks
+  - components
 tagsPosition: top
 ---
 ```
@@ -113,9 +139,9 @@ When you use a tag that isn't defined in your `tags.yml`, the plugin's behavior 
 
 ```mdx
 ---
-title: API Quickstart
+title: Quickstart
 tags:
-  - quickstart
+  - getting-started
 ---
 ```
 
@@ -123,40 +149,39 @@ tags:
 
 ```mdx
 ---
-title: OAuth 2.0 Implementation
-description: Complete guide to implementing OAuth 2.0 authentication
+title: Advanced Plugin Development
+description: Complete guide to building custom plugins
 tags:
-  - authentication
-  - oauth2
-  - rest-api
-  - stable
+  - plugins
+  - advanced
+  - guide
+  - components
 featuredTags:
-  - authentication
+  - plugins
 tagsPosition: top
 ---
 
 import { PageTags } from 'starlight-tags/components';
 
-# OAuth 2.0 Implementation
+# Advanced Plugin Development
 
 <PageTags />
 
 Your content here...
 ```
 
-### API Reference Page
+### Reference Page
 
 ```mdx
 ---
-title: Users Endpoint Reference
+title: Component Reference
 tags:
-  - rest-api
-  - endpoints
-  - stable
-  - sdk-python
+  - components
+  - reference
+  - frameworks
 ---
 
-Complete reference for the `/users` API endpoint.
+Complete reference for all available components.
 ```
 
 ## Using Tags in Content
@@ -165,15 +190,15 @@ You can also display tags manually within your content using the exported compon
 
 ```mdx
 ---
-title: Webhooks Guide
+title: Plugin Development Guide
 tags:
-  - webhooks
-  - rest-api
+  - plugins
+  - guide
 ---
 
 import { PageTags, TagBadge } from 'starlight-tags/components';
 
-# Webhooks Guide
+# Plugin Development Guide
 
 <PageTags layout="inline" />
 
@@ -181,7 +206,7 @@ Content goes here...
 
 Or display a specific tag:
 
-<TagBadge tagId="webhooks" />
+<TagBadge tagId="plugins" />
 ```
 
 ## Next Steps

@@ -36,7 +36,7 @@ export const customTagSchema = tagDefinitionSchema.extend({
   // API documentation fields
   status: z.enum(['stable', 'beta', 'deprecated']).optional(),
   version: z.string().optional(),
-  category: z.string().optional(),
+  apiArea: z.string().optional(),  // e.g., "Security", "Data", "Payments"
   breaking: z.boolean().optional(),
 });
 
@@ -51,21 +51,21 @@ tags:
   authentication:
     label: "Authentication"
     description: "API authentication methods"
-    category: "Security"
+    apiArea: "Security"
     status: "stable"
     version: "1.0"
 
   oauth2-pkce:
     label: "OAuth 2.0 PKCE"
     description: "Proof Key for Code Exchange flow"
-    category: "Security"
+    apiArea: "Security"
     status: "stable"
     version: "2.0"
 
   legacy-auth:
     label: "Legacy Authentication"
     description: "Deprecated authentication method"
-    category: "Security"
+    apiArea: "Security"
     status: "deprecated"
     version: "1.0"
     breaking: true
@@ -116,7 +116,7 @@ const { tag } = Astro.props;
 const apiTagSchema = tagDefinitionSchema.extend({
   status: z.enum(['stable', 'beta', 'deprecated', 'experimental']).optional(),
   version: z.string().optional(),
-  category: z.string().optional(),
+  apiArea: z.string().optional(),  // e.g., "Security", "Data", "Payments"
   breaking: z.boolean().optional(),
   sdks: z.array(z.enum(['js', 'python', 'go', 'java', 'ruby'])).optional(),
   apiVersion: z.enum(['v1', 'v2', 'v3']).optional(),

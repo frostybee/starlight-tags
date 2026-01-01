@@ -1,0 +1,132 @@
+---
+title: TagSidebar
+description: A sidebar widget showing popular tags for quick navigation
+---
+
+The `TagSidebar` component displays popular tags in a compact sidebar format. It's designed to be added to Starlight's sidebar for quick tag navigation.
+
+:::tip[Quick navigation to popular tags]
+- **Shows most-used tags** by default (sorted by page count)
+- **Compact vertical list** with optional count badges
+- **"View all tags"** link to the full tag index
+- Best for: Sidebar navigation, at-a-glance tag discovery
+:::
+
+## Import
+
+```js
+import { TagSidebar } from 'starlight-tags/components';
+```
+
+## Props
+
+| Prop | Type | Default | Description |
+|------|------|---------|-------------|
+| `limit` | `number` | `10` | Maximum number of tags to display |
+| `sortBy` | `'count' \| 'priority' \| 'alphabetical'` | `'count'` | Sort order for tags |
+| `showCount` | `boolean` | `true` | Show page count badge next to each tag |
+| `title` | `string` | `'Popular Tags'` | Section heading |
+
+## Basic Usage
+
+To add the TagSidebar to your Starlight site, create a sidebar component override:
+
+```astro
+---
+// src/components/Sidebar.astro
+import Default from '@astrojs/starlight/components/Sidebar.astro';
+import { TagSidebar } from 'starlight-tags/components';
+---
+
+<Default {...Astro.props} />
+<TagSidebar />
+```
+
+Then register the override in your `astro.config.mjs`:
+
+```js
+// astro.config.mjs
+import starlight from '@astrojs/starlight';
+
+export default defineConfig({
+  integrations: [
+    starlight({
+      title: 'My Docs',
+      components: {
+        Sidebar: './src/components/Sidebar.astro',
+      },
+    }),
+  ],
+});
+```
+
+## Customization Examples
+
+### Limit Number of Tags
+
+Show only the top 5 tags:
+
+```astro
+<TagSidebar limit={5} />
+```
+
+### Sort Alphabetically
+
+```astro
+<TagSidebar sortBy="alphabetical" title="Tags A-Z" />
+```
+
+### Sort by Priority
+
+Uses the `priority` field from your tag definitions:
+
+```astro
+<TagSidebar sortBy="priority" title="Featured Tags" />
+```
+
+### Hide Page Counts
+
+```astro
+<TagSidebar showCount={false} />
+```
+
+### Custom Title
+
+```astro
+<TagSidebar title="Browse by Topic" />
+```
+
+### Combined Options
+
+```astro
+<TagSidebar
+  limit={8}
+  sortBy="count"
+  showCount={true}
+  title="Top Topics"
+/>
+```
+
+## Styling
+
+The component uses Starlight's CSS variables for consistent theming:
+
+- `--sl-color-bg-nav` - Background color
+- `--sl-color-gray-5` - Border color
+- `--sl-color-gray-2` - Link text color
+- `--sl-color-accent` - Hover and link accent color
+- `--sl-color-white` - Title and count text color
+
+The component automatically adapts to light and dark themes.
+
+## How It Works
+
+The `TagSidebar` component:
+
+1. Fetches all tags using the [virtual tags module](/starlight-tags/guides/virtual-tags-module/)
+2. Sorts tags based on the `sortBy` prop (default: by page count, descending)
+3. Limits to the specified number of tags
+4. Renders a vertical list with optional count badges
+5. Includes a "View all tags" link to the full tag index
+
+The component renders nothing if no tags are defined in your site.

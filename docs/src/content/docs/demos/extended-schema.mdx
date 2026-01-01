@@ -2,227 +2,186 @@
 title: Extended Schema Demo
 description: Live demo showing how to extend the tag schema with custom fields
 tags:
-  - authentication
-  - webhooks
+  - plugins
+  - advanced
 ---
 
+import DifficultyTagBadge from '../../../components/DifficultyTagBadge.astro';
+import FilterableByDifficulty from '../../../components/FilterableByDifficulty.astro';
 import ProductTagBadge from '../../../components/ProductTagBadge.astro';
 import FilterableTagsList from '../../../components/FilterableTagsList.astro';
 
-This page demonstrates how to create custom components that render extended schema fields. The `ProductTagBadge` component shows **plan tier** badges and **product** grouping.
+This page demonstrates how to extend the base tag schema with **multiple custom field sets**. You can combine educational fields (difficulty, prerequisites) with product fields (planTier) in a single schema.
 
+---
 
-## Interactive Filtering
+## Educational Filtering (Difficulty Levels)
 
-Use the dropdown to filter tags by plan tier. This demonstrates how to build interactive UI for custom schema fields:
+Filter tags by difficulty level. Great for learning paths and tutorials:
+
+<FilterableByDifficulty />
+
+### Difficulty Badges
+
+<div style="display: flex; gap: 0.75rem; flex-wrap: wrap; align-items: center;">
+  <DifficultyTagBadge tagId="js-basics" />
+  <DifficultyTagBadge tagId="js-arrays" />
+  <DifficultyTagBadge tagId="js-async" />
+</div>
+
+### With Prerequisites
+
+<div style="display: flex; gap: 1rem; flex-wrap: wrap; align-items: flex-start;">
+  <DifficultyTagBadge tagId="js-async" showPrerequisites />
+</div>
+
+---
+
+## Product Filtering (Plan Tiers)
+
+Filter tags by pricing tier. Perfect for SaaS documentation:
 
 <FilterableTagsList />
 
-## Basic Usage
-
-Tags with plan tier badges:
+### Plan Tier Badges
 
 <div style="display: flex; gap: 0.75rem; flex-wrap: wrap; align-items: center;">
-  <ProductTagBadge tagId="authentication" />
-  <ProductTagBadge tagId="rest-api" />
-  <ProductTagBadge tagId="webhooks" />
+  <ProductTagBadge tagId="components" />
+  <ProductTagBadge tagId="theming" />
+  <ProductTagBadge tagId="i18n" />
 </div>
-
-```astro
-import ProductTagBadge from '../components/ProductTagBadge.astro';
-
-<ProductTagBadge tagId="authentication" />
-<ProductTagBadge tagId="webhooks" />
-```
-
-## With Product Label
-
-Show the product name above the badge:
-
-<div style="display: flex; gap: 1rem; flex-wrap: wrap; align-items: flex-start;">
-  <ProductTagBadge tagId="authentication" showProduct />
-  <ProductTagBadge tagId="webhooks" showProduct />
-  <ProductTagBadge tagId="sdk-python" showProduct />
-</div>
-
-```astro
-<ProductTagBadge tagId="authentication" showProduct />
-<ProductTagBadge tagId="webhooks" showProduct />
-```
-
-## Without Plan Tier
-
-Hide the plan tier badge:
-
-<div style="display: flex; gap: 0.75rem; flex-wrap: wrap; align-items: center;">
-  <ProductTagBadge tagId="authentication" showPlanTier={false} />
-  <ProductTagBadge tagId="webhooks" showPlanTier={false} />
-</div>
-
-```astro
-<ProductTagBadge tagId="authentication" showPlanTier={false} />
-```
-
-## Non-Clickable
-
-Render as a span instead of a link:
-
-<div style="display: flex; gap: 0.75rem; flex-wrap: wrap; align-items: center;">
-  <ProductTagBadge tagId="authentication" clickable={false} />
-  <ProductTagBadge tagId="webhooks" clickable={false} />
-</div>
-
-```astro
-<ProductTagBadge tagId="authentication" clickable={false} />
-```
-
-## Plan Tiers
-
-The component renders different tier badges based on the `planTier` field:
-
-<div style="display: flex; gap: 0.75rem; flex-wrap: wrap; align-items: center;">
-  <ProductTagBadge tagId="rest-api" />
-  <ProductTagBadge tagId="authentication" />
-  <ProductTagBadge tagId="webhooks" />
-</div>
-
-- **Free** (green): Basic features available to all users
-- **Pro** (blue): Features requiring a paid plan
-- **Enterprise** (purple): Advanced features for enterprise customers
-
-
-```astro
----
-// FilterableTagsList.astro - Key implementation details
-
-import { initTags, getTags } from 'virtual:starlight-tagging/tags';
-import type { ProcessedTag } from 'starlight-tags/schemas/tags';
-import type { ProductTag } from '../config/product-tag-schema';
-
-type ExtendedTag = ProcessedTag & ProductTag;
-
-await initTags();
-const allTags = Array.from(getTags().values()) as ExtendedTag[];
-const tagsWithPlanTier = allTags.filter(tag => tag.planTier);
----
-
-<div class="filterable-tags-container">
-  <select id="plan-tier-filter">
-    <option value="">All Plans</option>
-    <option value="free">Free</option>
-    <option value="pro">Pro</option>
-    <option value="enterprise">Enterprise</option>
-  </select>
-
-  <div class="tags-grid">
-    {tagsWithPlanTier.map(tag => (
-      <div data-plan-tier={tag.planTier}>
-        <ProductTagBadge tagId={tag.id} />
-      </div>
-    ))}
-  </div>
-</div>
-
-<script>
-  const dropdown = document.querySelector('#plan-tier-filter');
-  const tagItems = document.querySelectorAll('.tag-item');
-
-  dropdown.addEventListener('change', () => {
-    const selectedTier = dropdown.value;
-    tagItems.forEach(item => {
-      const shouldShow = !selectedTier || item.dataset.planTier === selectedTier;
-      item.classList.toggle('hidden', !shouldShow);
-    });
-  });
-</script>
-```
 
 ---
 
-## How It Works
+## Combined Schema
 
-### 1. Extend the Schema
-
-Create a custom schema that adds your fields:
+Both field sets can coexist in a single schema:
 
 ```typescript
-// src/config/product-tag-schema.ts
+// src/config/extended-tag-schema.ts
 import { z } from 'astro/zod';
 import { tagDefinitionSchema } from 'starlight-tags/schemas/tags';
 
-export const productTagSchema = tagDefinitionSchema.extend({
+export const extendedTagSchema = tagDefinitionSchema.extend({
+  // Educational fields
+  difficulty: z.enum(['beginner', 'intermediate', 'advanced']).optional(),
+  contentType: z.enum(['lecture', 'lab', 'tutorial', 'reference']).optional(),
+  prerequisites: z.array(z.string()).optional(),
+
+  // Product fields
   product: z.string().optional(),
   planTier: z.enum(['free', 'pro', 'enterprise']).optional(),
 });
-
-export type ProductTag = z.infer<typeof productTagSchema>;
 ```
 
-### 2. Add Fields to tags.yml
+### Example tags.yml
+
+Tags can have educational fields, product fields, or both:
 
 ```yaml
-# tags.yml
 tags:
-  authentication:
-    label: "Authentication"
-    product: "Platform"
-    planTier: "free"
+  # Educational only
+  js-basics:
+    label: "JS Basics"
+    difficulty: beginner
+    contentType: lecture
 
-  webhooks:
-    label: "Webhooks"
-    product: "Platform"
-    planTier: "pro"
+  # Product only
+  components:
+    label: "Components"
+    planTier: free
+
+  # Both fields!
+  advanced-api:
+    label: "Advanced API"
+    difficulty: advanced
+    planTier: enterprise
+    prerequisites: ["js-basics"]
 ```
 
-### 3. Create a Custom Component
+---
+
+## Implementation Details
+
+### Educational Component
 
 ```astro
 ---
-// src/components/ProductTagBadge.astro
+// DifficultyTagBadge.astro
 import { initTags, getTag } from 'virtual:starlight-tagging/tags';
 import type { ProcessedTag } from 'starlight-tags/schemas/tags';
-import type { ProductTag } from '../config/product-tag-schema';
+import type { ExtendedTag } from '../config/extended-tag-schema';
 
 const { tagId } = Astro.props;
 
 await initTags();
-const baseTag = getTag(tagId);
+const tag = getTag(tagId) as ProcessedTag & ExtendedTag;
 
-// Cast to extended type to access custom fields
-const tag = baseTag as ProcessedTag & ProductTag;
+const difficultyColors = {
+  beginner: '#22c55e',
+  intermediate: '#f59e0b',
+  advanced: '#ef4444'
+};
 ---
 
 <span class="tag">
   {tag.label}
-  {tag.planTier && <span class="tier">{tag.planTier}</span>}
+  {tag.difficulty && (
+    <span style={`background: ${difficultyColors[tag.difficulty]}`}>
+      {tag.difficulty}
+    </span>
+  )}
 </span>
 ```
 
-### 4. Filter by Custom Fields
+### Product Component
+
+```astro
+---
+// ProductTagBadge.astro
+import { initTags, getTag } from 'virtual:starlight-tagging/tags';
+import type { ProcessedTag } from 'starlight-tags/schemas/tags';
+import type { ExtendedTag } from '../config/extended-tag-schema';
+
+const { tagId } = Astro.props;
+
+await initTags();
+const tag = getTag(tagId) as ProcessedTag & ExtendedTag;
+
+const tierColors = {
+  free: '#22c55e',
+  pro: '#3b82f6',
+  enterprise: '#8b5cf6'
+};
+---
+
+<span class="tag">
+  {tag.label}
+  {tag.planTier && (
+    <span style={`background: ${tierColors[tag.planTier]}`}>
+      {tag.planTier}
+    </span>
+  )}
+</span>
+```
+
+### Filtering by Custom Fields
 
 ```typescript
-// src/utils/product-filters.ts
-import { getTags } from 'virtual:starlight-tagging/tags';
-import type { ProcessedTag } from 'starlight-tags/schemas/tags';
-import type { ProductTag, PlanTier } from '../config/product-tag-schema';
+// Filter by difficulty
+const beginnerTags = allTags.filter(tag => tag.difficulty === 'beginner');
 
-type ExtendedTag = ProcessedTag & ProductTag;
+// Filter by plan tier
+const freeTags = allTags.filter(tag => tag.planTier === 'free');
 
-export function getTagsByPlanTier(tier: PlanTier): ExtendedTag[] {
-  return Array.from(getTags().values())
-    .filter((tag): tag is ExtendedTag =>
-      (tag as ExtendedTag).planTier === tier
-    );
-}
-
-export function getTagsByProduct(product: string): ExtendedTag[] {
-  return Array.from(getTags().values())
-    .filter((tag): tag is ExtendedTag =>
-      (tag as ExtendedTag).product === product
-    );
-}
+// Filter by both (e.g., beginner + free)
+const accessibleTags = allTags.filter(
+  tag => tag.difficulty === 'beginner' && tag.planTier === 'free'
+);
 ```
 
 ---
 
-See the [Extending the Schema guide](/starlight-tags/guides/extending-schema/) for more details.
+## Live Examples
+
+Check out the [JavaScript Learning Path](/starlight-tags/educational/) to see educational tags in action with a complete tutorial series.
