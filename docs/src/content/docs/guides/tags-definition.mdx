@@ -55,21 +55,21 @@ tags:
 
 defaults:
   color: "#6b7280"
-  showInSidebar: true
 ```
 
 ## Tag ID
 
 The tag ID is the key used to reference the tag in frontmatter. It must:
-- Contain only alphanumeric characters, hyphens, and underscores
+- Contain only **lowercase** letters, numbers, hyphens, and underscores
 - Be unique within your configuration
 
 ```yaml
 tags:
   my-tag:        # Valid: lowercase with hyphens
   my_tag:        # Valid: lowercase with underscores
-  MyTag123:      # Valid: mixed case with numbers
+  my-tag-123:    # Valid: lowercase with numbers
   "invalid tag": # Invalid: contains space
+  MyTag:         # Invalid: uppercase letters not allowed
 ```
 
 ## Tag Properties

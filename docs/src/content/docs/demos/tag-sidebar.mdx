@@ -1,0 +1,121 @@
+---
+title: TagSidebar Demo
+description: Live demo of the TagSidebar component
+tags:
+  - components
+  - example
+---
+
+import { TagSidebar } from 'starlight-tags/components';
+
+This page demonstrates the `TagSidebar` component, a compact sidebar widget for displaying popular tags.
+
+:::tip[Sidebar Integration]
+In a real Starlight site, you would add this component to a [sidebar override](https://starlight.astro.build/guides/overriding-components/). The demos below show the component in isolation.
+:::
+
+## Default
+
+Shows top 10 tags sorted by page count:
+
+<TagSidebar />
+
+```astro
+import { TagSidebar } from 'starlight-tags/components';
+
+<TagSidebar />
+```
+
+## Limiting Tags
+
+Show only the top 5 tags:
+
+<TagSidebar limit={5} />
+
+```astro
+<TagSidebar limit={5} />
+```
+
+## Sorting Options
+
+### By Count (Default)
+
+Most used tags first:
+
+<TagSidebar sortBy="count" limit={6} />
+
+### Alphabetically
+
+Tags sorted A-Z:
+
+<TagSidebar sortBy="alphabetical" limit={6} title="Tags A-Z" />
+
+### By Priority
+
+Uses the `priority` field from tag definitions:
+
+<TagSidebar sortBy="priority" limit={6} title="Featured Tags" />
+
+## Without Page Counts
+
+<TagSidebar showCount={false} limit={6} />
+
+```astro
+<TagSidebar showCount={false} />
+```
+
+## Custom Title
+
+<TagSidebar title="Browse by Topic" limit={6} />
+
+```astro
+<TagSidebar title="Browse by Topic" />
+```
+
+## Collapsible Behavior
+
+### Collapsible (Default)
+
+Click the header to toggle:
+
+<TagSidebar collapsible={true} limit={5} />
+
+### Start Collapsed
+
+<TagSidebar collapsible={true} collapsed={true} limit={5} title="Expand to see tags" />
+
+```astro
+<TagSidebar collapsible={true} collapsed={true} />
+```
+
+### Non-Collapsible
+
+<TagSidebar collapsible={false} limit={5} />
+
+```astro
+<TagSidebar collapsible={false} />
+```
+
+## Combined Options
+
+<TagSidebar
+  limit={8}
+  sortBy="count"
+  showCount={true}
+  title="Top Topics"
+  collapsible={true}
+/>
+
+```astro
+<TagSidebar
+  limit={8}
+  sortBy="count"
+  showCount={true}
+  title="Top Topics"
+  collapsible={true}
+/>
+```
+
+---
+
+See the [TagSidebar documentation](/starlight-tags/components/tag-sidebar/) for full API reference and integration instructions.

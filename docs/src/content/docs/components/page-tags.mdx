@@ -8,10 +8,10 @@ The `PageTags` component automatically displays tags from the current page's fro
 **[See live demo →](/starlight-tags/demos/page-tags/)**
 
 :::tip[Self-contained, automatic tag display]
-- **Reads tags automatically** from the current page's frontmatter
-- **No props required** - just drop it in
+- Reads tags automatically from the current page's frontmatter
+- No props required, just drop it in
 - Renders as a simple inline/block list of tag badges
-- Best for: Quick tag display anywhere in your MDX
+- Best for quick tag display anywhere in your MDX
 :::
 
 ## Import
@@ -245,21 +245,21 @@ Wondering which component to use? Here's a quick comparison:
 
 | Feature | `PageTags` | `PageWithTags` |
 |---------|-----------|----------------|
-| Auto-reads frontmatter | ✅ Yes | ❌ No |
-| Requires tags prop | ❌ No | ✅ Yes |
-| Wraps content | ❌ No | ✅ Yes (via slot) |
-| Position control | ❌ Manual placement | ✅ `top` / `bottom` / `both` |
-| Separator line | ❌ No | ✅ Yes (bottom position) |
-| "Tags" title | ❌ No | ✅ Optional |
+| Auto-reads frontmatter |  Yes |  Yes |
+| Accepts tagIds prop | No |  Yes |
+| Wraps content | No |  Yes (via slot) |
+| Position control |  Manual placement |  `top` / `bottom` / `both` |
+| Separator line |  No |  Yes (bottom position) |
+| "Tags" title |  No |  Optional |
 | Best for | Drop-in tag display | Layout templates |
 
 ### When to Use `PageTags`
 
 Choose `PageTags` when you want:
 
-- **Simplicity** - Just drop `<PageTags />` anywhere in your MDX
-- **Flexibility** - Place tags exactly where you want them
-- **No setup** - Automatically reads from frontmatter
+- A simple drop-in solution — just add `<PageTags />` anywhere in your MDX
+- Full control over placement within your content
+- Automatic tag detection from frontmatter with no extra setup
 
 ```mdx
 <PageTags />  <!-- That's it! -->
@@ -269,9 +269,9 @@ Choose `PageTags` when you want:
 
 Choose [`PageWithTags`](/starlight-tags/components/page-with-tags/) when you need:
 
-- **Content wrapping** - Tags frame your content
-- **Consistent positioning** - Same layout across pages
-- **Custom tag data** - You control which tags display
+- Tags that frame your content at the top, bottom, or both
+- Consistent tag positioning across multiple pages
+- The ability to specify which tags to display via `tagIds`
 
 ```astro
 <PageWithTags tags={customTags} position="both">

@@ -7,42 +7,42 @@ tags:
   components:
     label: "Components"
     description: "UI components and their usage patterns"
-    color: "#3b82f6"
+    color: "#14b8a6"
     icon: "🧩"
     planTier: free
 
   configuration:
     label: "Configuration"
     description: "Setup options and config files"
-    color: "#3b82f6"
+    color: "#14b8a6"
     icon: "⚙️"
     planTier: free
 
   theming:
     label: "Theming"
     description: "Styling, colors, and visual customization"
-    color: "#3b82f6"
+    color: "#14b8a6"
     icon: "🎨"
     planTier: pro
 
   routing:
     label: "Routing"
     description: "Navigation, URLs, and page structure"
-    color: "#3b82f6"
+    color: "#14b8a6"
     icon: "🔀"
     planTier: pro
 
   i18n:
     label: "i18n"
     description: "Internationalization and localization"
-    color: "#3b82f6"
+    color: "#14b8a6"
     icon: "🌐"
     planTier: enterprise
 
   markdown:
     label: "Markdown"
     description: "Content authoring and MDX features"
-    color: "#3b82f6"
+    color: "#14b8a6"
     icon: "📝"
     planTier: free
 
@@ -50,28 +50,28 @@ tags:
   plugins:
     label: "Plugins"
     description: "Extending functionality with plugins"
-    color: "#8b5cf6"
+    color: "#ff7f50"
     icon: "🔌"
     planTier: pro
 
   cms:
     label: "CMS"
     description: "Content management system integrations"
-    color: "#8b5cf6"
+    color: "#ff7f50"
     icon: "📦"
     planTier: enterprise
 
   frameworks:
     label: "Frameworks"
     description: "Framework-specific usage (React, Vue, etc.)"
-    color: "#8b5cf6"
+    color: "#ff7f50"
     icon: "🏗️"
     planTier: enterprise
 
   deployment:
     label: "Deployment"
     description: "Hosting and deployment platforms"
-    color: "#8b5cf6"
+    color: "#ff7f50"
     icon: "🚀"
     planTier: pro
 
@@ -130,7 +130,7 @@ tags:
   js-basics:
     label: "JS Basics"
     description: "Introduction to JavaScript fundamentals"
-    color: "#f7df1e"
+    color: "#0ea5e9"
     icon: "📘"
     difficulty: beginner
     contentType: lecture
@@ -138,7 +138,7 @@ tags:
   js-variables:
     label: "Variables"
     description: "Variables, data types, and scope"
-    color: "#f7df1e"
+    color: "#0ea5e9"
     icon: "📦"
     difficulty: beginner
     contentType: tutorial
@@ -147,7 +147,7 @@ tags:
   js-functions:
     label: "Functions"
     description: "Function declarations, expressions, and arrow functions"
-    color: "#f7df1e"
+    color: "#0ea5e9"
     icon: "⚡"
     difficulty: beginner
     contentType: tutorial
@@ -156,7 +156,7 @@ tags:
   js-arrays:
     label: "Arrays"
     description: "Array methods and iteration"
-    color: "#f7df1e"
+    color: "#0ea5e9"
     icon: "📋"
     difficulty: intermediate
     contentType: tutorial
@@ -165,7 +165,7 @@ tags:
   js-objects:
     label: "Objects"
     description: "Objects, classes, and prototypes"
-    color: "#f7df1e"
+    color: "#0ea5e9"
     icon: "🧱"
     difficulty: intermediate
     contentType: tutorial
@@ -174,7 +174,7 @@ tags:
   js-async:
     label: "Async JS"
     description: "Promises, async/await, and event loop"
-    color: "#f7df1e"
+    color: "#0ea5e9"
     icon: "⏳"
     difficulty: advanced
     contentType: tutorial

@@ -46,5 +46,5 @@ export default function starlightTagsPlugin(
 // Export types and schemas for user convenience.
 export type { PluginConfig };
 export { pluginConfigSchema } from './src/schemas/config.js';
-export { tagsConfigSchema } from './src/schemas/tags.js';
+export { tagsConfigSchema, tagDefinitionSchema, type ProcessedTag, type TagDefinition, type TagsConfig } from './src/schemas/tags.js';
 export { frontmatterSchema, starlightTagsExtension } from './src/schemas/frontmatter.js';

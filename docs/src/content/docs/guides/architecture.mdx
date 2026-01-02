@@ -98,16 +98,34 @@ Each generated tag page receives these props:
 
 ```typescript
 interface ProcessedTag {
+  // Core properties
   id: string;           // Tag identifier (key in tags.yml)
   label: string;        // Display name
   description?: string; // Optional description
   color?: string;       // Hex color code
   icon?: string;        // Emoji or icon
-  slug: string;         // URL-safe slug
+  permalink?: string;   // Custom URL slug override
+  hidden?: boolean;     // Whether to hide from index
+  priority?: number;    // Sort order (higher first, default: 0)
+
+  // Computed properties
+  slug: string;         // URL-safe slug (from permalink or generated)
   url: string;          // Full URL path
   count: number;        // Number of pages with this tag
   pages: PageReference[]; // All pages with this tag
-  hidden?: boolean;     // Whether to hide from index
+
+  // Educational properties (optional)
+  difficulty?: 'beginner' | 'intermediate' | 'advanced';
+  contentType?: 'lecture' | 'lab' | 'assignment' | 'project' | 'reference' | 'tutorial' | 'assessment';
+  prerequisites?: string[];       // Tag IDs that should be understood first
+
+  // Computed educational relationships
+  relatedTags?: string[];         // IDs of related tags
+  prerequisiteChain?: string[];   // Ordered prerequisite IDs (resolved recursively)
+  nextSteps?: string[];           // Suggested next topics
+
+  // Custom fields from extended schemas
+  [key: string]: unknown;
 }
 ```
 
@@ -120,6 +138,7 @@ interface PageReference {
   title: string;        // Page title
   description?: string; // Page description
   tags?: string[];      // All tags on this page
+  frontmatter?: Record<string, unknown>; // Full frontmatter data for advanced use
 }
 ```
 
@@ -251,13 +270,38 @@ You can extend the tag schema with custom fields. See the [Extending Schema Guid
 Access tag data programmatically in your components:
 
 ```typescript
-import { initTags, getTag, getTags, getAllTagsSorted } from 'virtual:starlight-tagging/tags';
+import {
+  initTags,
+  getTag,
+  getTags,
+  getAllTagsSorted,
+  getTagsForPage,
+  getTagsByDifficulty,
+  getTagsByContentType,
+  validatePrerequisites,
+  getLearningPath,
+  isInitialized,
+  resetTagsStore
+} from 'virtual:starlight-tagging/tags';
 
 await initTags(); // Initialize (memoized, safe to call multiple times)
 
+// Core tag access
 const allTags = getTags();           // Map<string, ProcessedTag>
 const sorted = getAllTagsSorted();   // ProcessedTag[] sorted by count
 const single = getTag('auth');       // ProcessedTag | undefined
+
+// Page-based queries
+const pageTags = getTagsForPage('guides/authentication'); // Tags for a specific page
+
+// Educational queries
+const beginnerTags = getTagsByDifficulty('beginner');     // Filter by difficulty
+const tutorialTags = getTagsByContentType('tutorial');    // Filter by content type
+const path = getLearningPath('basics', 'advanced');       // Learning path between tags
+
+// Validation & utilities
+const { isValid, errors } = validatePrerequisites();      // Validate prerequisite refs
+const ready = isInitialized();                            // Check if store is initialized
 ```
 
 See the [Virtual Module Guide](/starlight-tags/guides/virtual-tags-module/) for more details.

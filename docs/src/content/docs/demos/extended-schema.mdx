@@ -13,6 +13,26 @@ import FilterableTagsList from '../../../components/FilterableTagsList.astro';
 
 This page demonstrates how to extend the base tag schema with **multiple custom field sets**. You can combine educational fields (difficulty, prerequisites) with product fields (planTier) in a single schema.
 
+:::tip[Live Examples]
+Check out the [JavaScript Learning Path](/starlight-tags/educational/) to see educational tags in action with a complete tutorial series.
+:::
+
+---
+
+## Product Filtering (Plan Tiers)
+
+Filter tags by pricing tier. Perfect for SaaS documentation:
+
+<FilterableTagsList />
+
+### Plan Tier Badges
+
+<div style="display: flex; gap: 0.75rem; flex-wrap: wrap; align-items: center;">
+  <ProductTagBadge tagId="components" />
+  <ProductTagBadge tagId="theming" />
+  <ProductTagBadge tagId="i18n" />
+</div>
+
 ---
 
 ## Educational Filtering (Difficulty Levels)
@@ -37,21 +57,6 @@ Filter tags by difficulty level. Great for learning paths and tutorials:
 
 ---
 
-## Product Filtering (Plan Tiers)
-
-Filter tags by pricing tier. Perfect for SaaS documentation:
-
-<FilterableTagsList />
-
-### Plan Tier Badges
-
-<div style="display: flex; gap: 0.75rem; flex-wrap: wrap; align-items: center;">
-  <ProductTagBadge tagId="components" />
-  <ProductTagBadge tagId="theming" />
-  <ProductTagBadge tagId="i18n" />
-</div>
-
----
 
 ## Combined Schema
 
@@ -180,8 +185,3 @@ const accessibleTags = allTags.filter(
 );
 ```
 
----
-
-## Live Examples
-
-Check out the [JavaScript Learning Path](/starlight-tags/educational/) to see educational tags in action with a complete tutorial series.

@@ -16,40 +16,40 @@ This component only displays data for tags that have `prerequisites` defined in 
 
 ## Basic Usage
 
-The `webhooks` tag has prerequisites defined (`authentication` and `rest-api`):
+The `js-async` tag has prerequisites defined (`js-functions`):
 
-<PrerequisiteChain tagId="webhooks" />
+<PrerequisiteChain tagId="js-async" />
 
 ```astro
 import { PrerequisiteChain } from 'starlight-tags/components';
 
-<PrerequisiteChain tagId="webhooks" />
+<PrerequisiteChain tagId="js-async" />
 ```
 
-## API Version Chain
+## Full Learning Path
 
-The `api-v2` tag shows a migration path from v1:
+The `js-objects` tag shows a longer chain through arrays, functions, variables, and basics:
 
-<PrerequisiteChain tagId="api-v2" />
+<PrerequisiteChain tagId="js-objects" />
 
 ## Without Description
 
 Hide the helper text for a more compact display:
 
-<PrerequisiteChain tagId="webhooks" showDescription={false} />
+<PrerequisiteChain tagId="js-async" showDescription={false} />
 
 ```astro
-<PrerequisiteChain tagId="webhooks" showDescription={false} />
+<PrerequisiteChain tagId="js-async" showDescription={false} />
 ```
 
 ## Limiting Chain Length
 
 For tags with many prerequisites, you can limit the display:
 
-<PrerequisiteChain tagId="webhooks" maxChainLength={2} />
+<PrerequisiteChain tagId="js-objects" maxChainLength={3} />
 
 ```astro
-<PrerequisiteChain tagId="webhooks" maxChainLength={2} />
+<PrerequisiteChain tagId="js-objects" maxChainLength={3} />
 ```
 
 ## How Prerequisites Work
@@ -58,20 +58,19 @@ Prerequisites are defined in your `tags.yml` configuration:
 
 ```yaml
 tags:
-  rest-api:
-    label: "REST API"
-    description: "RESTful API endpoints"
+  js-basics:
+    label: "JS Basics"
+    description: "Introduction to JavaScript fundamentals"
 
-  authentication:
-    label: "Authentication"
+  js-variables:
+    label: "Variables"
     prerequisites:
-      - rest-api  # Must understand REST API first
+      - js-basics  # Must understand basics first
 
-  webhooks:
-    label: "Webhooks"
+  js-functions:
+    label: "Functions"
     prerequisites:
-      - authentication  # Must understand auth first
-      - rest-api        # And REST API basics
+      - js-variables  # Must understand variables first
 ```
 
 The component automatically:
@@ -82,17 +81,17 @@ The component automatically:
 
 ## Use Cases
 
-### API Migration Paths
+### Audience Progression
 
-Show users how to migrate between API versions:
+Show users how content builds from beginner to advanced:
 
-<PrerequisiteChain tagId="api-v2" />
+<PrerequisiteChain tagId="advanced" />
 
 ### Learning Paths
 
 Guide users through a sequence of topics they should understand:
 
-<PrerequisiteChain tagId="webhooks" />
+<PrerequisiteChain tagId="js-arrays" />
 
 ## Responsive Behavior
 

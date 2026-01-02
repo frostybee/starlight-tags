@@ -22,10 +22,10 @@ JavaScript is single-threaded but handles asynchronous operations elegantly thro
 
 JavaScript uses an event loop to handle async operations:
 
-1. **Call Stack** - Executes synchronous code
-2. **Web APIs** - Handle async operations (timers, fetch, etc.)
-3. **Callback Queue** - Queues completed async callbacks
-4. **Event Loop** - Moves callbacks to stack when empty
+1. The call stack executes synchronous code
+2. Web APIs handle async operations (timers, fetch, etc.)
+3. The callback queue holds completed async callbacks
+4. The event loop moves callbacks to the stack when empty
 
 ```javascript
 console.log("1");
@@ -80,9 +80,9 @@ promise
 
 ### Promise States
 
-- **Pending** - Initial state
-- **Fulfilled** - Operation completed successfully
-- **Rejected** - Operation failed
+- Pending: the initial state
+- Fulfilled: operation completed successfully
+- Rejected: operation failed
 
 ### Chaining Promises
 

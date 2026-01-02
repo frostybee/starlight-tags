@@ -52,7 +52,9 @@ export class TagsProcessor {
       const configPath = this.config.configPath;
       this.logger.info(`Loading tags configuration from: ${configPath} (cwd: ${process.cwd()})`);
       const fileContent = await fs.readFile(configPath, 'utf-8');
-      const rawData = yaml.load(fileContent);
+      // Use JSON_SCHEMA to prevent prototype pollution and code execution
+      // This restricts parsing to JSON-compatible types (strings, numbers, booleans, null, arrays, objects)
+      const rawData = yaml.load(fileContent, { schema: yaml.JSON_SCHEMA });
 
       // Validate YAML structure
       this.tagsData = tagsConfigSchema.parse(rawData);

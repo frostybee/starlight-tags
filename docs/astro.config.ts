@@ -29,12 +29,12 @@ export default defineConfig({
           exclude: ['/starlight-tags/tags/', '/starlight-tags/tags/**'],
         }),
         starlightTags({
-          configPath: 'src/config/tasags.yml',
+          configPath: 'src/config/tags.yml',
           tagsPagesPrefix: 'tags',
           tagsIndexSlug: 'tags',
           onInlineTagsNotFound: 'warn',
           enableFrontmatterTags: true,
-          itemsPerPage: 2,
+          itemsPerPage: 4,
         }),
         // starlightThemeGalaxy()
       ],

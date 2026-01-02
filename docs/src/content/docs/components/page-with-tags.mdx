@@ -14,9 +14,9 @@ The `PageWithTags` component wraps your content and displays tags at configurabl
 </PageWithTags>
 ```
 
-- **Automatic data fetching** - reads from frontmatter or accepts `tagIds`
-- **Wraps content** via `<slot />` - your content goes inside
-- **Position control** - `top`, `bottom`, or `both`
+- Automatically fetches data from frontmatter or accepts `tagIds`
+- Wraps content via `<slot />` so your content goes inside
+- Supports position control with `top`, `bottom`, or `both`
 - Adds separator line and "Tags" title for bottom position
 - Best for: Layout templates where you want tags to frame content
 :::
@@ -187,10 +187,10 @@ Wondering which component to use? Here's a quick comparison:
 
 Choose `PageWithTags` when you need:
 
-- **Content wrapping** - Tags frame your content automatically
-- **Consistent positioning** - Enforce same layout across pages (great for layout components)
-- **Custom tag selection** - Specify which tags to display via `tagIds`
-- **Visual separation** - Built-in separator line and optional "Tags" title
+- Tags frame your content automatically through content wrapping
+- Enforces consistent positioning across pages (great for layout components)
+- Lets you specify which tags to display via `tagIds`
+- Provides visual separation with a built-in separator line and optional "Tags" title
 
 ```astro
 <PageWithTags position="both">
@@ -204,9 +204,9 @@ Choose `PageWithTags` when you need:
 
 Choose [`PageTags`](/starlight-tags/components/page-tags/) when you want:
 
-- **Simplicity** - Just drop `<PageTags />` anywhere in your MDX
-- **Flexibility** - Place tags exactly where you want in your content
-- **Inline display** - Tags as part of content flow
+- Drop `<PageTags />` anywhere in your MDX for simplicity
+- Place tags exactly where you want in your content
+- Display tags inline as part of content flow
 
 ```mdx
 <PageTags />  <!-- That's it! -->
@@ -228,7 +228,7 @@ It's important to understand the difference between **components** you use in yo
 ### Auto-Generated Pages
 
 The plugin automatically creates these routes:
-- **`/tags`** - Index page listing all tags with stats, tag cloud, and alphabetical navigation
-- **`/tags/[tag-slug]`** - Individual tag pages showing all pages with that tag
+- `/tags` is the index page listing all tags with stats, tag cloud, and alphabetical navigation
+- `/tags/[tag-slug]` are individual tag pages showing all pages with that tag
 
 These pages are fully localized and styled - you don't need to create them yourself.

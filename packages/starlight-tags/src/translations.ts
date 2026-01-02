@@ -6,7 +6,7 @@
 export const translations = {
   en: {
     'starlightTags.totalTags': 'Total Tags',
-    'starlightTags.tagsApplied': 'Tags Applied',
+    'starlightTags.pagesTagged': 'Pages Tagged',
     'starlightTags.tagCloud': 'Tag Cloud',
     'starlightTags.alphabeticalIndex': 'Alphabetical Index',
     'starlightTags.allTags': 'All Tags',
@@ -28,7 +28,7 @@ export const translations = {
   },
   fr: {
     'starlightTags.totalTags': 'Total des tags',
-    'starlightTags.tagsApplied': 'Tags appliqués',
+    'starlightTags.pagesTagged': 'Pages taguées',
     'starlightTags.tagCloud': 'Nuage de tags',
     'starlightTags.alphabeticalIndex': 'Index alphabétique',
     'starlightTags.allTags': 'Tous les tags',
@@ -50,7 +50,7 @@ export const translations = {
   },
   es: {
     'starlightTags.totalTags': 'Total de etiquetas',
-    'starlightTags.tagsApplied': 'Etiquetas aplicadas',
+    'starlightTags.pagesTagged': 'Páginas etiquetadas',
     'starlightTags.tagCloud': 'Nube de etiquetas',
     'starlightTags.alphabeticalIndex': 'Índice alfabético',
     'starlightTags.allTags': 'Todas las etiquetas',
@@ -72,7 +72,7 @@ export const translations = {
   },
   de: {
     'starlightTags.totalTags': 'Gesamte Tags',
-    'starlightTags.tagsApplied': 'Angewandte Tags',
+    'starlightTags.pagesTagged': 'Getaggte Seiten',
     'starlightTags.tagCloud': 'Tag-Wolke',
     'starlightTags.alphabeticalIndex': 'Alphabetischer Index',
     'starlightTags.allTags': 'Alle Tags',

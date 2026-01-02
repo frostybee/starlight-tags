@@ -15,16 +15,16 @@ This page demonstrates the `TagBadge` component, which renders a single tag as a
 Single tags with different configurations:
 
 <div style="display: flex; gap: 0.5rem; flex-wrap: wrap; align-items: center;">
-  <TagBadge tagId="authentication" />
-  <TagBadge tagId="rest-api" />
-  <TagBadge tagId="webhooks" />
-  <TagBadge tagId="stable" />
+  <TagBadge tagId="configuration" />
+  <TagBadge tagId="guide" />
+  <TagBadge tagId="plugins" />
+  <TagBadge tagId="advanced" />
 </div>
 
 ```astro
 import { TagBadge } from 'starlight-tags/components';
 
-<TagBadge tagId="authentication" />
+<TagBadge tagId="configuration" />
 ```
 
 ## Style Variants
@@ -34,9 +34,9 @@ import { TagBadge } from 'starlight-tags/components';
 Filled background with the tag's color:
 
 <div style="display: flex; gap: 0.5rem; flex-wrap: wrap; align-items: center;">
-  <TagBadge tagId="authentication" variant="solid" />
-  <TagBadge tagId="rest-api" variant="solid" />
-  <TagBadge tagId="beginner" variant="solid" />
+  <TagBadge tagId="configuration" variant="solid" />
+  <TagBadge tagId="guide" variant="solid" />
+  <TagBadge tagId="getting-started" variant="solid" />
 </div>
 
 ### Outline
@@ -44,9 +44,9 @@ Filled background with the tag's color:
 Bordered with transparent background:
 
 <div style="display: flex; gap: 0.5rem; flex-wrap: wrap; align-items: center;">
-  <TagBadge tagId="authentication" variant="outline" />
-  <TagBadge tagId="rest-api" variant="outline" />
-  <TagBadge tagId="beginner" variant="outline" />
+  <TagBadge tagId="configuration" variant="outline" />
+  <TagBadge tagId="guide" variant="outline" />
+  <TagBadge tagId="getting-started" variant="outline" />
 </div>
 
 ### Ghost
@@ -54,9 +54,9 @@ Bordered with transparent background:
 Subtle background tint:
 
 <div style="display: flex; gap: 0.5rem; flex-wrap: wrap; align-items: center;">
-  <TagBadge tagId="authentication" variant="ghost" />
-  <TagBadge tagId="rest-api" variant="ghost" />
-  <TagBadge tagId="beginner" variant="ghost" />
+  <TagBadge tagId="configuration" variant="ghost" />
+  <TagBadge tagId="guide" variant="ghost" />
+  <TagBadge tagId="getting-started" variant="ghost" />
 </div>
 
 ## Sizes
@@ -64,22 +64,22 @@ Subtle background tint:
 ### Small
 
 <div style="display: flex; gap: 0.5rem; flex-wrap: wrap; align-items: center;">
-  <TagBadge tagId="authentication" size="small" />
-  <TagBadge tagId="rest-api" size="small" />
+  <TagBadge tagId="configuration" size="small" />
+  <TagBadge tagId="guide" size="small" />
 </div>
 
 ### Medium (Default)
 
 <div style="display: flex; gap: 0.5rem; flex-wrap: wrap; align-items: center;">
-  <TagBadge tagId="authentication" size="medium" />
-  <TagBadge tagId="rest-api" size="medium" />
+  <TagBadge tagId="configuration" size="medium" />
+  <TagBadge tagId="guide" size="medium" />
 </div>
 
 ### Large
 
 <div style="display: flex; gap: 0.5rem; flex-wrap: wrap; align-items: center;">
-  <TagBadge tagId="authentication" size="large" />
-  <TagBadge tagId="rest-api" size="large" />
+  <TagBadge tagId="configuration" size="large" />
+  <TagBadge tagId="guide" size="large" />
 </div>
 
 ## With Page Count
@@ -87,9 +87,9 @@ Subtle background tint:
 Show how many pages use each tag:
 
 <div style="display: flex; gap: 0.5rem; flex-wrap: wrap; align-items: center;">
-  <TagBadge tagId="authentication" showCount={true} />
-  <TagBadge tagId="rest-api" showCount={true} />
-  <TagBadge tagId="beginner" showCount={true} />
+  <TagBadge tagId="configuration" showCount={true} />
+  <TagBadge tagId="guide" showCount={true} />
+  <TagBadge tagId="example" showCount={true} />
 </div>
 
 ## Without Icon
@@ -97,9 +97,9 @@ Show how many pages use each tag:
 Hide the tag icon:
 
 <div style="display: flex; gap: 0.5rem; flex-wrap: wrap; align-items: center;">
-  <TagBadge tagId="authentication" showIcon={false} />
-  <TagBadge tagId="rest-api" showIcon={false} />
-  <TagBadge tagId="beginner" showIcon={false} />
+  <TagBadge tagId="configuration" showIcon={false} />
+  <TagBadge tagId="guide" showIcon={false} />
+  <TagBadge tagId="getting-started" showIcon={false} />
 </div>
 
 ## Non-Clickable
@@ -107,40 +107,53 @@ Hide the tag icon:
 Render as a span instead of a link:
 
 <div style="display: flex; gap: 0.5rem; flex-wrap: wrap; align-items: center;">
-  <TagBadge tagId="authentication" clickable={false} />
-  <TagBadge tagId="rest-api" clickable={false} />
+  <TagBadge tagId="configuration" clickable={false} />
+  <TagBadge tagId="guide" clickable={false} />
 </div>
 
 ## All Tag Types
 
-### Status Tags
+### Content Types
 
 <div style="display: flex; gap: 0.5rem; flex-wrap: wrap; align-items: center;">
-  <TagBadge tagId="stable" />
-  <TagBadge tagId="beta" />
-  <TagBadge tagId="deprecated" />
+  <TagBadge tagId="guide" />
+  <TagBadge tagId="reference" />
+  <TagBadge tagId="tutorial" />
+  <TagBadge tagId="example" />
 </div>
 
-### Difficulty Tags
+### Audience
 
 <div style="display: flex; gap: 0.5rem; flex-wrap: wrap; align-items: center;">
-  <TagBadge tagId="beginner" />
-  <TagBadge tagId="intermediate" />
+  <TagBadge tagId="getting-started" />
   <TagBadge tagId="advanced" />
+  <TagBadge tagId="migration" />
+  <TagBadge tagId="troubleshooting" />
 </div>
 
-### SDK Tags
+### Core Features
 
 <div style="display: flex; gap: 0.5rem; flex-wrap: wrap; align-items: center;">
-  <TagBadge tagId="sdk-python" />
-  <TagBadge tagId="sdk-node" />
+  <TagBadge tagId="components" />
+  <TagBadge tagId="configuration" />
+  <TagBadge tagId="theming" />
+  <TagBadge tagId="routing" />
 </div>
 
-### Version Tags
+### Integrations
 
 <div style="display: flex; gap: 0.5rem; flex-wrap: wrap; align-items: center;">
-  <TagBadge tagId="api-v1" />
-  <TagBadge tagId="api-v2" />
+  <TagBadge tagId="plugins" />
+  <TagBadge tagId="frameworks" />
+  <TagBadge tagId="deployment" />
+</div>
+
+### Educational
+
+<div style="display: flex; gap: 0.5rem; flex-wrap: wrap; align-items: center;">
+  <TagBadge tagId="js-basics" />
+  <TagBadge tagId="js-functions" />
+  <TagBadge tagId="js-async" />
 </div>
 
 ---

@@ -30,7 +30,7 @@ Create a schema file in your project that extends the base schema:
 ```typescript
 // src/config/tags-schema.ts
 import { z } from 'astro/zod';
-import { tagDefinitionSchema } from 'starlight-tags/schemas/tags';
+import { tagDefinitionSchema } from 'starlight-tags';
 
 export const customTagSchema = tagDefinitionSchema.extend({
   // API documentation fields
@@ -166,20 +166,29 @@ tags.yml                    TagProcessor                 Your Components
 
 ## Important Notes
 
-1. The plugin's built-in components (`TagBadge`, `TagsList`, etc.) only render core fields. Create your own components to display custom fields.
+1. **Import paths:** You can import from either path:
+   ```typescript
+   // Main entry point
+   import { tagDefinitionSchema, type ProcessedTag } from 'starlight-tags';
 
-2. When accessing tags with custom fields, cast to your custom type:
+   // Or subpath export
+   import { tagDefinitionSchema, type ProcessedTag } from 'starlight-tags/schemas/tags';
+   ```
+
+2. The plugin's built-in components (`TagBadge`, `TagsList`, etc.) only render core fields. Create your own components to display custom fields.
+
+3. When accessing tags with custom fields, cast to your custom type:
    ```typescript
    const tag = processor.getTag('auth') as CustomTag;
    ```
 
-3. Zod validates your `tags.yml` against the schema at build time. Invalid custom field values will cause build errors.
+4. Zod validates your `tags.yml` against the schema at build time. Invalid custom field values will cause build errors.
 
-4. Custom fields are optional, so handle cases where they might be `undefined` in your components.
+5. Custom fields are optional, so handle cases where they might be `undefined` in your components.
 
 ## Next Steps
 
-- **[See the live demo](/starlight-tags/demos/extended-schema/)** - Working example with product documentation fields
+- [See the live demo](/starlight-tags/demos/extended-schema/) for a working example with product documentation fields
 - Learn about the [core tag properties](/starlight-tags/guides/tags-definition/)
 - See how to use [components](/starlight-tags/components/) to display tags
 - Understand the [auto-generated routes](/starlight-tags/guides/routes/)

@@ -18,7 +18,7 @@ This component wraps your content and automatically fetches tags from the page's
 
 Tags appear after the content with a separator line and "Tags" heading:
 
-<PageWithTags position="bottom" tagIds={['webhooks', 'intermediate']}>
+<PageWithTags position="bottom" tagIds={['plugins', 'guide']}>
   <p>This is sample content wrapped by PageWithTags.</p>
 </PageWithTags>
 
@@ -34,7 +34,7 @@ import { PageWithTags } from 'starlight-tags/components';
 
 Tags appear before the content:
 
-<PageWithTags position="top" tagIds={['webhooks', 'intermediate']}>
+<PageWithTags position="top" tagIds={['plugins', 'guide']}>
   <p>This is sample content wrapped by PageWithTags.</p>
 </PageWithTags>
 
@@ -48,7 +48,7 @@ Tags appear before the content:
 
 Tags appear at both top and bottom:
 
-<PageWithTags position="both" tagIds={['webhooks', 'intermediate']}>
+<PageWithTags position="both" tagIds={['plugins', 'guide']}>
   <p>This is sample content wrapped by PageWithTags.</p>
 </PageWithTags>
 
@@ -62,7 +62,7 @@ Tags appear at both top and bottom:
 
 Hide the "Tags" heading at the bottom:
 
-<PageWithTags position="bottom" showTitle={false} tagIds={['webhooks', 'intermediate']}>
+<PageWithTags position="bottom" showTitle={false} tagIds={['plugins', 'guide']}>
   <p>This is sample content wrapped by PageWithTags.</p>
 </PageWithTags>
 
@@ -76,12 +76,12 @@ Hide the "Tags" heading at the bottom:
 
 Specify which tags to display using `tagIds`:
 
-<PageWithTags position="bottom" tagIds={['stable', 'sdk-python', 'advanced']}>
+<PageWithTags position="bottom" tagIds={['frameworks', 'getting-started', 'advanced']}>
   <p>This content shows custom-selected tags.</p>
 </PageWithTags>
 
 ```astro
-<PageWithTags position="bottom" tagIds={['stable', 'sdk-python', 'advanced']}>
+<PageWithTags position="bottom" tagIds={['frameworks', 'getting-started', 'advanced']}>
   <YourContent />
 </PageWithTags>
 ```

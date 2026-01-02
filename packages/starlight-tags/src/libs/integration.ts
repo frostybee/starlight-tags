@@ -24,6 +24,17 @@ export function createTagsIntegration(
           ? config.configPath
           : path.resolve(astroRoot, config.configPath);
 
+        // Validate that config path is within project root (defense-in-depth)
+        const normalizedConfigPath = path.normalize(absoluteConfigPath);
+        const normalizedRoot = path.normalize(astroRoot);
+        if (!normalizedConfigPath.startsWith(normalizedRoot)) {
+          throw new Error(
+            `[starlight-tags] Config path must be within project root.\n` +
+            `  Resolved path: ${normalizedConfigPath}\n` +
+            `  Project root: ${normalizedRoot}`
+          );
+        }
+
         // Get base path from Astro config (remove trailing slash for consistency)
         const basePath = (astroConfig.base || '').replace(/\/$/, '');
 

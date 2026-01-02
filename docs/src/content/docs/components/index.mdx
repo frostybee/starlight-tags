@@ -17,6 +17,7 @@ All components handle data fetching automatically. Just pass a `tagId` or `tagId
 | [`TagsList`](/starlight-tags/components/tags-list/) | Display a list of tags |
 | [`PageTags`](/starlight-tags/components/page-tags/) | Auto-display tags for the current page |
 | [`PageWithTags`](/starlight-tags/components/page-with-tags/) | Wrapper that adds tags to content |
+| [`TagSidebar`](/starlight-tags/components/tag-sidebar/) | Sidebar widget for popular tags navigation |
 | [`PrerequisiteChain`](/starlight-tags/components/prerequisite-chain/) | Display prerequisite learning path |
 
 ## Importing Components
@@ -106,9 +107,9 @@ Each component accepts different props for customization:
 
 All tag components support three visual variants:
 
-- **`solid`** - Filled background with tag color
-- **`outline`** - Bordered with transparent background
-- **`ghost`** - Subtle background tint
+- `solid` has a filled background with the tag color
+- `outline` has a border with transparent background
+- `ghost` has a subtle background tint
 
 ## Advanced: Manual Data Fetching
 
@@ -134,5 +135,6 @@ const popularTags = allTags.filter(tag => tag.count >= 3);
   - [TagsList](/starlight-tags/components/tags-list/)
   - [PageTags](/starlight-tags/components/page-tags/)
   - [PageWithTags](/starlight-tags/components/page-with-tags/)
+  - [TagSidebar](/starlight-tags/components/tag-sidebar/)
   - [PrerequisiteChain](/starlight-tags/components/prerequisite-chain/)
 - See how to [extend the schema](/starlight-tags/guides/extending-schema/) for custom tag displays

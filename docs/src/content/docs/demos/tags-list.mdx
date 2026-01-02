@@ -92,25 +92,47 @@ Show how many pages use each tag:
 
 Display only specific tags by ID:
 
-<TagsList tagIds={['authentication', 'rest-api', 'webhooks', 'stable']} />
+<TagsList tagIds={['configuration', 'guide', 'plugins', 'advanced']} />
 
 ```astro
-<TagsList tagIds={['authentication', 'rest-api', 'webhooks', 'stable']} />
+<TagsList tagIds={['configuration', 'guide', 'plugins', 'advanced']} />
 ```
 
 ## Grouped Examples
 
-### Status Tags
+### Content Types
 
-<TagsList tagIds={['stable', 'beta', 'deprecated']} title="API Status" variant="outline" />
+<TagsList tagIds={['guide', 'reference', 'tutorial', 'example']} title="Content Types" variant="outline" />
 
-### Difficulty Levels
+### Audience
 
-<TagsList tagIds={['beginner', 'intermediate', 'advanced']} title="Difficulty" layout="grid" />
+<TagsList tagIds={['getting-started', 'advanced', 'migration', 'troubleshooting']} title="Audience" layout="grid" />
 
-### SDK Options
+### Integrations
 
-<TagsList tagIds={['sdk-python', 'sdk-node']} title="Available SDKs" showCount={true} />
+<TagsList tagIds={['plugins', 'frameworks', 'deployment']} title="Integrations" showCount={true} />
+
+## Sorting
+
+### By Name (Default)
+
+Sort tags alphabetically:
+
+<TagsList sortBy="name" limit={6} />
+
+```astro
+<TagsList sortBy="name" />
+```
+
+### By Count
+
+Sort by number of pages using each tag (highest first):
+
+<TagsList sortBy="count" limit={6} showCount={true} />
+
+```astro
+<TagsList sortBy="count" showCount />
+```
 
 ## Combined Options
 

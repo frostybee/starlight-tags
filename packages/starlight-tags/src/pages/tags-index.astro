@@ -24,7 +24,8 @@ export function getStaticPaths() {
 await initTags();
 
 const allTags = getAllTagsSorted().filter(tag => !tag.hidden);
-const totalTagUsages = allTags.reduce((sum, tag) => sum + tag.count, 0);
+const uniquePages = new Set(allTags.flatMap(tag => tag.pages.map(p => p.id)));
+const totalPagesTagged = uniquePages.size;
 const t = Astro.locals.t;
 const { locale } = Astro.params;
 
@@ -45,7 +46,7 @@ const sortedLetters = Object.keys(tagsByLetter).sort();
 <StarlightPage
   frontmatter={{
     title: t('starlightTags.allTags'),
-    description: `Browse all ${allTags.length} tags applied ${totalTagUsages} times across documentation pages.`,
+    description: `Browse all ${allTags.length} tags across ${totalPagesTagged} documentation pages.`,
     sidebar: {
       label: "Tags",
       order: 999
@@ -62,8 +63,8 @@ const sortedLetters = Object.keys(tagsByLetter).sort();
       </div>
       <span class="stat-separator">/</span>
       <div class="stat">
-        <span class="stat-value">{totalTagUsages}</span>
-        <span class="stat-label">{t('starlightTags.tagsApplied')}</span>
+        <span class="stat-value">{totalPagesTagged}</span>
+        <span class="stat-label">{t('starlightTags.pagesTagged')}</span>
       </div>
     </div>
 
@@ -369,8 +370,11 @@ const sortedLetters = Object.keys(tagsByLetter).sort();
   .card-count {
     font-size: 0.75rem;
     font-weight: 600;
-    color: var(--sl-color-gray-3);
+    color: var(--sl-color-white);
     font-variant-numeric: tabular-nums;
+    background: var(--sl-color-gray-6);
+    padding: 0.2rem 0.4rem;
+    border-radius: 0.25rem;
   }
 
   .card-desc {

@@ -54,7 +54,7 @@ await initTags();
 await initTags({ verbose: true });
 ```
 
-This function is **memoized** - calling it multiple times only initializes once.
+This function is memoized, so calling it multiple times only initializes once.
 
 ### `getTag(tagId)`
 
@@ -76,7 +76,7 @@ const tagsMap = getTags();
 
 ### `getAllTagsSorted()`
 
-Get all tags sorted by count (descending) then label (ascending).
+Get all tags sorted by priority (descending), then count (descending), then label (ascending).
 
 ```ts
 const tags = getAllTagsSorted();
