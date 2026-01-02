@@ -101,16 +101,7 @@ const config = ${JSON.stringify(config)};
  * @throws {Error} If initialization fails (e.g., invalid tags.yml)
  */
 export async function initTags(options) {
-  try {
-    return await initializeTagsStore(config, options);
-  } catch (error) {
-    // Provide a helpful error message for debugging
-    const message = error instanceof Error ? error.message : String(error);
-    throw new Error(
-      '[starlight-tags] Failed to initialize tags store: ' + message + '\\n' +
-      'Check your tags.yml configuration and ensure the file exists.'
-    );
-  }
+  return await initializeTagsStore(config, options);
 }
 
 // Re-export all helper functions

@@ -29,14 +29,14 @@ export default defineConfig({
           exclude: ['/starlight-tags/tags/', '/starlight-tags/tags/**'],
         }),
         starlightTags({
-          configPath: 'tags.yml',
+          configPath: 'src/config/tasags.yml',
           tagsPagesPrefix: 'tags',
           tagsIndexSlug: 'tags',
           onInlineTagsNotFound: 'warn',
           enableFrontmatterTags: true,
           itemsPerPage: 2,
         }),
-        //starlightThemeGalaxy()
+        // starlightThemeGalaxy()
       ],
       sidebar: [
         {
@@ -49,18 +49,21 @@ export default defineConfig({
         },
         {
           label: 'Plugin Components',
+          collapsed:true,
           autogenerate: {
             directory: 'components/',
           },
         },
         {
           label: 'Demos: Plugin Components',
+          collapsed:true,
           autogenerate: {
             directory: 'demos/',
           },
         },
         {
           label: 'Examples: Tagged Pages',
+          collapsed:true,
           items: [
             {
               label: 'API Documentation',

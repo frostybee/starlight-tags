@@ -42,15 +42,9 @@ export class TagsProcessor {
   }
 
   async initialize(): Promise<void> {
-    try {
-      await this.loadTagsConfig();
-      await this.processTagsData();
-      this.logger.info(`Loaded ${this.processedTags?.size || 0} tags from configuration`);
-    } catch (error) {
-      const message = error instanceof Error ? error.message : String(error);
-      this.logger.error(`Failed to initialize tags: ${message}`);
-      throw error;
-    }
+    await this.loadTagsConfig();
+    await this.processTagsData();
+    this.logger.info(`Loaded ${this.processedTags?.size || 0} tags from configuration`);
   }
 
   private async loadTagsConfig(): Promise<void> {
@@ -64,15 +58,12 @@ export class TagsProcessor {
       this.tagsData = tagsConfigSchema.parse(rawData);
 
     } catch (error) {
-      // Check for file not found error
       const errnoError = error as { code?: string; path?: string };
       if (error instanceof Error && errnoError.code === 'ENOENT') {
-        this.logger.warn(`Tags configuration file not found: ${this.config.configPath} (tried: ${errnoError.path || 'unknown path'})`);
-        this.tagsData = { tags: {} };
-      } else {
-        const message = error instanceof Error ? error.message : String(error);
-        throw new Error(`Invalid tags configuration: ${message}`);
+        throw new Error(`[starlight-tags] Tags configuration file not found: ${this.config.configPath}\nCreate a tags.yml file or update the configPath option.`);
       }
+      const message = error instanceof Error ? error.message : String(error);
+      throw new Error(`[starlight-tags] Invalid tags configuration: ${message}`);
     }
   }
 

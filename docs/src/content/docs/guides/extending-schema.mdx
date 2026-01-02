@@ -166,16 +166,16 @@ tags.yml                    TagProcessor                 Your Components
 
 ## Important Notes
 
-1. **Core components use core fields only** - The plugin's built-in components (`TagBadge`, `TagsList`, etc.) only render core fields. Create your own components to display custom fields.
+1. The plugin's built-in components (`TagBadge`, `TagsList`, etc.) only render core fields. Create your own components to display custom fields.
 
-2. **Type casting may be required** - When accessing tags with custom fields, cast to your custom type:
+2. When accessing tags with custom fields, cast to your custom type:
    ```typescript
    const tag = processor.getTag('auth') as CustomTag;
    ```
 
-3. **Validation at build time** - Zod validates your `tags.yml` against the schema. Invalid custom field values will cause build errors.
+3. Zod validates your `tags.yml` against the schema at build time. Invalid custom field values will cause build errors.
 
-4. **Handle undefined values** - Custom fields are optional, so handle cases where they might be `undefined` in your components.
+4. Custom fields are optional, so handle cases where they might be `undefined` in your components.
 
 ## Next Steps
 

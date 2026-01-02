@@ -17,7 +17,7 @@
     "astro": "^5.16.6",
     "sharp": "^0.34.5",
     "starlight-tags": "workspace:*",
-    "starlight-theme-galaxy": "^0.5.2"
+    "starlight-theme-galaxy": "^0.6.0"
   },
   "engines": {
     "node": "^18.17.1 || ^20.3.0 || >=21.0.0"
