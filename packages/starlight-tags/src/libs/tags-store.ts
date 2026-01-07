@@ -85,8 +85,9 @@ async function performInitialization(
       logger.info(`Tags store initialized with ${processor.getTags().size} tags`);
     }
   } catch (error) {
-    // Clear the promise on failure to allow retry attempts
+    // Clear both promise and processor on failure to ensure consistent state
     initializationPromise = null;
+    cachedProcessor = null;
     throw error instanceof Error ? error : new Error(String(error));
   }
 }

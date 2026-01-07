@@ -80,14 +80,21 @@ export async function getStaticPaths() {
     }
   }
 
+  // Runtime assertion to verify path count matches pre-allocation
+  if (pathIndex !== totalPathCount) {
+    throw new Error(
+      `[starlight-tags] Path generation mismatch: expected ${totalPathCount}, got ${pathIndex}`
+    );
+  }
+
   return paths;
 }
 
 const { tag, pages, pagination } = Astro.props;
 
-// Guard against missing tag data (shouldn't happen, but ensures type safety)
-if (!tag) {
-  throw new Error('[starlight-tags] Tag data not found in props');
+// Guard against missing props data (shouldn't happen, but ensures type safety)
+if (!tag || !pages || !pagination) {
+  throw new Error('[starlight-tags] Invalid props: missing tag, pages, or pagination data');
 }
 
 // Access translations via Astro.locals.t
@@ -100,22 +107,9 @@ const { locale } = Astro.params as { locale?: string };
 // Initialize tags store (memoized - already initialized in getStaticPaths, this is a no-op)
 await initTags();
 
-// Find related tags from the pages that have this tag
-const relatedTags = new Set<string>();
-
-for (const page of pages) {
-  // Use tags from the page data (already available from the processor)
-  const pageTags = page.tags;
-  if (pageTags && Array.isArray(pageTags)) {
-    for (const tagId of pageTags) {
-      if (tagId !== tag.id) {
-        relatedTags.add(tagId);
-      }
-    }
-  }
-}
-
-const relatedTagsData = Array.from(relatedTags)
+// Use pre-computed related tags from the processor
+// (based on shared pages and prerequisite relationships, limited to top 5)
+const relatedTagsData = (tag.relatedTags || [])
   .map(tagId => getTag(tagId))
   .filter((relTag): relTag is NonNullable<typeof relTag> => relTag !== undefined && !relTag.hidden)
   .sort((a, b) => b.count - a.count);

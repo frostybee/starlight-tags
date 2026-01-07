@@ -1,0 +1,169 @@
+---
+title: Adding Tags on All Pages
+description: Override PageTitle to show tags below every page title automatically
+---
+
+By default, you need to manually add the [`<PageTags />`](/starlight-tags/components/page-tags/) component to each page where you want tags displayed. If you want tags to **appear automatically** on every page without modifying your content files, you can override Starlight's `PageTitle` component.
+
+## How It Works
+
+Starlight allows you to [override built-in components](https://starlight.astro.build/guides/overriding-components/) with your own implementations. By overriding the `PageTitle` component, you can inject `<PageTags />` after every page title site-wide.
+
+## Step 1: Create the Override Component
+
+Create a new file at `src/components/PageTitleOverride.astro` in your project:
+
+```astro
+---
+/**
+ * Custom PageTitle that displays tags below the page heading
+ */
+import StarlightPageTitle from '@astrojs/starlight/components/PageTitle.astro';
+import { PageTags } from 'starlight-tags/components';
+---
+
+<StarlightPageTitle {...Astro.props} />
+<PageTags layout="inline" variant="outline" size="small" />
+
+<style>
+  /* Optional: Add spacing between title and tags */
+  :global(.fb-page-tags) {
+    margin-top: 0.75rem;
+  }
+</style>
+```
+
+This component:
+- Imports and renders Starlight's original `PageTitle`
+- Adds `PageTags` directly below it
+- Passes through all props to maintain compatibility
+
+## Step 2: Configure the Override
+
+Register your component override in `astro.config.mjs`:
+
+```js
+// astro.config.mjs
+import starlight from '@astrojs/starlight'
+import { defineConfig } from 'astro/config'
+import starlightTags from 'starlight-tags'
+
+export default defineConfig({
+  integrations: [
+    starlight({
+      plugins: [starlightTags()],
+      title: 'My Docs',
+      components: {
+        // Override PageTitle with your custom component
+        PageTitle: './src/components/PageTitleOverride.astro',
+      },
+    }),
+  ],
+})
+```
+
+## Customization
+
+### Tag Display Options
+
+Customize how tags appear by modifying the `PageTags` props:
+
+```astro
+<PageTags
+  layout="block"        <!-- 'inline' | 'block' -->
+  variant="solid"       <!-- 'solid' | 'outline' | 'ghost' -->
+  size="medium"         <!-- 'small' | 'medium' | 'large' -->
+  showIcon={true}       <!-- Show tag icons -->
+  label={true}          <!-- Show "Tags:" label (localized) -->
+/>
+```
+
+| Prop | Default | Description |
+|------|---------|-------------|
+| `layout` | `'inline'` | `'inline'` flows with text, `'block'` takes full width with borders |
+| `variant` | `'outline'` | Visual style: `'solid'`, `'outline'`, or `'ghost'` |
+| `size` | `'small'` | Badge size: `'small'`, `'medium'`, or `'large'` |
+| `showIcon` | `true` | Display tag icons if defined |
+| `label` | `false` | Show label before tags. `true` for localized "Tags:", or pass a string |
+
+### Custom Styling
+
+Add custom CSS to control spacing and appearance:
+
+```astro
+<style>
+  :global(.fb-page-tags) {
+    margin-top: 1rem;
+    padding-top: 0.5rem;
+    border-top: 1px solid var(--sl-color-hairline);
+  }
+</style>
+```
+
+## Opting Out on Specific Pages
+
+The `PageTags` component respects the [`hideTags`](/starlight-tags/guides/frontmatter/#hidetags) frontmatter property. To hide tags on a specific page, add `hideTags: true` to the page's frontmatter:
+
+```mdx
+---
+title: Internal Documentation
+tags:
+  - internal
+hideTags: true
+---
+
+This page is tagged but won't display the tags.
+```
+
+The page will still appear in tag listings, but tags won't be rendered below the title.
+
+## Complete Example
+
+Here's a full example with custom styling:
+
+```astro
+---
+/**
+ * src/components/PageTitle.astro
+ * Custom PageTitle with automatic tag display
+ */
+import StarlightPageTitle from '@astrojs/starlight/components/PageTitle.astro';
+import { PageTags } from 'starlight-tags/components';
+---
+
+<div class="page-title-with-tags">
+  <StarlightPageTitle {...Astro.props} />
+  <PageTags
+    layout="inline"
+    variant="outline"
+    size="small"
+    showIcon={true}
+  />
+</div>
+
+<style>
+  .page-title-with-tags {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .page-title-with-tags :global(.fb-page-tags) {
+    margin: 0;
+  }
+</style>
+```
+
+## When to Use This Approach
+
+| Approach | Best For |
+|----------|----------|
+| **PageTitle Override** | Sites where most pages have tags and you want consistent display |
+| **Manual `<PageTags />`** | Sites where only some pages need visible tags, or different pages need different styling |
+| **`<PageWithTags />`** | Wrapping specific content blocks with tags at top/bottom |
+
+## Next Steps
+
+- Learn about [PageTags props](/starlight-tags/components/page-tags/) for customization options
+- See [frontmatter options](/starlight-tags/guides/frontmatter/) for per-page control
+- Explore other [component overrides](https://starlight.astro.build/guides/overriding-components/) in Starlight

@@ -81,13 +81,14 @@ const tagStyle = tag.color ? `--tag-color: ${tag.color}` : '';
     style={tagStyle}
     title={tag.description || tag.label}
   >
-    {tag.icon && <span class="product-tag__icon">{tag.icon}</span>}
+    {tag.icon && <span class="product-tag__icon" aria-hidden="true">{tag.icon}</span>}
     <span class="product-tag__label">{tag.label}</span>
 
     {showPlanTier && planTier && (
       <span
         class="product-tag__tier"
         style={`--tier-color: ${tierColor}`}
+        aria-label={`Plan: ${tierLabel}`}
       >
         {tierLabel}
       </span>

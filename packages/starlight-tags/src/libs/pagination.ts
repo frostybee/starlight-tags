@@ -67,7 +67,14 @@ export function buildTagPageUrl(
   pageNumber: number,
   tagsPagesPrefix: string
 ): string {
-  if (pageNumber <= 1) {
+  // Validate pageNumber is a positive integer
+  if (!Number.isInteger(pageNumber) || pageNumber < 1) {
+    throw new Error(
+      `[starlight-tags] Invalid page number: ${pageNumber}. Must be a positive integer.`
+    );
+  }
+
+  if (pageNumber === 1) {
     return `/${tagsPagesPrefix}/${tagSlug}/`;
   }
   return `/${tagsPagesPrefix}/${tagSlug}/${pageNumber}`;

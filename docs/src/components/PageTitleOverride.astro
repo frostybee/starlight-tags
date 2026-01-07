@@ -1,0 +1,20 @@
+---
+/**
+ * Custom PageTitle that displays tags below the page heading
+ *
+ * This component overrides Starlight's default PageTitle to automatically
+ * show page tags beneath every page title site-wide.
+ */
+import StarlightPageTitle from '@astrojs/starlight/components/PageTitle.astro';
+import { PageTags } from 'starlight-tags/components';
+---
+
+<StarlightPageTitle {...Astro.props} />
+<PageTags layout="inline" variant="solid" size="small" />
+
+<style>
+  /* Add spacing between title and tags */
+  :global(.fb-page-tags) {
+    margin-top: 0.5rem;
+  }
+</style>

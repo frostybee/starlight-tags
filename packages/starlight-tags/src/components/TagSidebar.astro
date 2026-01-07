@@ -58,16 +58,18 @@ const tagsIndexUrl = buildUrlFromCurrentPage('/tags/', Astro.url);
 ---
 
 {popularTags.length > 0 && (
-  <div
+  <nav
     class="sl-tag-sidebar"
     data-collapsible={collapsible}
     data-open={!collapsed}
+    aria-label={title || 'Tags'}
   >
     {title && (
       <button
         type="button"
         class="sl-tag-sidebar__header"
         aria-expanded={!collapsed}
+        aria-controls="sl-tag-sidebar-content"
         disabled={!collapsible}
       >
         <span class="sl-tag-sidebar__title">{title}</span>
@@ -83,45 +85,49 @@ const tagsIndexUrl = buildUrlFromCurrentPage('/tags/', Astro.url);
             stroke-width="2"
             stroke-linecap="round"
             stroke-linejoin="round"
+            aria-hidden="true"
           >
             <polyline points="6 9 12 15 18 9"></polyline>
           </svg>
         )}
       </button>
     )}
-    <div class="sl-tag-sidebar__content">
+    <div class="sl-tag-sidebar__content" id="sl-tag-sidebar-content">
       <ul class="sl-tag-sidebar__list">
         {popularTags.map(tag => (
           <li>
             <a href={buildUrlFromCurrentPage(tag.url, Astro.url)} class="sl-tag-sidebar__item">
               <span class="sl-tag-sidebar__name">{tag.label}</span>
               {showCount && (
-                <span class="sl-tag-sidebar__count">{tag.count}</span>
+                <span class="sl-tag-sidebar__count" aria-label={`${tag.count} pages`}>{tag.count}</span>
               )}
             </a>
           </li>
         ))}
       </ul>
       <a href={tagsIndexUrl} class="sl-tag-sidebar__all">
-        View all tags &rarr;
+        View all tags<span aria-hidden="true"> &rarr;</span>
       </a>
     </div>
-  </div>
+  </nav>
 )}
 
 <!-- Inline script to prevent hydration flash - runs before first paint -->
 <script is:inline>
   (function() {
-    const STORAGE_KEY = 'starlight-tag-sidebar-open';
-    const savedState = localStorage.getItem(STORAGE_KEY);
+    var STORAGE_KEY = 'starlight-tag-sidebar-open';
+    var savedState = localStorage.getItem(STORAGE_KEY);
     if (savedState !== null) {
-      const isOpen = savedState === 'true';
-      document.querySelectorAll('.sl-tag-sidebar[data-collapsible="true"]').forEach(function(el) {
+      var isOpen = savedState === 'true';
+      document.querySelectorAll('.sl-tag-sidebar[data-collapsible="true"]').forEach(function(el, index) {
         // Disable transitions during initial state restore
         el.style.setProperty('--_transition', 'none');
         el.dataset.open = String(isOpen);
         var header = el.querySelector('.sl-tag-sidebar__header');
-        if (header) header.setAttribute('aria-expanded', String(isOpen));
+        var content = el.querySelector('.sl-tag-sidebar__content');
+        if (header) {
+          header.setAttribute('aria-expanded', String(isOpen));
+        }
         // Re-enable transitions after a frame
         requestAnimationFrame(function() {
           requestAnimationFrame(function() {
@@ -136,13 +142,20 @@ const tagsIndexUrl = buildUrlFromCurrentPage('/tags/', Astro.url);
 <script>
   class TagSidebarToggle {
     private static STORAGE_KEY = 'starlight-tag-sidebar-open';
+    private static instanceCounter = 0;
 
     static init() {
       const sidebars = document.querySelectorAll<HTMLElement>('.sl-tag-sidebar[data-collapsible="true"]');
 
-      sidebars.forEach(sidebar => {
+      sidebars.forEach((sidebar, index) => {
         const header = sidebar.querySelector<HTMLButtonElement>('.sl-tag-sidebar__header');
-        if (!header) return;
+        const content = sidebar.querySelector<HTMLElement>('.sl-tag-sidebar__content');
+        if (!header || !content) return;
+
+        // Generate unique IDs for aria-controls relationship
+        const uniqueId = `sl-tag-sidebar-content-${this.instanceCounter++}`;
+        content.id = uniqueId;
+        header.setAttribute('aria-controls', uniqueId);
 
         // Remove any existing listeners (for SPA navigation)
         const newHeader = header.cloneNode(true) as HTMLButtonElement;

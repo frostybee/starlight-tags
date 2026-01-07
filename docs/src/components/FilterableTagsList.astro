@@ -43,18 +43,18 @@ const tierLabels: Record<PlanTier, string> = {
         <option value={tier}>{tierLabels[tier]}</option>
       ))}
     </select>
-    <span class="filter-count">
+    <span class="filter-count" aria-live="polite" aria-atomic="true">
       Showing <span class="count-value">{tagsWithPlanTier.length}</span> of {tagsWithPlanTier.length} tags
     </span>
   </div>
 
-  <div class="tags-grid">
+  <ul class="tags-grid" role="list" aria-label="Tags filtered by plan">
     {tagsWithPlanTier.map(tag => (
-      <div class="tag-item" data-plan-tier={tag.planTier}>
+      <li class="tag-item" data-plan-tier={tag.planTier}>
         <ProductTagBadge tagId={tag.id} showProduct />
-      </div>
+      </li>
     ))}
-  </div>
+  </ul>
 
   {tagsWithPlanTier.length === 0 && (
     <p class="no-tags">No tags with plan tier defined.</p>
@@ -161,6 +161,9 @@ const tierLabels: Record<PlanTier, string> = {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
     gap: 1rem;
+    list-style: none;
+    margin: 0;
+    padding: 0;
   }
 
   .tag-item {

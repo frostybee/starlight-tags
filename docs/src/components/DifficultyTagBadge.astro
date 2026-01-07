@@ -77,13 +77,14 @@ const tagStyle = tag.color ? `--tag-color: ${tag.color}` : '';
     style={tagStyle}
     title={tag.description || tag.label}
   >
-    {tag.icon && <span class="difficulty-tag__icon">{tag.icon}</span>}
+    {tag.icon && <span class="difficulty-tag__icon" aria-hidden="true">{tag.icon}</span>}
     <span class="difficulty-tag__label">{tag.label}</span>
 
     {showDifficulty && difficulty && (
       <span
         class="difficulty-tag__level"
         style={`--difficulty-color: ${difficultyColor}`}
+        aria-label={`Difficulty: ${difficultyLabel}`}
       >
         {difficultyLabel}
       </span>
@@ -91,11 +92,13 @@ const tagStyle = tag.color ? `--tag-color: ${tag.color}` : '';
   </TagElement>
 
   {showPrerequisites && tag.prerequisites && tag.prerequisites.length > 0 && (
-    <div class="prerequisites">
-      <span class="prerequisites__label">Requires:</span>
-      {tag.prerequisites.map((prereqId: string) => (
-        <span class="prerequisite-tag">{prereqId}</span>
-      ))}
+    <div class="prerequisites" role="group" aria-label="Prerequisites">
+      <span class="prerequisites__label" id="prereq-label">Requires:</span>
+      <ul class="prerequisites__list" aria-labelledby="prereq-label">
+        {tag.prerequisites.map((prereqId: string) => (
+          <li class="prerequisite-tag">{prereqId}</li>
+        ))}
+      </ul>
     </div>
   )}
 </div>
@@ -177,6 +180,15 @@ const tagStyle = tag.color ? `--tag-color: ${tag.color}` : '';
   .prerequisites__label {
     color: var(--sl-color-gray-3);
     font-weight: 500;
+  }
+
+  .prerequisites__list {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    list-style: none;
+    margin: 0;
+    padding: 0;
   }
 
   .prerequisite-tag {

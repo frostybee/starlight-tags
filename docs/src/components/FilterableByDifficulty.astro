@@ -43,18 +43,18 @@ const difficultyLabels: Record<DifficultyLevel, string> = {
         <option value={level}>{difficultyLabels[level]}</option>
       ))}
     </select>
-    <span class="filter-count">
+    <span class="filter-count" aria-live="polite" aria-atomic="true">
       Showing <span class="count-value">{tagsWithDifficulty.length}</span> of {tagsWithDifficulty.length} tags
     </span>
   </div>
 
-  <div class="tags-grid">
+  <ul class="tags-grid" role="list" aria-label="Tags filtered by difficulty">
     {tagsWithDifficulty.map(tag => (
-      <div class="tag-item" data-difficulty={tag.difficulty}>
+      <li class="tag-item" data-difficulty={tag.difficulty}>
         <DifficultyTagBadge tagId={tag.id} showPrerequisites />
-      </div>
+      </li>
     ))}
-  </div>
+  </ul>
 
   {tagsWithDifficulty.length === 0 && (
     <p class="no-tags">No tags with difficulty level defined.</p>
@@ -161,6 +161,9 @@ const difficultyLabels: Record<DifficultyLevel, string> = {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
     gap: 1rem;
+    list-style: none;
+    margin: 0;
+    padding: 0;
   }
 
   .tag-item {

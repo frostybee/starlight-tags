@@ -35,7 +35,7 @@ To add the TagSidebar to your Starlight site, create a sidebar component overrid
 
 ```astro
 ---
-// src/components/Sidebar.astro
+// src/components/SidebarOverride.astro
 import Default from '@astrojs/starlight/components/Sidebar.astro';
 import { TagSidebar } from 'starlight-tags/components';
 ---
@@ -55,7 +55,7 @@ export default defineConfig({
     starlight({
       title: 'My Docs',
       components: {
-        Sidebar: './src/components/Sidebar.astro',
+        Sidebar: './src/components/SidebarOverride.astro',
       },
     }),
   ],

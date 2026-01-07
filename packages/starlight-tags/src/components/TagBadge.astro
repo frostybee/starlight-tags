@@ -77,11 +77,11 @@ const href = clickable ? buildUrlFromCurrentPage(tag.url, Astro.url) : undefined
   title={tag.description || tag.label}
 >
   {showIcon && tag.icon && (
-    <span class="fb-tag__icon">{tag.icon}</span>
+    <span class="fb-tag__icon" aria-hidden="true">{tag.icon}</span>
   )}
   <span class="fb-tag__label">{tag.label}</span>
   {showCount && (
-    <span class="fb-tag__count">{tag.count}</span>
+    <span class="fb-tag__count" aria-label={`${tag.count} pages`}>{tag.count}</span>
   )}
 </TagElement>
 

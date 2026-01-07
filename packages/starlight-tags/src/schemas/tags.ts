@@ -7,6 +7,24 @@
 import { z } from 'astro/zod';
 
 /**
+ * Difficulty level constants for educational content.
+ * Used for indicating prerequisite knowledge level.
+ */
+export const DIFFICULTIES = ['beginner', 'intermediate', 'advanced'] as const;
+
+/** Type alias for valid difficulty level values */
+export type Difficulty = (typeof DIFFICULTIES)[number];
+
+/**
+ * Content type constants for educational materials.
+ * Used for categorizing documentation by format/purpose.
+ */
+export const CONTENT_TYPES = ['lecture', 'lab', 'assignment', 'project', 'reference', 'tutorial', 'assessment'] as const;
+
+/** Type alias for valid content type values */
+export type ContentType = (typeof CONTENT_TYPES)[number];
+
+/**
  * Regex for valid CSS color values.
  * Supports: hex (#fff, #ffffff), named colors (blue), rgb/rgba, hsl/hsla
  */
@@ -55,9 +73,9 @@ export const tagDefinitionSchema = z.object({
 
   // Educational metadata (optional)
   /** Difficulty level: beginner, intermediate, or advanced */
-  difficulty: z.enum(['beginner', 'intermediate', 'advanced']).optional(),
+  difficulty: z.enum(DIFFICULTIES).optional(),
   /** Type of content: lecture, lab, assignment, project, reference, tutorial, or assessment */
-  contentType: z.enum(['lecture', 'lab', 'assignment', 'project', 'reference', 'tutorial', 'assessment']).optional(),
+  contentType: z.enum(CONTENT_TYPES).optional(),
   /** Tag IDs that should be learned before this topic */
   prerequisites: z.array(z.string()).optional(),
 }).passthrough(); // Allow custom fields to pass through for schema extension

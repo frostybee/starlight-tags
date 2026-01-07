@@ -83,20 +83,24 @@ if (limit && limit > 0) {
 }
 ---
 
-{title && <h3 class="fb-tags-list__title">{title}</h3>}
+{title && <h3 class="fb-tags-list__title" id="tags-list-title">{title}</h3>}
 
-<div class:list={[
-  'fb-tags-list',
-  `fb-tags-list--${layout}`
-]}>
+<ul
+  class:list={['fb-tags-list', `fb-tags-list--${layout}`]}
+  aria-label={title ? undefined : 'Tags'}
+  aria-labelledby={title ? 'tags-list-title' : undefined}
+  role="list"
+>
   {sortedTags.map(tag => (
-    <TagBadge
-      tag={tag}
-      showCount={showCount}
-      variant={variant}
-    />
+    <li class="fb-tags-list__item">
+      <TagBadge
+        tag={tag}
+        showCount={showCount}
+        variant={variant}
+      />
+    </li>
   ))}
-</div>
+</ul>
 
 <style>
   .fb-tags-list__title {
@@ -107,6 +111,10 @@ if (limit && limit > 0) {
   }
 
   .fb-tags-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+
     /* Inline layout (default) */
     &.fb-tags-list--inline {
       display: flex;
@@ -127,5 +135,9 @@ if (limit && limit > 0) {
       flex-direction: column;
       gap: 0.5rem;
     }
+  }
+
+  .fb-tags-list__item {
+    display: contents;
   }
 </style>

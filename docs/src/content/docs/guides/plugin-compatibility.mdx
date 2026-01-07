@@ -1,0 +1,141 @@
+---
+title: Plugin Compatibility
+description: How to integrate starlight-tags with other Starlight plugins
+---
+
+The `starlight-tags` plugin creates dynamic routes that may require special handling when used alongside other Starlight plugins. This guide covers common integration patterns.
+
+## Sidebar Plugins
+
+The tag routes created by `starlight-tags` are **dynamically injected** at build time—they don't exist as files in your `src/content/docs/` directory. This means sidebar plugins that organize navigation based on your content structure need to exclude these routes.
+
+### Why Exclusion is Needed
+
+Sidebar plugins like `starlight-sidebar-topics` work by analyzing your content collections. Since tag pages:
+
+- Are generated programmatically via Astro's `injectRoute()` API
+- Don't belong to any content collection
+- Have their own navigation and pagination system
+
+Including them would cause the sidebar plugin to either error out or create unwanted/broken sidebar entries.
+
+### Example: starlight-sidebar-topics
+
+When using `starlight-sidebar-topics`, exclude the tag routes:
+
+```js
+// astro.config.mjs
+import starlightSidebarTopics from 'starlight-sidebar-topics'
+import starlightTags from 'starlight-tags'
+
+export default defineConfig({
+  integrations: [
+    starlight({
+      plugins: [
+        starlightTags({
+          tagsPagesPrefix: 'tags',
+          tagsIndexSlug: 'tags',
+        }),
+        starlightSidebarTopics([
+          // Your sidebar topics configuration...
+        ], {
+          exclude: ['/tags', '/tags/**']
+        }),
+      ],
+    }),
+  ],
+})
+```
+
+### Custom URL Prefixes
+
+If you've customized the `tagsPagesPrefix` or `tagsIndexSlug`, update your exclusions accordingly:
+
+```js
+starlightTags({
+  tagsPagesPrefix: 'topics',
+  tagsIndexSlug: 'browse',
+}),
+starlightSidebarTopics([...], {
+  exclude: ['/browse', '/topics/**']
+}),
+```
+
+### Other Sidebar Plugins
+
+Any plugin that processes routes or builds navigation from content collections may require similar exclusions. Check your plugin's documentation for exclude/ignore options.
+
+## Link Validation Plugins
+
+Link validators check that all internal links in your documentation resolve to valid pages. Since tag pages are dynamically generated and don't exist as content files, these validators need to exclude tag routes to avoid false positives.
+
+### Example: starlight-links-validator
+
+When using `starlight-links-validator`, exclude the tag routes:
+
+```js
+// astro.config.mjs
+import starlightLinksValidator from 'starlight-links-validator'
+import starlightTags from 'starlight-tags'
+
+export default defineConfig({
+  integrations: [
+    starlight({
+      plugins: [
+        starlightLinksValidator({
+          exclude: ['/tags/', '/tags/**'],
+        }),
+        starlightTags({
+          tagsPagesPrefix: 'tags',
+          tagsIndexSlug: 'tags',
+        }),
+      ],
+    }),
+  ],
+})
+```
+
+:::note
+If your site uses a `base` path (e.g., `base: '/starlight-tags'`), include it in the exclusion patterns:
+```js
+exclude: ['/starlight-tags/tags/', '/starlight-tags/tags/**']
+```
+:::
+
+## Plugin Load Order
+
+Starlight plugins are processed in the order they appear in the `plugins` array. While `starlight-tags` generally works in any position, consider these guidelines:
+
+- Place `starlight-tags` **before** sidebar plugins so tag routes are registered first
+- If a plugin modifies the content schema, ensure `starlight-tags` is loaded after it to pick up the extended schema
+
+```js
+plugins: [
+  starlightTags(),           // Register tag routes first
+  starlightSidebarTopics(),  // Then configure sidebar (with exclusions)
+],
+```
+
+## Known Compatible Plugins
+
+The following plugins have been tested with `starlight-tags`:
+
+| Plugin | Notes |
+|--------|-------|
+| `starlight-sidebar-topics` | Requires route exclusions (see above) |
+| `starlight-links-validator` | Requires route exclusions (see above) |
+| `@astrojs/sitemap` | Tag pages are automatically included |
+
+## Reporting Compatibility Issues
+
+If you encounter issues using `starlight-tags` with another Starlight plugin, please [open an issue](https://github.com/frostybee/starlight-tags/issues) with:
+
+- The plugin name and version
+- Your configuration
+- The error or unexpected behavior
+
+## Next Steps
+
+- Learn about [auto-generated routes](/starlight-tags/guides/routes/) created by the plugin
+- See the [Architecture Guide](/starlight-tags/guides/architecture/) for how tag pages are generated internally
+- Explore [configuration options](/starlight-tags/guides/configuration/) for customizing routes

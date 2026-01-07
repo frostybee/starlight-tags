@@ -69,25 +69,25 @@ const shouldShowBottom = position === 'bottom' || position === 'both';
 ---
 
 {!hideTags && shouldShowTop && tags.length > 0 && (
-  <div class="fb-page-tags fb-page-tags--top">
+  <nav class="fb-page-tags fb-page-tags--top" aria-label="Page tags">
     <TagsList
       tags={tags}
       layout="inline"
       variant="outline"
     />
-  </div>
+  </nav>
 )}
 
 <slot />
 
 {!hideTags && shouldShowBottom && tags.length > 0 && (
-  <div class="fb-page-tags fb-page-tags--bottom">
+  <nav class="fb-page-tags fb-page-tags--bottom" aria-label="Related tags">
     <TagsList
       tags={tags}
       title={showTitle ? "Tags" : undefined}
       layout="inline"
     />
-  </div>
+  </nav>
 )}
 
 <style>

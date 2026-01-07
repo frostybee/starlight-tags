@@ -66,9 +66,9 @@ const hasPrerequisites = prerequisiteChain.length > 0;
 ---
 
 {hasPrerequisites && (
-  <div class="prerequisite-chain">
+  <section class="prerequisite-chain" aria-labelledby="prerequisite-chain-title">
     <div class="prerequisite-chain__header">
-      <h4 class="prerequisite-chain__title">
+      <h4 class="prerequisite-chain__title" id="prerequisite-chain-title">
         Prerequisites
       </h4>
       {showDescription && (
@@ -79,9 +79,9 @@ const hasPrerequisites = prerequisiteChain.length > 0;
     </div>
 
     <div class="prerequisite-chain__content">
-      <div class="prerequisite-chain__flow">
+      <ol class="prerequisite-chain__flow" aria-label="Learning path">
         {prerequisiteChain.map((prereqTag, index) => (
-          <div class="prerequisite-chain__item">
+          <li class="prerequisite-chain__item">
             <TagBadge
               tag={prereqTag}
               size="medium"
@@ -89,18 +89,19 @@ const hasPrerequisites = prerequisiteChain.length > 0;
               showCount={false}
             />
             {index < prerequisiteChain.length - 1 && (
-              <div class="prerequisite-chain__arrow">
+              <span class="prerequisite-chain__arrow" aria-hidden="true">
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
-              </div>
+              </span>
             )}
-          </div>
+          </li>
         ))}
         {prerequisiteChain.length > 0 && (
-          <>
-            <div class="prerequisite-chain__arrow prerequisite-chain__arrow--final">
+          <li class="prerequisite-chain__item prerequisite-chain__item--current">
+            <span class="prerequisite-chain__arrow prerequisite-chain__arrow--final" aria-hidden="true">
               <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
-            </div>
+            </span>
             <div class="prerequisite-chain__current">
+              <span class="prerequisite-chain__current-label">You are here</span>
               <TagBadge
                 tag={tag}
                 size="medium"
@@ -109,9 +110,9 @@ const hasPrerequisites = prerequisiteChain.length > 0;
                 clickable={false}
               />
             </div>
-          </>
+          </li>
         )}
-      </div>
+      </ol>
 
       {tag.prerequisiteChain && tag.prerequisiteChain.length > maxChainLength && (
         <p class="prerequisite-chain__more">
@@ -119,7 +120,7 @@ const hasPrerequisites = prerequisiteChain.length > 0;
         </p>
       )}
     </div>
-  </div>
+  </section>
 )}
 
 <style>
@@ -163,9 +164,18 @@ const hasPrerequisites = prerequisiteChain.length > 0;
     flex-wrap: wrap;
     align-items: center;
     gap: 0.5rem;
+    list-style: none;
+    margin: 0;
+    padding: 0;
   }
 
   .prerequisite-chain__item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .prerequisite-chain__item--current {
     display: flex;
     align-items: center;
     gap: 0.5rem;
@@ -191,17 +201,16 @@ const hasPrerequisites = prerequisiteChain.length > 0;
 
   .prerequisite-chain__current {
     position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
   }
 
-  .prerequisite-chain__current::before {
-    content: "You are here";
-    position: absolute;
-    top: -1.5rem;
-    left: 50%;
-    transform: translateX(-50%);
+  .prerequisite-chain__current-label {
     font-size: var(--sl-text-xs);
     color: var(--sl-color-text-accent);
     white-space: nowrap;
+    margin-bottom: 0.25rem;
   }
 
   .prerequisite-chain__more {
@@ -217,17 +226,17 @@ const hasPrerequisites = prerequisiteChain.length > 0;
       align-items: flex-start;
     }
 
+    .prerequisite-chain__item {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+
     .prerequisite-chain__arrow svg {
       transform: rotate(90deg);
     }
 
-    .prerequisite-chain__current::before {
-      position: relative;
-      top: auto;
-      left: auto;
-      transform: none;
-      display: block;
-      margin-bottom: 0.25rem;
+    .prerequisite-chain__current {
+      align-items: flex-start;
     }
   }
 </style>

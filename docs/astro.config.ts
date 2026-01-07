@@ -13,6 +13,7 @@ export default defineConfig({
       favicon: '/images/tag-icon.svg',
       components: {
         Sidebar: './src/components/Sidebar.astro',
+        PageTitle: './src/components/PageTitleOverride.astro',
       },
       defaultLocale: 'root',      
       locales: {
@@ -41,11 +42,11 @@ export default defineConfig({
       sidebar: [
         {
           label: 'Start Here',
-          items: ['getting-started'],
+          items: ['getting-started', 'acknowledgements'],
         },
         {
           label: 'Guides',
-          items: ['guides/configuration', 'guides/tags-definition', 'guides/frontmatter', 'guides/routes', 'guides/extending-schema', 'guides/virtual-tags-module', 'guides/i18n', 'guides/architecture'],
+          items: ['guides/configuration', 'guides/tags-definition', 'guides/frontmatter', 'guides/routes', 'guides/plugin-compatibility', 'guides/page-title-override', 'guides/extending-schema', 'guides/virtual-tags-module', 'guides/i18n', 'guides/architecture'],
         },
         {
           label: 'Plugin Components',

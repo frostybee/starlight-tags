@@ -1,13 +1,13 @@
 import fs from 'fs/promises';
 import yaml from 'js-yaml';
 import type { AstroIntegrationLogger } from 'astro';
-import { tagsConfigSchema, type TagsConfig, type ProcessedTag } from '../schemas/tags.js';
+import { tagsConfigSchema, type TagsConfig, type ProcessedTag, type ContentType, type Difficulty } from '../schemas/tags.js';
 import type { PluginConfig } from '../schemas/config.js';
 
 // Constants
 const MAX_RELATED_TAGS = 5;
 const MAX_NEXT_STEPS = 5;
-const DIFFICULTY_ORDER = ['beginner', 'intermediate', 'advanced'] as const;
+const MAX_PREREQUISITE_DEPTH = 20;
 
 // Type for docs entries from Astro content collections
 interface DocsEntry {
@@ -284,7 +284,16 @@ export class TagsProcessor {
     }
   }
 
-  private buildPrerequisiteChain(tagId: string, visited = new Set<string>(), path: string[] = []): string[] {
+  private buildPrerequisiteChain(tagId: string, visited = new Set<string>(), path: string[] = [], depth = 0): string[] {
+    // Guard against excessive depth to prevent memory issues with deep graphs
+    if (depth >= MAX_PREREQUISITE_DEPTH) {
+      this.logger.warn(
+        `Maximum prerequisite depth (${MAX_PREREQUISITE_DEPTH}) exceeded for tag "${tagId}". ` +
+        `Consider simplifying your prerequisite structure.`
+      );
+      return [];
+    }
+
     if (visited.has(tagId)) {
       // Build the cycle path for a more informative error message
       const cycleStart = path.indexOf(tagId);
@@ -312,7 +321,7 @@ export class TagsProcessor {
         // A -> B -> D and A -> C -> D (D can appear in both branches)
         const branchVisited = new Set(visited);
         branchVisited.add(tagId);
-        const subChain = this.buildPrerequisiteChain(prereqId, branchVisited, currentPath);
+        const subChain = this.buildPrerequisiteChain(prereqId, branchVisited, currentPath, depth + 1);
         chain.push(...subChain);
       }
     }
@@ -372,13 +381,13 @@ export class TagsProcessor {
   }
 
   // Educational utility methods
-  getTagsByDifficulty(difficulty: 'beginner' | 'intermediate' | 'advanced'): ProcessedTag[] {
+  getTagsByDifficulty(difficulty: Difficulty): ProcessedTag[] {
     return Array.from(this.getTags().values())
       .filter(tag => tag.difficulty === difficulty)
       .sort((a, b) => b.count - a.count);
   }
 
-  getTagsByContentType(contentType: 'lecture' | 'lab' | 'assignment' | 'project' | 'reference' | 'tutorial' | 'assessment'): ProcessedTag[] {
+  getTagsByContentType(contentType: ContentType): ProcessedTag[] {
     return Array.from(this.getTags().values())
       .filter(tag => tag.contentType === contentType)
       .sort((a, b) => b.count - a.count);
