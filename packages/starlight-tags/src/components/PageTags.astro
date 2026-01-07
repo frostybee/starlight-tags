@@ -43,6 +43,8 @@ interface Props {
   showIcon?: boolean;
   /** Optional label before tags. Pass `true` to use the localized default label, or a string for custom label */
   label?: string | boolean;
+  /** The base path at which a language is served. `undefined` for root locale slugs. */
+  locale?: string;
 }
 
 const {
@@ -50,7 +52,8 @@ const {
   variant = 'outline',
   size = 'small',
   showIcon = true,
-  label
+  label,
+  locale
 } = Astro.props;
 
 // Access translations via Astro.locals.t
@@ -101,6 +104,7 @@ if (frontmatterTags.length > 0) {
             variant={variant}
             size={size}
             showIcon={showIcon}
+            {locale}
           />
         </li>
       ))}

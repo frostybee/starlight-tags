@@ -26,7 +26,7 @@ declare module 'virtual:starlight-tagging/tags' {
   /**
    * Get all tags sorted by count (descending) then label (ascending).
    */
-  export function getAllTagsSorted(): ProcessedTag[];
+  export function getAllTagsSorted(locale: string | undefined): ProcessedTag[];
 
   /**
    * Get tags for a specific page by its slug.

@@ -75,11 +75,12 @@ export function createTagsIntegration(
 
         // Get path to tags-store for virtual module
         const tagsStorePath = fileURLToPath(new URL('./tags-store.js', import.meta.url));
+        const labelHelperPath = fileURLToPath(new URL('./label.js', import.meta.url));
 
         // Inject virtual modules via Vite plugin
         updateConfig({
           vite: {
-            plugins: [vitePluginStarlightTags(resolvedConfig, tagsStorePath)]
+            plugins: [vitePluginStarlightTags(resolvedConfig, tagsStorePath, labelHelperPath)]
           }
         });
       },

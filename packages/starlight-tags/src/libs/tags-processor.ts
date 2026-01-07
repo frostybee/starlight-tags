@@ -3,6 +3,8 @@ import yaml from 'js-yaml';
 import type { AstroIntegrationLogger } from 'astro';
 import { tagsConfigSchema, type TagsConfig, type ProcessedTag, type ContentType, type Difficulty } from '../schemas/tags.js';
 import type { PluginConfig } from '../schemas/config.js';
+import { getTagLabel } from './label.js';
+import { type Locale } from './i18n.js';
 
 // Constants
 const MAX_RELATED_TAGS = 5;
@@ -250,7 +252,7 @@ export class TagsProcessor {
     return this.processedTags?.get(tagId);
   }
 
-  getAllTagsSorted(): ProcessedTag[] {
+  getAllTagsSorted(locale: Locale): ProcessedTag[] {
     return Array.from(this.getTags().values())
       .sort((a, b) => {
         // Sort by priority first (higher priority first)
@@ -260,7 +262,7 @@ export class TagsProcessor {
         const countDiff = b.count - a.count;
         if (countDiff !== 0) return countDiff;
         // Finally alphabetically by label
-        return a.label.localeCompare(b.label);
+        return getTagLabel(locale, a.label).localeCompare(getTagLabel(locale, b.label));
       });
   }
 

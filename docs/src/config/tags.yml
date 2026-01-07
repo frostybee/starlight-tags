@@ -5,139 +5,299 @@ defaults:
 tags:
   # ===== Core (Feature Area) =====
   components:
-    label: "Components"
-    description: "UI components and their usage patterns"
+    label:
+      en: "Components"
+      fr: "Composants"
+      es: "Componentes"
+      de: "Komponenten"
+    description:
+      en: "UI components and their usage patterns"
+      fr: "Composants d'interface utilisateur et leurs modèles d'utilisation"
+      es: "Componentes de interfaz de usuario y sus patrones de uso"
+      de: "UI-Komponenten und deren Nutzungsmuster"
     color: "#14b8a6"
     icon: "🧩"
     planTier: free
 
   configuration:
-    label: "Configuration"
-    description: "Setup options and config files"
+    label:
+      en: "Configuration"
+      fr: "Configuration"
+      es: "Configuración"
+      de: "Konfiguration"
+    description:
+      en: "Setup options and config files"
+      fr: "Options d'installation et fichiers de configuration"
+      es: "Opciones de configuración y archivos de config"
+      de: "Setup-Optionen und Konfigurationsdateien"
     color: "#14b8a6"
     icon: "⚙️"
     planTier: free
 
   theming:
-    label: "Theming"
-    description: "Styling, colors, and visual customization"
+    label:
+      en: "Theming"
+      fr: "Thématisation"
+      es: "Temas"
+      de: "Themendesign"
+    description:
+      en: "Styling, colors, and visual customization"
+      fr: "Style, couleurs et personnalisation visuelle"
+      es: "Estilo, colores y personalización visual"
+      de: "Styling, Farben und visuelle Anpassung"
     color: "#14b8a6"
     icon: "🎨"
     planTier: pro
 
   routing:
-    label: "Routing"
-    description: "Navigation, URLs, and page structure"
+    label:
+      en: "Routing"
+      fr: "Routage"
+      es: "Enrutamiento"
+      de: "Routing"
+    description:
+      en: "Navigation, URLs, and page structure"
+      fr: "Navigation, URLs et structure des pages"
+      es: "Navegación, URLs y estructura de páginas"
+      de: "Navigation, URLs und Seitenstruktur"
     color: "#14b8a6"
     icon: "🔀"
     planTier: pro
 
   i18n:
-    label: "i18n"
-    description: "Internationalization and localization"
+    label:
+      en: "i18n"
+      fr: "i18n"
+      es: "i18n"
+      de: "i18n"
+    description:
+      en: "Internationalization and localization"
+      fr: "Internationalisation et localisation"
+      es: "Internacionalización y localización"
+      de: "Internationalisierung und Lokalisierung"
     color: "#14b8a6"
     icon: "🌐"
     planTier: enterprise
 
   markdown:
-    label: "Markdown"
-    description: "Content authoring and MDX features"
+    label:
+      en: "Markdown"
+      fr: "Markdown"
+      es: "Markdown"
+      de: "Markdown"
+    description:
+      en: "Content authoring and MDX features"
+      fr: "Rédaction de contenu et fonctionnalités MDX"
+      es: "Creación de contenido y funciones MDX"
+      de: "Inhaltserstellung und MDX-Funktionen"
     color: "#14b8a6"
     icon: "📝"
     planTier: free
 
   # ===== Integrations =====
   plugins:
-    label: "Plugins"
-    description: "Extending functionality with plugins"
+    label:
+      en: "Plugins"
+      fr: "Extensions"
+      es: "Complementos"
+      de: "Plugins"
+    description:
+      en: "Extending functionality with plugins"
+      fr: "Extension des fonctionnalités avec des plug-ins"
+      es: "Ampliación de funciones con complementos"
+      de: "Funktionalität mit Plugins erweitern"
     color: "#ff7f50"
     icon: "🔌"
     planTier: pro
 
   cms:
-    label: "CMS"
-    description: "Content management system integrations"
+    label:
+      en: "CMS"
+      fr: "CMS"
+      es: "CMS"
+      de: "CMS"
+    description:
+      en: "Content management system integrations"
+      fr: "Intégrations de systèmes de gestion de contenu"
+      es: "Integraciones con sistemas de gestión de contenidos"
+      de: "Integrationen für Content-Management-Systeme"
     color: "#ff7f50"
     icon: "📦"
     planTier: enterprise
 
   frameworks:
-    label: "Frameworks"
-    description: "Framework-specific usage (React, Vue, etc.)"
+    label:
+      en: "Frameworks"
+      fr: "Frameworks"
+      es: "Frameworks"
+      de: "Frameworks"
+    description:
+      en: "Framework-specific usage (React, Vue, etc.)"
+      fr: "Utilisation spécifique au framework (React, Vue, etc.)"
+      es: "Uso específico del framework (React, Vue, etc.)"
+      de: "Framework-spezifische Nutzung (React, Vue, etc.)"
     color: "#ff7f50"
     icon: "🏗️"
     planTier: enterprise
 
   deployment:
-    label: "Deployment"
-    description: "Hosting and deployment platforms"
+    label:
+      en: "Deployment"
+      fr: "Déploiement"
+      es: "Despliegue"
+      de: "Bereitstellung"
+    description:
+      en: "Hosting and deployment platforms"
+      fr: "Plateformes d'hébergement et de déploiement"
+      es: "Plataformas de alojamiento y despliegue"
+      de: "Hosting- und Deployment-Plattformen"
     color: "#ff7f50"
     icon: "🚀"
     planTier: pro
 
   # ===== Content Types =====
   guide:
-    label: "Guide"
-    description: "Step-by-step instructions"
+    label:
+      en: "Guide"
+      fr: "Guide"
+      es: "Guía"
+      de: "Anleitung"
+    description:
+      en: "Step-by-step instructions"
+      fr: "Instructions étape par étape"
+      es: "Instrucciones paso a paso"
+      de: "Schritt-für-Schritt-Anleitungen"
     color: "#10b981"
     icon: "📖"
 
   reference:
-    label: "Reference"
-    description: "API and configuration reference"
+    label:
+      en: "Reference"
+      fr: "Référence"
+      es: "Referencia"
+      de: "Referenz"
+    description:
+      en: "API and configuration reference"
+      fr: "Référence API et configuration"
+      es: "Referencia de API y configuración"
+      de: "API- und Konfigurationsreferenz"
     color: "#10b981"
     icon: "📚"
 
   tutorial:
-    label: "Tutorial"
-    description: "Learn by building projects"
+    label:
+      en: "Tutorial"
+      fr: "Tutoriel"
+      es: "Tutorial"
+      de: "Tutorial"
+    description:
+      en: "Learn by building projects"
+      fr: "Apprendre en construisant des projets"
+      es: "Aprende construyendo proyectos"
+      de: "Lernen durch den Bau von Projekten"
     color: "#10b981"
     icon: "🎓"
 
   example:
-    label: "Example"
-    description: "Code samples and demos"
+    label:
+      en: "Example"
+      fr: "Exemple"
+      es: "Ejemplo"
+      de: "Beispiel"
+    description:
+      en: "Code samples and demos"
+      fr: "Exemples de code et démos"
+      es: "Muestras de código y demostraciones"
+      de: "Codebeispiele und Demos"
     color: "#10b981"
     icon: "💡"
 
   # ===== Audience =====
   getting-started:
-    label: "Getting Started"
-    description: "For new users starting out"
+    label:
+      en: "Getting Started"
+      fr: "Premiers pas"
+      es: "Primeros pasos"
+      de: "Erste Schritte"
+    description:
+      en: "For new users starting out"
+      fr: "Pour les nouveaux utilisateurs qui débutent"
+      es: "Para nuevos usuarios que comienzan"
+      de: "Für neue Benutzer am Anfang"
     color: "#f59e0b"
     icon: "🌱"
 
   advanced:
-    label: "Advanced"
-    description: "For experienced users"
+    label:
+      en: "Advanced"
+      fr: "Avancé"
+      es: "Avanzado"
+      de: "Fortgeschritten"
+    description:
+      en: "For experienced users"
+      fr: "Pour les utilisateurs expérimentés"
+      es: "Para usuarios experimentados"
+      de: "Für erfahrene Benutzer"
     color: "#f59e0b"
     icon: "⚡"
     prerequisites: ["getting-started"]
 
   migration:
-    label: "Migration"
-    description: "Upgrading between versions"
+    label:
+      en: "Migration"
+      fr: "Migration"
+      es: "Migración"
+      de: "Migration"
+    description:
+      en: "Upgrading between versions"
+      fr: "Mise à jour entre les versions"
+      es: "Actualización entre versiones"
+      de: "Upgrades zwischen Versionen"
     color: "#f59e0b"
     icon: "📦"
 
   troubleshooting:
-    label: "Troubleshooting"
-    description: "Common issues and solutions"
+    label:
+      en: "Troubleshooting"
+      fr: "Dépannage"
+      es: "Solución de problemas"
+      de: "Fehlerbehebung"
+    description:
+      en: "Common issues and solutions"
+      fr: "Problèmes courants et solutions"
+      es: "Problemas comunes y soluciones"
+      de: "Häufige Probleme und Lösungen"
     color: "#f59e0b"
     icon: "🔧"
 
   # ===== JavaScript Educational (Showcases Extended Schema) =====
   js-basics:
-    label: "JS Basics"
-    description: "Introduction to JavaScript fundamentals"
+    label:
+      en: "JS Basics"
+      fr: "Bases JS"
+      es: "Básicos de JS"
+      de: "JS-Grundlagen"
+    description:
+      en: "Introduction to JavaScript fundamentals"
+      fr: "Introduction aux fondamentaux de JavaScript"
+      es: "Introducción a los fundamentos de JavaScript"
+      de: "Einführung in die JavaScript-Grundlagen"
     color: "#0ea5e9"
     icon: "📘"
     difficulty: beginner
     contentType: lecture
 
   js-variables:
-    label: "Variables"
-    description: "Variables, data types, and scope"
+    label:
+      en: "Variables"
+      fr: "Variables"
+      es: "Variables"
+      de: "Variablen"
+    description:
+      en: "Variables, data types, and scope"
+      fr: "Variables, types de données et portée"
+      es: "Variables, tipos de datos y alcance"
+      de: "Variablen, Datentypen und Gültigkeitsbereich"
     color: "#0ea5e9"
     icon: "📦"
     difficulty: beginner
@@ -145,8 +305,16 @@ tags:
     prerequisites: ["js-basics"]
 
   js-functions:
-    label: "Functions"
-    description: "Function declarations, expressions, and arrow functions"
+    label:
+      en: "Functions"
+      fr: "Fonctions"
+      es: "Funciones"
+      de: "Funktionen"
+    description:
+      en: "Function declarations, expressions, and arrow functions"
+      fr: "Déclarations de fonctions, expressions et fonctions fléchées"
+      es: "Declaraciones de funciones, expresiones y funciones de flecha"
+      de: "Funktionsdeklarationen, Ausdrücke und Arrow-Funktionen"
     color: "#0ea5e9"
     icon: "⚡"
     difficulty: beginner
@@ -154,8 +322,16 @@ tags:
     prerequisites: ["js-variables"]
 
   js-arrays:
-    label: "Arrays"
-    description: "Array methods and iteration"
+    label:
+      en: "Arrays"
+      fr: "Tableaux"
+      es: "Arrays"
+      de: "Arrays"
+    description:
+      en: "Array methods and iteration"
+      fr: "Méthodes de tableau et itération"
+      es: "Métodos de arrays e iteración"
+      de: "Array-Methoden und Iteration"
     color: "#0ea5e9"
     icon: "📋"
     difficulty: intermediate
@@ -163,8 +339,16 @@ tags:
     prerequisites: ["js-functions"]
 
   js-objects:
-    label: "Objects"
-    description: "Objects, classes, and prototypes"
+    label:
+      en: "Objects"
+      fr: "Objets"
+      es: "Objetos"
+      de: "Objekte"
+    description:
+      en: "Objects, classes, and prototypes"
+      fr: "Objets, classes et prototypes"
+      es: "Objetos, clases y prototipos"
+      de: "Objekte, Klassen und Prototypen"
     color: "#0ea5e9"
     icon: "🧱"
     difficulty: intermediate
@@ -172,8 +356,16 @@ tags:
     prerequisites: ["js-arrays"]
 
   js-async:
-    label: "Async JS"
-    description: "Promises, async/await, and event loop"
+    label:
+      en: "Async JS"
+      fr: "JS Asynchrone"
+      es: "JS Asíncrono"
+      de: "Async-JS"
+    description:
+      en: "Promises, async/await, and event loop"
+      fr: "Promesses, async/await et boucle d'événements"
+      es: "Promesas, async/await y bucle de eventos"
+      de: "Promises, async/await und Event-Loop"
     color: "#0ea5e9"
     icon: "⏳"
     difficulty: advanced

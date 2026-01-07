@@ -2,12 +2,13 @@
 import StarlightPage from '@astrojs/starlight/components/StarlightPage.astro';
 import TagBadge from '../components/TagBadge.astro';
 import TagPagination from '../components/TagPagination.astro';
-import { initTags, getAllTagsSorted, getTag } from 'virtual:starlight-tagging/tags';
+import { initTags, getTags, getTag } from 'virtual:starlight-tagging/tags';
 // @ts-expect-error - virtual module provided by plugin
 import { config } from 'virtual:starlight-tagging/config';
 import { buildUrl } from '../libs/url.js';
 import { calculatePagination, paginateArray, type PaginationInfo } from '../libs/pagination.js';
 import type { ProcessedTag, PageReference } from '../schemas/tags.js';
+import { getTagLabel, getTagDescription } from '../libs/label.js';
 import { createTierCalculator } from '../libs/popularity.js';
 // @ts-expect-error - virtual module provided by Starlight
 import starlightConfig from 'virtual:starlight/user-config';
@@ -22,7 +23,7 @@ export async function getStaticPaths() {
   // Initialize tags store (memoized - only runs once)
   await initTags();
 
-  const tags = getAllTagsSorted();
+  const tags = Array.from(getTags().values());
   const itemsPerPage = config.itemsPerPage;
 
   // Get configured locales from Starlight config (not plugin translations)
@@ -122,10 +123,10 @@ const getPopularityTier = createTierCalculator(minRelatedCount, maxRelatedCount)
 
 <StarlightPage
   frontmatter={{
-    title: `${t('starlightTags.taggedPrefix')} ${tag.label}`,
-    description: tag.description || `${pages.length} ${pages.length === 1 ? t('starlightTags.page') : t('starlightTags.pages')}`,
+    title: `${t('starlightTags.taggedPrefix')} ${getTagLabel(locale, tag.label)}`,
+    description: getTagDescription(locale, tag.description) || `${pages.length} ${pages.length === 1 ? t('starlightTags.page') : t('starlightTags.pages')}`,
     sidebar: {
-      label: tag.label,
+      label: getTagLabel(locale, tag.label),
       order: 999
     }
   }}
@@ -141,7 +142,7 @@ const getPopularityTier = createTierCalculator(minRelatedCount, maxRelatedCount)
     <!-- Tag Header Card -->
     <header class="tag-header">
       <div class="tag-header-content">
-        <TagBadge tag={tag} size="large" clickable={false} />
+        <TagBadge tag={tag} size="large" clickable={false} {locale} />
         <div class="tag-stats">
           <div class="stat-pill">
             <svg class="stat-icon" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/></svg>
@@ -157,7 +158,7 @@ const getPopularityTier = createTierCalculator(minRelatedCount, maxRelatedCount)
           )}
         </div>
         {tag.description && (
-          <p class="tag-description">{tag.description}</p>
+          <p class="tag-description">{getTagDescription(locale, tag.description)}</p>
         )}
       </div>
     </header>
@@ -174,10 +175,10 @@ const getPopularityTier = createTierCalculator(minRelatedCount, maxRelatedCount)
             <a
               href={buildUrl(relatedTag.url, locale)}
               class={`cloud-tag ${getPopularityTier(relatedTag.count)}`}
-              title={`${relatedTag.label}: ${relatedTag.count} ${relatedTag.count === 1 ? t('starlightTags.page') : t('starlightTags.pages')}`}
+              title={`${getTagLabel(locale, relatedTag.label)}: ${relatedTag.count} ${relatedTag.count === 1 ? t('starlightTags.page') : t('starlightTags.pages')}`}
             >
               {relatedTag.icon && <span class="tag-icon">{relatedTag.icon}</span>}
-              <span class="tag-name">{relatedTag.label}</span>
+              <span class="tag-name">{getTagLabel(locale, relatedTag.label)}</span>
               <span class="tag-badge">{relatedTag.count}</span>
             </a>
           ))}

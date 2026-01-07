@@ -28,6 +28,8 @@ interface Props {
   tagsMap?: Map<string, ProcessedTag>;
   showDescription?: boolean;
   maxChainLength?: number;
+  /** The base path at which a language is served. `undefined` for root locale slugs. */
+  locale?: string;
 }
 
 const {
@@ -35,7 +37,8 @@ const {
   tag: tagProp,
   tagsMap: tagsMapProp,
   showDescription = true,
-  maxChainLength = 5
+  maxChainLength = 5,
+  locale
 } = Astro.props;
 
 // Resolve tag and tagsMap: use provided objects, or fetch internally
@@ -87,6 +90,7 @@ const hasPrerequisites = prerequisiteChain.length > 0;
               size="medium"
               variant="outline"
               showCount={false}
+              {locale}
             />
             {index < prerequisiteChain.length - 1 && (
               <span class="prerequisite-chain__arrow" aria-hidden="true">
@@ -108,6 +112,7 @@ const hasPrerequisites = prerequisiteChain.length > 0;
                 variant="solid"
                 showCount={false}
                 clickable={false}
+                {locale}
               />
             </div>
           </li>

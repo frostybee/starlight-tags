@@ -24,6 +24,7 @@
 import TagBadge from './TagBadge.astro';
 import { initTags, getTag, getAllTagsSorted } from 'virtual:starlight-tagging/tags';
 import type { ProcessedTag } from '../schemas/tags.js';
+import { getTagLabel } from '../libs/label.js';
 
 interface Props {
   /** Specific tag IDs to display */
@@ -38,6 +39,8 @@ interface Props {
   layout?: 'inline' | 'grid' | 'list';
   variant?: 'solid' | 'outline' | 'ghost';
   sortBy?: 'name' | 'count';
+  /** The base path at which a language is served. `undefined` for root locale slugs. */
+  locale?: string;
 }
 
 const {
@@ -48,7 +51,8 @@ const {
   showCount = false,
   layout = 'inline',
   variant = 'solid',
-  sortBy = 'name'
+  sortBy = 'name',
+  locale
 } = Astro.props;
 
 // Resolve tags: use provided tags, fetch by IDs, or get all
@@ -64,17 +68,17 @@ if (!tagsProp) {
       .filter((t): t is ProcessedTag => t !== undefined);
   } else {
     // Get all tags
-    tags = getAllTagsSorted();
+    tags = getAllTagsSorted(locale);
   }
 }
 
 // Sort tags based on sortBy prop
 let sortedTags = [...tags].sort((a, b) => {
   if (sortBy === 'count') {
-    return b.count - a.count || a.label.localeCompare(b.label);
+    return b.count - a.count || getTagLabel(locale, a.label).localeCompare(getTagLabel(locale, b.label));
   }
   // Default: sort by name
-  return a.label.localeCompare(b.label);
+  return getTagLabel(locale, a.label).localeCompare(getTagLabel(locale, b.label));
 });
 
 // Apply limit after sorting
@@ -97,6 +101,7 @@ if (limit && limit > 0) {
         tag={tag}
         showCount={showCount}
         variant={variant}
+        {locale}
       />
     </li>
   ))}

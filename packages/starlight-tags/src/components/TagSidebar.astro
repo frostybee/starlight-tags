@@ -17,6 +17,7 @@
 import { initTags, getAllTagsSorted } from 'virtual:starlight-tagging/tags';
 import { buildUrlFromCurrentPage } from '../libs/url.js';
 import type { ProcessedTag } from '../schemas/tags.js';
+import { getTagLabel } from '../libs/label.js';
 
 interface Props {
   /** Maximum number of tags to display */
@@ -26,32 +27,36 @@ interface Props {
   /** Show page count badge next to each tag */
   showCount?: boolean;
   /** Section heading */
-  title?: string;
+  title?: string | Record<string, string>;
   /** Enable collapsible behavior */
   collapsible?: boolean;
   /** Start with sidebar collapsed (only used if collapsible is true) */
   collapsed?: boolean;
+  /** The base path at which a language is served. `undefined` for root locale slugs. */
+  locale?: string;
 }
 
 const {
   limit = 10,
   sortBy = 'count',
   showCount = true,
-  title = 'Popular Tags',
+  title,
   collapsible = true,
-  collapsed = false
+  collapsed = false,
+  locale
 } = Astro.props;
+const t = Astro.locals.t;
 
 await initTags();
-let tags: ProcessedTag[] = getAllTagsSorted();
+let tags: ProcessedTag[] = getAllTagsSorted(locale);
 
 // Sort based on sortBy prop
 if (sortBy === 'count') {
   tags = [...tags].sort((a, b) => b.count - a.count);
 } else if (sortBy === 'alphabetical') {
-  tags = [...tags].sort((a, b) => a.label.localeCompare(b.label));
+  tags = [...tags].sort((a, b) => getTagLabel(locale, a.label).localeCompare(getTagLabel(locale, b.label)));
 }
-// 'priority' uses default from getAllTagsSorted()
+// 'priority' uses default from getAllTagsSorted(locale)
 
 const popularTags = tags.slice(0, limit);
 const tagsIndexUrl = buildUrlFromCurrentPage('/tags/', Astro.url);
@@ -62,9 +67,8 @@ const tagsIndexUrl = buildUrlFromCurrentPage('/tags/', Astro.url);
     class="sl-tag-sidebar"
     data-collapsible={collapsible}
     data-open={!collapsed}
-    aria-label={title || 'Tags'}
+    aria-label={title === undefined ? t('starlightTags.popularTags') : getTagLabel(locale, title)}
   >
-    {title && (
       <button
         type="button"
         class="sl-tag-sidebar__header"
@@ -72,7 +76,7 @@ const tagsIndexUrl = buildUrlFromCurrentPage('/tags/', Astro.url);
         aria-controls="sl-tag-sidebar-content"
         disabled={!collapsible}
       >
-        <span class="sl-tag-sidebar__title">{title}</span>
+        <span class="sl-tag-sidebar__title">{title === undefined ? t('starlightTags.popularTags') : getTagLabel(locale, title)}</span>
         {collapsible && (
           <svg
             class="sl-tag-sidebar__chevron"
@@ -91,13 +95,12 @@ const tagsIndexUrl = buildUrlFromCurrentPage('/tags/', Astro.url);
           </svg>
         )}
       </button>
-    )}
     <div class="sl-tag-sidebar__content" id="sl-tag-sidebar-content">
       <ul class="sl-tag-sidebar__list">
         {popularTags.map(tag => (
           <li>
             <a href={buildUrlFromCurrentPage(tag.url, Astro.url)} class="sl-tag-sidebar__item">
-              <span class="sl-tag-sidebar__name">{tag.label}</span>
+              <span class="sl-tag-sidebar__name">{getTagLabel(locale, tag.label)}</span>
               {showCount && (
                 <span class="sl-tag-sidebar__count" aria-label={`${tag.count} pages`}>{tag.count}</span>
               )}
@@ -106,7 +109,7 @@ const tagsIndexUrl = buildUrlFromCurrentPage('/tags/', Astro.url);
         ))}
       </ul>
       <a href={tagsIndexUrl} class="sl-tag-sidebar__all">
-        View all tags<span aria-hidden="true"> &rarr;</span>
+        {t('starlightTags.viewAllTags')}
       </a>
     </div>
   </nav>

@@ -15,7 +15,8 @@ type ModuleName = (typeof moduleNames)[number];
  */
 export function vitePluginStarlightTags(
   config: PluginConfig,
-  tagsStorePath: string
+  tagsStorePath: string,
+  labelHelperPath: string
 ): Plugin {
   const resolvedModuleIds = Object.fromEntries(
     moduleNames.map((name) => [resolveVirtualModuleId(name), name])
@@ -23,7 +24,7 @@ export function vitePluginStarlightTags(
 
   const modules: Record<ModuleName, string> = {
     'virtual:starlight-tagging/config': `export const config = ${JSON.stringify(config)};`,
-    'virtual:starlight-tagging/tags': getTagsVirtualModule(config, tagsStorePath),
+    'virtual:starlight-tagging/tags': getTagsVirtualModule(config, tagsStorePath, labelHelperPath),
   };
 
   return {
@@ -70,9 +71,10 @@ function normalizeImportPath(filePath: string): string {
 /**
  * Generates the virtual module content for starlight-tagging/tags.
  */
-function getTagsVirtualModule(config: PluginConfig, tagsStorePath: string): string {
+function getTagsVirtualModule(config: PluginConfig, tagsStorePath: string, labelHelperPath: string): string {
   // Normalize path for cross-platform compatibility (especially Windows)
-  const normalizedPath = normalizeImportPath(tagsStorePath);
+  const normalizedTagsStorePath = normalizeImportPath(tagsStorePath);
+  const normalizedLabelHelperPath = normalizeImportPath(tagsStorePath);
 
   return `
 import {
@@ -87,7 +89,11 @@ import {
   getLearningPath,
   isInitialized,
   resetTagsStore
-} from '${normalizedPath}';
+} from '${normalizedTagsStorePath}';
+import {
+  getTagLabel,
+  getTagDescription
+} from '${normalizedLabelHelperPath}';
 
 const config = ${JSON.stringify(config)};
 
@@ -115,7 +121,9 @@ export {
   validatePrerequisites,
   getLearningPath,
   isInitialized,
-  resetTagsStore
+  resetTagsStore,
+  getTagLabel,
+  getTagDescription  
 };
 `;
 }

@@ -11,7 +11,7 @@
  * <DifficultyTagBadge tagId="advanced" showPrerequisites />
  * ```
  */
-import { initTags, getTag } from 'virtual:starlight-tagging/tags';
+import { initTags, getTag, getTagLabel, getTagDescription } from 'virtual:starlight-tagging/tags';
 import { buildUrlFromCurrentPage } from 'starlight-tags/libs/url';
 import type { ProcessedTag } from 'starlight-tags/schemas/tags';
 import type { EducationalTag, DifficultyLevel } from '../config/educational-tag-schema';
@@ -33,6 +33,8 @@ const {
   showDifficulty = true,
   clickable = true
 } = Astro.props;
+
+const { locale } = Astro.locals.starlightRoute
 
 // Fetch the tag data
 await initTags();
@@ -75,10 +77,10 @@ const tagStyle = tag.color ? `--tag-color: ${tag.color}` : '';
     class:list={['difficulty-tag', { 'difficulty-tag--clickable': clickable }]}
     href={href}
     style={tagStyle}
-    title={tag.description || tag.label}
+    title={getTagDescription(locale, tag.description) || getTagLabel(locale, tag.label)}
   >
     {tag.icon && <span class="difficulty-tag__icon" aria-hidden="true">{tag.icon}</span>}
-    <span class="difficulty-tag__label">{tag.label}</span>
+    <span class="difficulty-tag__label">{getTagLabel(locale, tag.label)}</span>
 
     {showDifficulty && difficulty && (
       <span

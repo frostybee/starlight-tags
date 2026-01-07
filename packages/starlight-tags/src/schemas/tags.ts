@@ -56,10 +56,10 @@ const permalinkRegex = /^[a-z0-9][a-z0-9-/]*[a-z0-9]$|^[a-z0-9]$/;
  * ```
  */
 export const tagDefinitionSchema = z.object({
-  /** Display name for the tag */
-  label: z.string(),
-  /** Short description shown in tooltips and tag pages */
-  description: z.string().optional(),
+  /** Display name for the tag; for multilingual sites: an object with values for each different locale */
+  label: z.union([z.string(), z.record(z.string())]),
+  /** Short description shown in tooltips and tag pages; for multilingual sites: an object with values for each different locale */
+  description: z.union([z.string(), z.record(z.string())]).optional(),
   /** CSS color value for the tag badge (hex, named, rgb, hsl) */
   color: z.string().regex(colorRegex, 'Invalid color format. Use hex (#fff), named color (blue), or rgb/hsl').optional(),
   /** Emoji or short text displayed before the label */

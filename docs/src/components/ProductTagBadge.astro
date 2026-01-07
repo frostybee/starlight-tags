@@ -11,7 +11,7 @@
  * <ProductTagBadge tagId="webhooks" showProduct />
  * ```
  */
-import { initTags, getTag } from 'virtual:starlight-tagging/tags';
+import { initTags, getTag, getTagLabel, getTagDescription } from 'virtual:starlight-tagging/tags';
 import { buildUrlFromCurrentPage } from 'starlight-tags/libs/url';
 import type { ProcessedTag } from 'starlight-tags/schemas/tags';
 import type { ProductTag, PlanTier } from '../config/product-tag-schema';
@@ -33,6 +33,8 @@ const {
   showPlanTier = true,
   clickable = true
 } = Astro.props;
+
+const { locale } = Astro.locals.starlightRoute
 
 // Fetch the tag data
 await initTags();
@@ -79,10 +81,10 @@ const tagStyle = tag.color ? `--tag-color: ${tag.color}` : '';
     class:list={['product-tag', { 'product-tag--clickable': clickable }]}
     href={href}
     style={tagStyle}
-    title={tag.description || tag.label}
+    title={getTagDescription(locale, tag.description) || getTagLabel(locale, tag.label)}
   >
     {tag.icon && <span class="product-tag__icon" aria-hidden="true">{tag.icon}</span>}
-    <span class="product-tag__label">{tag.label}</span>
+    <span class="product-tag__label">{getTagLabel(locale, tag.label)}</span>
 
     {showPlanTier && planTier && (
       <span
