@@ -10,17 +10,19 @@ The `starlight-tags` plugin integrates with [Starlight's i18n system](https://st
 - Spanish (es)
 - German (de)
 
-## Translated UI Strings
+## UI Strings
 
 The plugin uses the following translation keys for its UI components:
 
 | Key | English Default |
 |-----|-----------------|
 | `starlightTags.totalTags` | Total Tags |
-| `starlightTags.tagsApplied` | Tags Applied |
+| `starlightTags.pagesTagged` | Pages Tagged |
 | `starlightTags.tagCloud` | Tag Cloud |
 | `starlightTags.alphabeticalIndex` | Alphabetical Index |
 | `starlightTags.allTags` | All Tags |
+| `starlightTags.popularTags` | Popular Tags |
+| `starlightTags.viewAllTags` | View all tags → |
 | `starlightTags.page` | page |
 | `starlightTags.pages` | pages |
 | `starlightTags.pageTags` | Tags: |
@@ -37,11 +39,11 @@ The plugin uses the following translation keys for its UI components:
 | `starlightTags.pagination.item` | tagged item |
 | `starlightTags.pagination.items` | tagged items |
 
-## Customizing Translations
+### Customizing UI translations
 
 You can override any translation by adding entries to your `src/content/i18n/` files. This allows you to customize the labels or add support for additional languages.
 
-### Step 1: Set Up i18n Content Collection
+#### Step 1: Set Up i18n Content Collection
 
 If you haven't already, add the i18n collection to your `src/content.config.ts`:
 
@@ -56,7 +58,7 @@ export const collections = {
 };
 ```
 
-### Step 2: Create Translation Files
+#### Step 2: Create Translation Files
 
 Create JSON files in `src/content/i18n/` for each language you want to customize:
 
@@ -76,7 +78,7 @@ Create JSON files in `src/content/i18n/` for each language you want to customize
 }
 ```
 
-## Adding New Languages
+### Adding New Languages
 
 To add a language not included in the plugin's built-in translations, create a translation file with all the keys:
 
@@ -84,16 +86,18 @@ To add a language not included in the plugin's built-in translations, create a t
 // src/content/i18n/ja.json
 {
   "starlightTags.totalTags": "タグ総数",
-  "starlightTags.tagsApplied": "適用されたタグ",
+  "starlightTags.pagesTagged": "タグ付きページ",
   "starlightTags.tagCloud": "タグクラウド",
-  "starlightTags.alphabeticalIndex": "アルファベット順索引",
+  "starlightTags.alphabeticalIndex": "五十音・アルファベット順索引",
   "starlightTags.allTags": "すべてのタグ",
+  "starlightTags.popularTags": "人気のタグ",
+  "starlightTags.viewAllTags": "すべてのタグを表示 →",
   "starlightTags.page": "ページ",
   "starlightTags.pages": "ページ",
   "starlightTags.pageTags": "タグ：",
-  "starlightTags.taggedPrefix": "タグ付き：",
+  "starlightTags.taggedPrefix": "タグ付け：",
   "starlightTags.relatedTags": "関連タグ",
-  "starlightTags.pagesWithTag": "このタグのページ",
+  "starlightTags.pagesWithTag": "このタグが付いたページ",
   "starlightTags.related": "関連",
   "starlightTags.path": "パス：",
   "starlightTags.pagination.label": "ページネーション",
@@ -101,16 +105,44 @@ To add a language not included in the plugin's built-in translations, create a t
   "starlightTags.pagination.of": "/",
   "starlightTags.pagination.previous": "前のページ",
   "starlightTags.pagination.next": "次のページ",
-  "starlightTags.pagination.item": "タグ付きアイテム",
-  "starlightTags.pagination.items": "タグ付きアイテム"
+  "starlightTags.pagination.item": "個のアイテム",
+  "starlightTags.pagination.items": "個のアイテム"
 }
 ```
+
+## Translate `label`s and `description`s
+
+You can provide the translations of your tag labels and descriptions in your tag configuration file by defining the string for each locale.
+
+Here is an example:
+
+```yaml
+tags:
+  components:
+    label:
+      en: "Components"
+      fr: "Composants"
+      es: "Componentes"
+      de: "Komponenten"
+    description:
+      en: "UI components and their usage patterns"
+      fr: "Composants d'interface utilisateur et leurs modèles d'utilisation"
+      es: "Componentes de interfaz de usuario y sus patrones de uso"
+      de: "UI-Komponenten und deren Nutzungsmuster"
+    color: "#14b8a6"
+    icon: "🧩"
+    planTier: free
+```
+
+:::note
+It's important that at least the default locale is provided. Otherwise you will get an error!
+:::
 
 ## How It Works
 
 The plugin automatically detects the current locale from Starlight's routing and displays the appropriate translations. When a translation key is not found for a locale, it falls back to the English default.
 
-### Locale-Aware URLs
+## Locale-Aware URLs
 
 All tag-related URLs are automatically localized:
 
