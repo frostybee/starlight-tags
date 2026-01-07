@@ -1,6 +1,6 @@
 # `starlight-tags`
 
-A plugin to add tags to your Starlight docs.
+A plugin to add tags to your Starlight docs...
 
 ## Documentation
 
