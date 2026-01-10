@@ -74,7 +74,7 @@ function normalizeImportPath(filePath: string): string {
 function getTagsVirtualModule(config: PluginConfig, tagsStorePath: string, labelHelperPath: string): string {
   // Normalize path for cross-platform compatibility (especially Windows)
   const normalizedTagsStorePath = normalizeImportPath(tagsStorePath);
-  const normalizedLabelHelperPath = normalizeImportPath(tagsStorePath);
+  const normalizedLabelHelperPath = normalizeImportPath(labelHelperPath);
 
   return `
 import {
