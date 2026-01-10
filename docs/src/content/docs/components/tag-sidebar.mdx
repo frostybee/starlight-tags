@@ -25,9 +25,10 @@ import { TagSidebar } from 'starlight-tags/components';
 | `limit` | `number` | `10` | Maximum number of tags to display |
 | `sortBy` | `'count' \| 'priority' \| 'alphabetical'` | `'count'` | Sort order for tags |
 | `showCount` | `boolean` | `true` | Show page count badge next to each tag |
-| `title` | `string` | `'Popular Tags'` | Section heading |
+| `title` | <code>string &#124; Record&lt;string, string&gt;</code> | `'Popular Tags'` translated into English, French, Spanish and German | Section heading |
 | `collapsible` | `boolean` | `true` | Enable collapsible behavior |
 | `collapsed` | `boolean` | `false` | Start with sidebar collapsed |
+| `locale` | <code>string &#124; Record&lt;string, string&gt;</code> | `undefined` | Necessary when multilingual site |
 
 ## Adding Tags to Starlight Sidebar
 
@@ -38,10 +39,12 @@ To add the TagSidebar to your Starlight site, create a sidebar component overrid
 // src/components/SidebarOverride.astro
 import Default from '@astrojs/starlight/components/Sidebar.astro';
 import { TagSidebar } from 'starlight-tags/components';
+
+const { locale } = Astro.locals.starlightRoute
 ---
 
 <Default {...Astro.props} />
-<TagSidebar limit={8} sortBy="count" title="Popular Tags" />
+<TagSidebar limit={8} sortBy="count" {locale} />
 ```
 
 Then register the override in your `astro.config.mjs`:

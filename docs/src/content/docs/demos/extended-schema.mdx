@@ -130,7 +130,7 @@ const difficultyColors = {
 ---
 
 <span class="tag">
-  {tag.label}
+  {getTagLabel(locale, tag.label)}
   {tag.difficulty && (
     <span style={`background: ${difficultyColors[tag.difficulty]}`}>
       {tag.difficulty}
@@ -161,7 +161,7 @@ const tierColors = {
 ---
 
 <span class="tag">
-  {tag.label}
+  {getTagLabel(locale, tag.label)}
   {tag.planTier && (
     <span style={`background: ${tierColors[tag.planTier]}`}>
       {tag.planTier}

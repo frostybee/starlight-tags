@@ -102,6 +102,30 @@ Each component accepts different props for customization:
 | `size` | Size: `'small'`, `'medium'`, or `'large'` |
 | `showIcon` | Whether to show tag icons |
 | `showCount` | Whether to show page counts |
+| `locale` | <code>string &#124; Record&lt;string, string&gt;</code> | `undefined` | Necessary when multilingual site |
+
+:::note
+For multilingual sites, you always need to pass the `locale` property to all components so they can correctly resolve the right [label](/starlight-tags/guides/tags-definition/#label) and [description](/starlight-tags/guides/tags-definition/#description).
+Here is an example which uses the [`locale`](https://starlight.astro.build/reference/route-data/#locale) from [Starlight Route Data](https://starlight.astro.build/guides/route-data/) in an Astro file:
+
+```astro
+---
+import { PageTags } from 'starlight-tags/components';
+const { locale } = Astro.locals.starlightRoute
+---
+
+<PageTags layout="inline" {locale} />
+```
+
+If you want to use the components in a MDX file, you can just pass the correct locale directly as there should be individual MDX files for each language already:
+
+```mdx
+import { PageTags } from 'starlight-tags/components';
+
+<PageTags layout="inline" locale="en" />
+```
+
+:::
 
 ### Style Variants
 

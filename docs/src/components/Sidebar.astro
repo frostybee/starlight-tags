@@ -4,7 +4,9 @@
  */
 import Default from '@astrojs/starlight/components/Sidebar.astro';
 import { TagSidebar } from 'starlight-tags/components';
+
+const { locale } = Astro.locals.starlightRoute
 ---
 
 <Default {...Astro.props} />
-<TagSidebar limit={8} sortBy="count" title="Popular Tags" collapsed={false}/>
+<TagSidebar limit={8} sortBy="count" collapsed={false} {locale} />

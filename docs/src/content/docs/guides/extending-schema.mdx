@@ -86,7 +86,7 @@ const { tag } = Astro.props;
 ---
 
 <span class="tag" data-status={tag.status}>
-  {tag.icon} {tag.label}
+  {tag.icon} {getTagLabel(locale, tag.label)}
 
   {tag.status === 'deprecated' && (
     <span class="badge deprecated">Deprecated</span>

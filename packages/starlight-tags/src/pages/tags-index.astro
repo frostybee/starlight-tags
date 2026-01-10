@@ -1,9 +1,9 @@
 ---
 import StarlightPage from '@astrojs/starlight/components/StarlightPage.astro';
-import TagsList from '../components/TagsList.astro';
 import { initTags, getAllTagsSorted } from 'virtual:starlight-tagging/tags';
 import { buildUrl } from '../libs/url.js';
 import { createTierCalculator } from '../libs/popularity.js';
+import { getTagLabel, getTagDescription } from '../libs/label.js';
 // @ts-expect-error - virtual module provided by Starlight
 import starlightConfig from 'virtual:starlight/user-config';
 
@@ -23,18 +23,18 @@ export function getStaticPaths() {
 
 await initTags();
 
-const allTags = getAllTagsSorted().filter(tag => !tag.hidden);
+const { locale } = Astro.params;
+const allTags = getAllTagsSorted(locale).filter(tag => !tag.hidden);
 const uniquePages = new Set(allTags.flatMap(tag => tag.pages.map(p => p.id)));
 const totalPagesTagged = uniquePages.size;
 const t = Astro.locals.t;
-const { locale } = Astro.params;
 
 const maxCount = Math.max(...allTags.map(tag => tag.count), 1);
 const minCount = Math.min(...allTags.map(tag => tag.count), 1);
 const getPopularityTier = createTierCalculator(minCount, maxCount);
 
 const tagsByLetter = allTags.reduce((acc, tag) => {
-  const letter = tag.label.charAt(0).toUpperCase();
+  const letter = getTagLabel(locale, tag.label).charAt(0).toUpperCase();
   if (!acc[letter]) acc[letter] = [];
   acc[letter].push(tag);
   return acc;
@@ -79,7 +79,7 @@ const sortedLetters = Object.keys(tagsByLetter).sort();
             title={`${tag.count} ${tag.count === 1 ? t('starlightTags.page') : t('starlightTags.pages')}`}
           >
             {tag.icon && <span class="icon">{tag.icon}</span>}
-            <span>{tag.label}</span>
+            <span>{getTagLabel(locale, tag.label)}</span>
             <span class="count">{tag.count}</span>
           </a>
         ))}
@@ -111,12 +111,12 @@ const sortedLetters = Object.keys(tagsByLetter).sort();
                   <div class="card-main">
                     <span class="card-name">
                       {tag.icon && <span class="icon">{tag.icon}</span>}
-                      {tag.label}
+                      {getTagLabel(locale, tag.label)}
                     </span>
                     <span class="card-count">{tag.count}</span>
                   </div>
                   {tag.description && (
-                    <p class="card-desc">{tag.description}</p>
+                    <p class="card-desc">{getTagDescription(locale, tag.description)}</p>
                   )}
                   <div class="card-bar">
                     <div class="card-bar-fill" style={`--w: ${(tag.count / maxCount) * 100}%`}></div>

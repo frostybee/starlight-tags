@@ -7,6 +7,7 @@
 import { TagsProcessor, type MinimalLogger } from './tags-processor.js';
 import type { PluginConfig } from '../schemas/config.js';
 import type { ProcessedTag } from '../schemas/tags.js';
+import type { Locale } from './i18n.js';
 
 // Module-level cache for the processor instance
 let cachedProcessor: TagsProcessor | null = null;
@@ -123,8 +124,8 @@ export function getTags(): Map<string, ProcessedTag> {
 /**
  * Get all tags sorted by count (descending) then label (ascending).
  */
-export function getAllTagsSorted(): ProcessedTag[] {
-  return ensureInitialized().getAllTagsSorted();
+export function getAllTagsSorted(locale: Locale): ProcessedTag[] {
+  return ensureInitialized().getAllTagsSorted(locale);
 }
 
 /**

@@ -78,8 +78,8 @@ tags:
 
 | Property | Type | Required | Description |
 |----------|------|----------|-------------|
-| `label` | `string` | Yes | Display name shown to users |
-| `description` | `string` | No | Short description of the tag |
+| `label` | <code>string &#124; Record&lt;string, string&gt;</code> | Yes | Display name shown to users |
+| `description` | <code>string &#124; Record&lt;string, string&gt;</code> | No | Short description of the tag |
 | `color` | `string` | No | Badge color (hex, named, rgb/hsl) |
 | `icon` | `string` | No | Emoji or short text displayed with tag |
 | `permalink` | `string` | No | Custom URL slug (overrides tag ID) |
@@ -96,6 +96,20 @@ tags:
     label: "Internationalization"  # Shows as "Internationalization" in the UI
 ```
 
+:::note
+If your site is multilingual, you can define the labels for all your BCP-47 tags like that:
+
+```yaml
+tags:
+  i18n:
+    label:
+      en: "Internationalization"
+      de: "Internationalisierung"
+```
+
+Read more details about this in the [internationalization guide](/starlight-tags/guides/i18n/#translate-labels-and-descriptions).
+:::
+
 ### `description`
 
 A brief description shown on the tag's detail page and in tooltips.
@@ -106,6 +120,21 @@ tags:
     label: "Plugins"
     description: "Extending functionality with plugins and integrations"
 ```
+
+:::note
+If your site is multilingual, you can define the descriptions for all your BCP-47 tags like that:
+
+```yaml
+tags:
+  i18n:
+    label: "Plugins"  # coincidentally the same in both languages
+    description:
+      en: "Extending functionality with plugins and integrations"
+      de: "Erweitere die Funktionen mit Plugins und Integrationen"
+```
+
+Read more details about this in the [internationalization guide](/starlight-tags/guides/i18n/#translate-labels-and-descriptions).
+:::
 
 ### `color`
 
