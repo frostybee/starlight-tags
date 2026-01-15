@@ -19,16 +19,7 @@
  * ```
  */
 import type { StarlightRouteData } from '@astrojs/starlight/route-data';
-import { getTagsData, type StarlightTagsData } from './src/libs/data.js';
-
-// Extend Astro.locals type for TypeScript
-declare global {
-  namespace App {
-    interface Locals {
-      starlightTags: StarlightTagsData;
-    }
-  }
-}
+import { getTagsData } from './src/libs/data.js';
 
 /**
  * Route middleware that injects starlight-tags data into Astro.locals.

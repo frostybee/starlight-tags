@@ -42,6 +42,10 @@ interface Props {
   showIcon?: boolean;
   /** Optional label before tags. Pass `true` to use the localized default label, or a string for custom label */
   label?: string | boolean;
+  /** Frontmatter data passed explicitly (optional, falls back to Starlight route data) */
+  frontmatter?: {
+    tags?: string[];
+  };
 }
 
 const {

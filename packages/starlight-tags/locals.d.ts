@@ -17,9 +17,11 @@
  */
 import type { StarlightTagsData } from './src/libs/data.js';
 
+type StarlightLocals = import('@astrojs/starlight').StarlightLocals;
+
 declare global {
   namespace App {
-    interface Locals {
+    interface Locals extends StarlightLocals {
       /**
        * Tag data injected by starlight-tags middleware.
        * Available on all Starlight pages.
@@ -48,3 +50,10 @@ declare global {
 }
 
 export type { StarlightTagsData };
+
+declare global {
+  namespace StarlightApp {
+    type Translations = typeof import('./src/translations').translations.en;
+    interface I18n extends Translations {}
+  }
+}

@@ -1,27 +1,22 @@
 {
+  "extends": "astro/tsconfigs/strict",
   "compilerOptions": {
-    "target": "ES2022",
-    "module": "ESNext",
-    "moduleResolution": "bundler",
-    "strict": true,
-    "esModuleInterop": true,
-    "skipLibCheck": true,
-    "forceConsistentCasingInFileNames": true,
-    "allowSyntheticDefaultImports": true,
-    "resolveJsonModule": true,
     "types": ["node", "vite/client"],
     "noEmit": true
   },
   "include": [
     "index.ts",
-    "src/**/*.ts"
+    "middleware.ts",
+    "locals.d.ts",
+    "src/**/*.ts",
+    "src/**/*.astro",
+    "src/env.d.ts"
   ],
   "exclude": [
     "**/node_modules",
     "../../node_modules",
     "dist",
     "tests",
-    "**/*.astro",
     "src/components/index.ts"
   ]
 }
