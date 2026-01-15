@@ -14,7 +14,6 @@
  * <TagSidebar />
  * ```
  */
-import { initTags, getAllTagsSorted } from 'virtual:starlight-tagging/tags';
 import { buildUrlFromCurrentPage } from '../libs/url.js';
 import type { ProcessedTag } from '../schemas/tags.js';
 
@@ -42,8 +41,9 @@ const {
   collapsed = false
 } = Astro.props;
 
-await initTags();
-let tags: ProcessedTag[] = getAllTagsSorted();
+// Get tags from middleware-injected data
+const { allTagsSorted } = Astro.locals.starlightTags;
+let tags: ProcessedTag[] = allTagsSorted;
 
 // Sort based on sortBy prop
 if (sortBy === 'count') {

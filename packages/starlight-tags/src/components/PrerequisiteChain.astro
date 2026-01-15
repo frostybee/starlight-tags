@@ -15,7 +15,6 @@
  * <PrerequisiteChain tag={processedTag} tagsMap={tagsMap} />
  * ```
  */
-import { initTags, getTag, getTags } from 'virtual:starlight-tagging/tags';
 import type { ProcessedTag } from '../schemas/tags.js';
 import TagBadge from './TagBadge.astro';
 
@@ -38,14 +37,15 @@ const {
   maxChainLength = 5
 } = Astro.props;
 
-// Resolve tag and tagsMap: use provided objects, or fetch internally
+// Get tags from middleware-injected data
+const { tags: middlewareTags } = Astro.locals.starlightTags;
+
+// Resolve tag and tagsMap: use provided objects, or fetch from middleware
 let tag: ProcessedTag | undefined = tagProp;
-let tagsMap: Map<string, ProcessedTag> = tagsMapProp || new Map();
+let tagsMap: Map<string, ProcessedTag> = tagsMapProp || middlewareTags;
 
 if (!tag && tagId) {
-  await initTags();
-  tag = getTag(tagId);
-  tagsMap = getTags();
+  tag = middlewareTags.get(tagId);
 }
 
 // Early return if no tag found

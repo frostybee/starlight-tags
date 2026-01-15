@@ -22,7 +22,6 @@
  * ```
  */
 import TagBadge from './TagBadge.astro';
-import { initTags, getTag, getAllTagsSorted } from 'virtual:starlight-tagging/tags';
 import type { ProcessedTag } from '../schemas/tags.js';
 
 interface Props {
@@ -51,25 +50,26 @@ const {
   sortBy = 'name'
 } = Astro.props;
 
+// Get tags from middleware-injected data
+const { tags: tagsMap, allTagsSorted } = Astro.locals.starlightTags;
+
 // Resolve tags: use provided tags, fetch by IDs, or get all
-let tags: ProcessedTag[] = tagsProp || [];
+let resolvedTags: ProcessedTag[] = tagsProp || [];
 
 if (!tagsProp) {
-  await initTags();
-
   if (tagIds && tagIds.length > 0) {
     // Fetch specific tags by ID
-    tags = tagIds
-      .map(id => getTag(id))
+    resolvedTags = tagIds
+      .map(id => tagsMap.get(id))
       .filter((t): t is ProcessedTag => t !== undefined);
   } else {
     // Get all tags
-    tags = getAllTagsSorted();
+    resolvedTags = allTagsSorted;
   }
 }
 
 // Sort tags based on sortBy prop
-let sortedTags = [...tags].sort((a, b) => {
+let sortedTags = [...resolvedTags].sort((a, b) => {
   if (sortBy === 'count') {
     return b.count - a.count || a.label.localeCompare(b.label);
   }

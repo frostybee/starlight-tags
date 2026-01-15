@@ -16,7 +16,6 @@
  * ```
  */
 import TagBadge from './TagBadge.astro';
-import { initTags, getTag } from 'virtual:starlight-tagging/tags';
 import type { ProcessedTag } from '../schemas/tags.js';
 
 // Type for accessing Starlight's internal route data
@@ -53,6 +52,9 @@ const {
   label
 } = Astro.props;
 
+// Get tags from middleware-injected data
+const { tags } = Astro.locals.starlightTags;
+
 // Access translations via Astro.locals.t
 const t = Astro.locals.t;
 
@@ -69,25 +71,10 @@ const frontmatterTags: string[] = Astro.props.frontmatter?.tags ||
 // Check if tags should be hidden on this page
 const hideTags = starlightLocals.starlightRoute?.entry?.data?.hideTags ?? false;
 
-// Fetch processed tags
-let pageTags: ProcessedTag[] = [];
-
-if (frontmatterTags.length > 0) {
-  try {
-    // Initialize tags store (memoized - only runs once across all components)
-    await initTags();
-
-    // Get processed tag data for each frontmatter tag
-    pageTags = frontmatterTags
-      .map(tagId => getTag(tagId))
-      .filter((t): t is ProcessedTag => t !== undefined);
-  } catch (e) {
-    // Log error in development for debugging
-    if (import.meta.env.DEV) {
-      console.error('[PageTags] Failed to load tags:', e);
-    }
-  }
-}
+// Fetch processed tags from middleware data
+const pageTags: ProcessedTag[] = frontmatterTags
+  .map(tagId => tags.get(tagId))
+  .filter((t): t is ProcessedTag => t !== undefined);
 ---
 
 {!hideTags && pageTags.length > 0 && (

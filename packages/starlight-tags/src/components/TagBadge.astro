@@ -15,7 +15,6 @@
  * <TagBadge tag={processedTag} />
  * ```
  */
-import { initTags, getTag } from 'virtual:starlight-tagging/tags';
 import type { ProcessedTag } from '../schemas/tags.js';
 import { buildUrlFromCurrentPage } from '../libs/url.js';
 
@@ -41,12 +40,14 @@ const {
   clickable = true
 } = Astro.props;
 
+// Get tags from middleware-injected data
+const { tags } = Astro.locals.starlightTags;
+
 // Resolve tag: use provided tag object, or fetch by tagId
 let tag: ProcessedTag | undefined = tagProp;
 
 if (!tag && tagId) {
-  await initTags();
-  tag = getTag(tagId);
+  tag = tags.get(tagId);
 }
 
 // Early return if no tag found

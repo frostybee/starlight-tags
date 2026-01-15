@@ -76,30 +76,40 @@ tags:
 ```astro
 ---
 // src/components/CustomTagBadge.astro
+import type { ProcessedTag } from 'starlight-tags/schemas/tags';
 import type { CustomTag } from '../config/tags-schema';
 
 interface Props {
-  tag: CustomTag;
+  tagId: string;
 }
 
-const { tag } = Astro.props;
+const { tagId } = Astro.props;
+
+// Get tag data from middleware
+const { tags } = Astro.locals.starlightTags;
+const baseTag = tags.get(tagId);
+
+// Cast to custom type to access extended fields
+const tag = baseTag as (ProcessedTag & CustomTag) | undefined;
 ---
 
-<span class="tag" data-status={tag.status}>
-  {tag.icon} {tag.label}
+{tag && (
+  <span class="tag" data-status={tag.status}>
+    {tag.icon} {tag.label}
 
-  {tag.status === 'deprecated' && (
-    <span class="badge deprecated">Deprecated</span>
-  )}
+    {tag.status === 'deprecated' && (
+      <span class="badge deprecated">Deprecated</span>
+    )}
 
-  {tag.status === 'beta' && (
-    <span class="badge beta">Beta</span>
-  )}
+    {tag.status === 'beta' && (
+      <span class="badge beta">Beta</span>
+    )}
 
-  {tag.version && (
-    <span class="version">v{tag.version}</span>
-  )}
-</span>
+    {tag.version && (
+      <span class="version">v{tag.version}</span>
+    )}
+  </span>
+)}
 
 <style>
   .badge.deprecated { background: #dc2626; color: white; }
@@ -179,7 +189,13 @@ tags.yml                    TagProcessor                 Your Components
 
 3. When accessing tags with custom fields, cast to your custom type:
    ```typescript
-   const tag = processor.getTag('auth') as CustomTag;
+   // Using middleware (recommended)
+   const { tags } = Astro.locals.starlightTags;
+   const tag = tags.get('auth') as (ProcessedTag & CustomTag);
+
+   // Or with an array
+   const { allTagsSorted } = Astro.locals.starlightTags;
+   const customTags = allTagsSorted as (ProcessedTag & CustomTag)[];
    ```
 
 4. Zod validates your `tags.yml` against the schema at build time. Invalid custom field values will cause build errors.

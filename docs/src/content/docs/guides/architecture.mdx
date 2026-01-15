@@ -12,19 +12,27 @@ This guide explains the internal architecture of the `starlight-tags` plugin. Un
 
 ```
 ┌─────────────┐     ┌──────────────────┐     ┌─────────────────┐
-│  tags.yml   │────▶│ tags-processor   │────▶│ Virtual Module  │
+│  tags.yml   │────▶│ tags-processor   │────▶│   data.ts       │
 └─────────────┘     └──────────────────┘     └─────────────────┘
                             │                        │
                             ▼                        ▼
                     ┌──────────────┐         ┌─────────────────┐
-                    │ Validation   │         │ getStaticPaths  │
-                    │ (Zod Schema) │         └─────────────────┘
-                    └──────────────┘                 │
+                    │ Validation   │         │   Middleware    │
+                    │ (Zod Schema) │         │  (onRequest)    │
+                    └──────────────┘         └─────────────────┘
+                                                     │
                                                      ▼
                                             ┌─────────────────┐
-                                            │ Generated Pages │
-                                            │ /tags/[slug]/   │
+                                            │ Astro.locals    │
+                                            │ .starlightTags  │
                                             └─────────────────┘
+                                                     │
+                            ┌────────────────────────┴────────────────────────┐
+                            ▼                                                 ▼
+                    ┌─────────────────┐                              ┌─────────────────┐
+                    │   Components    │                              │ Generated Pages │
+                    │  (TagBadge...)  │                              │ /tags/[slug]/   │
+                    └─────────────────┘                              └─────────────────┘
 ```
 
 ### 1. Configuration Loading
@@ -49,14 +57,19 @@ tags:
 - Scans content files for tag references
 - Creates slugs and URLs for each tag
 
-### 3. Virtual Module
+### 3. Middleware & Data Access
 
-Processed data is exposed via Vite virtual modules:
+The plugin uses route middleware to inject processed tag data into `Astro.locals`:
 
 ```typescript
-// Available in your components
-import { initTags, getTag, getTags } from 'virtual:starlight-tagging/tags';
-import { config } from 'virtual:starlight-tagging/config';
+// Access via Astro.locals (automatically available)
+const { tags, allTagsSorted, tagsByPage, config } = Astro.locals.starlightTags;
+
+// Get a specific tag
+const tag = tags.get('authentication');
+
+// Get tags for current page
+const pageTags = tagsByPage.get(pageSlug) ?? [];
 ```
 
 ### 4. Page Generation
@@ -237,16 +250,18 @@ Key files in the plugin:
 ```
 packages/starlight-tags/
 ├── index.ts                 # Plugin entry point
+├── middleware.ts            # Route middleware for Astro.locals
+├── locals.d.ts              # TypeScript declarations for Astro.locals
 ├── src/
 │   ├── components/          # Astro components
 │   │   ├── TagBadge.astro
 │   │   ├── PageTags.astro
 │   │   └── ...
 │   ├── libs/
+│   │   ├── data.ts          # Core data interface (StarlightTagsData)
 │   │   ├── integration.ts   # Astro integration setup
 │   │   ├── tags-processor.ts # YAML processing & validation
-│   │   ├── tags-store.ts    # In-memory tag storage
-│   │   ├── vite.ts          # Virtual module definitions
+│   │   ├── vite.ts          # Config virtual module for runtime
 │   │   ├── pagination.ts    # Pagination logic
 │   │   └── url.ts           # URL building utilities
 │   ├── pages/
@@ -256,6 +271,7 @@ packages/starlight-tags/
 │   │   ├── config.ts        # Plugin config schema
 │   │   ├── tags.ts          # tags.yml schema
 │   │   └── frontmatter.ts   # Frontmatter extension
+│   ├── utils.ts             # Standalone utility functions
 │   └── translations.ts      # i18n strings
 ```
 
@@ -265,43 +281,37 @@ packages/starlight-tags/
 
 You can extend the tag schema with custom fields. See the [Extending Schema Guide](/starlight-tags/guides/extending-schema/).
 
-### Virtual Module Access
+### Programmatic Tag Access
 
-Access tag data programmatically in your components:
+Access tag data programmatically in your components via `Astro.locals`:
 
-```typescript
+```astro
+---
 import {
-  initTags,
-  getTag,
-  getTags,
-  getAllTagsSorted,
-  getTagsForPage,
-  getTagsByDifficulty,
-  getTagsByContentType,
-  validatePrerequisites,
+  filterByDifficulty,
+  filterByContentType,
   getLearningPath,
-  isInitialized,
-  resetTagsStore
-} from 'virtual:starlight-tagging/tags';
+  validatePrerequisites,
+  getPopularityTier
+} from 'starlight-tags/utils';
 
-await initTags(); // Initialize (memoized, safe to call multiple times)
+// Core tag access - automatically available via middleware
+const { tags, allTagsSorted, tagsByPage, config } = Astro.locals.starlightTags;
 
-// Core tag access
-const allTags = getTags();           // Map<string, ProcessedTag>
-const sorted = getAllTagsSorted();   // ProcessedTag[] sorted by count
-const single = getTag('auth');       // ProcessedTag | undefined
+// Get a specific tag
+const authTag = tags.get('authentication');
 
-// Page-based queries
-const pageTags = getTagsForPage('guides/authentication'); // Tags for a specific page
+// Get tags for a specific page
+const pageTags = tagsByPage.get('guides/authentication') ?? [];
 
-// Educational queries
-const beginnerTags = getTagsByDifficulty('beginner');     // Filter by difficulty
-const tutorialTags = getTagsByContentType('tutorial');    // Filter by content type
-const path = getLearningPath('basics', 'advanced');       // Learning path between tags
+// Filter by difficulty or content type
+const beginnerTags = filterByDifficulty(allTagsSorted, 'beginner');
+const tutorials = filterByContentType(allTagsSorted, 'tutorial');
 
-// Validation & utilities
-const { isValid, errors } = validatePrerequisites();      // Validate prerequisite refs
-const ready = isInitialized();                            // Check if store is initialized
+// Educational features
+const path = getLearningPath(tags, 'basics', 'advanced');
+const { isValid, errors } = validatePrerequisites(tags);
+---
 ```
 
-See the [Virtual Module Guide](/starlight-tags/guides/virtual-tags-module/) for more details.
+See the [Accessing Tag Data guide](/starlight-tags/guides/accessing-tag-data/) for complete documentation.

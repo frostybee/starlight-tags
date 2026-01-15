@@ -168,13 +168,10 @@ For advanced filtering or custom data sources:
 ```astro
 ---
 import { TagsList } from 'starlight-tags/components';
-import { initTags, getAllTagsSorted } from 'virtual:starlight-tagging/tags';
 
-await initTags();
-
-const allTags = getAllTagsSorted();
+const { allTagsSorted } = Astro.locals.starlightTags;
 // Custom filtering
-const popularTags = allTags.filter(tag => tag.count >= 3);
+const popularTags = allTagsSorted.filter(tag => tag.count >= 3);
 ---
 
 <TagsList tags={popularTags} title="Popular Tags" />

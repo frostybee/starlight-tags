@@ -113,16 +113,14 @@ All tag components support three visual variants:
 
 ## Advanced: Manual Data Fetching
 
-For advanced use cases (custom filtering, caching, etc.), you can fetch tag data manually:
+For advanced use cases (custom filtering, etc.), you can access tag data via middleware:
 
 ```astro
 ---
 import { TagsList } from 'starlight-tags/components';
-import { initTags, getAllTagsSorted } from 'virtual:starlight-tagging/tags';
 
-await initTags();
-const allTags = getAllTagsSorted();
-const popularTags = allTags.filter(tag => tag.count >= 3);
+const { allTagsSorted } = Astro.locals.starlightTags;
+const popularTags = allTagsSorted.filter(tag => tag.count >= 3);
 ---
 
 <TagsList tags={popularTags} />

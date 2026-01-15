@@ -107,51 +107,186 @@ export type TagsConfig = z.infer<typeof tagsConfigSchema>;
 
 /**
  * Reference to a documentation page that uses a tag.
- * Used internally to track which pages have which tags.
+ * Used to track which pages have which tags and provide page metadata.
+ *
+ * @example
+ * ```typescript
+ * const { tags } = Astro.locals.starlightTags;
+ * const authTag = tags.get('authentication');
+ *
+ * for (const page of authTag.pages) {
+ *   console.log(page.title, page.slug);
+ * }
+ * ```
  */
-export type PageReference = {
-  /** Unique content collection entry ID */
+export interface PageReference {
+  /**
+   * Unique content collection entry ID.
+   * Format includes the file extension: `'guides/getting-started.mdx'`
+   *
+   * @example 'guides/authentication.mdx', 'reference/api.md'
+   */
   id: string;
-  /** URL slug for the page */
+
+  /**
+   * URL slug for the page (without file extension).
+   * Used for routing and lookup in `tagsByPage`.
+   *
+   * @example 'guides/authentication', 'reference/api'
+   */
   slug: string;
-  /** Page title from frontmatter */
+
+  /**
+   * Page title from frontmatter.
+   * This is the `title` field defined in the page's frontmatter.
+   */
   title: string;
-  /** Page description from frontmatter */
+
+  /**
+   * Page description from frontmatter, if provided.
+   * This is the optional `description` field from the page's frontmatter.
+   */
   description?: string;
-  /** Tag IDs assigned to this page */
+
+  /**
+   * Tag IDs assigned to this page via frontmatter.
+   * These are the raw tag IDs as specified in the `tags` frontmatter field.
+   *
+   * @example ['authentication', 'security', 'rest-api']
+   */
   tags?: string[];
-  /** Full frontmatter data for advanced use */
+
+  /**
+   * Full frontmatter data for advanced use cases.
+   * Contains all frontmatter fields from the page, useful for custom filtering or display.
+   */
   frontmatter?: Record<string, unknown>;
-};
+}
 
 /**
  * Processed tag with computed properties.
- * This is what components receive - the raw TagDefinition plus
- * runtime-computed data like page counts and URLs.
+ *
+ * This is the primary tag type used throughout starlight-tags. It combines
+ * the raw `TagDefinition` from `tags.yml` with runtime-computed data like
+ * page counts, URLs, and educational relationships.
  *
  * Custom fields from extended schemas are preserved via the index signature.
  * Cast to your extended type to access custom fields with type safety.
+ *
+ * @example
+ * ```typescript
+ * const { tags } = Astro.locals.starlightTags;
+ * const tag = tags.get('authentication');
+ *
+ * if (tag) {
+ *   console.log(tag.label);          // "Authentication"
+ *   console.log(tag.count);          // 5
+ *   console.log(tag.url);            // "/tags/authentication"
+ *   console.log(tag.pages.length);   // 5
+ * }
+ * ```
+ *
+ * @see TagDefinition for the base properties from tags.yml
+ * @see PageReference for the structure of pages array items
  */
 export type ProcessedTag = TagDefinition & {
-  /** Original tag ID from tags.yml */
+  /**
+   * The unique identifier for the tag as defined in `tags.yml`.
+   * This is the key used in the tags configuration file.
+   *
+   * @example 'authentication', 'rest-api', 'getting-started'
+   */
   id: string;
-  /** URL-safe slug (from permalink or generated from ID) */
+
+  /**
+   * URL-safe slug used for routing to the tag's page.
+   * Derived from `permalink` if specified in the tag definition,
+   * otherwise generated from the tag `id`.
+   *
+   * @example 'authentication', 'rest-api'
+   */
   slug: string;
-  /** Full URL to the tag's page (e.g., "/tags/authentication") */
+
+  /**
+   * Full URL path to the tag's dedicated page.
+   * Includes the configured `tagsPagesPrefix` (default: 'tags').
+   *
+   * @example '/tags/authentication', '/docs/tags/rest-api'
+   */
   url: string;
-  /** Number of pages using this tag */
+
+  /**
+   * Number of documentation pages that have this tag assigned.
+   * Used for popularity calculations, sorting, and display (e.g., "Authentication (5)").
+   */
   count: number;
-  /** List of pages that have this tag */
+
+  /**
+   * List of pages that have this tag assigned.
+   * Each page includes its slug, title, description, and other metadata.
+   *
+   * @example
+   * ```typescript
+   * const tag = tags.get('authentication');
+   * for (const page of tag.pages) {
+   *   console.log(`${page.title}: ${page.slug}`);
+   * }
+   * ```
+   *
+   * @see PageReference
+   */
   pages: PageReference[];
 
   // Computed educational properties
-  /** IDs of tags that share pages or prerequisites with this tag */
+
+  /**
+   * IDs of tags that are related to this tag.
+   * Calculated based on shared pages and prerequisite relationships.
+   * Tags that frequently appear together or have prerequisite links are considered related.
+   *
+   * @example ['security', 'jwt', 'oauth'] for an 'authentication' tag
+   */
   relatedTags?: string[];
-  /** Ordered list of prerequisite tag IDs (resolved recursively) */
+
+  /**
+   * Ordered list of prerequisite tag IDs, resolved recursively.
+   * Represents the full learning path leading to this tag, not just immediate prerequisites.
+   *
+   * @example
+   * If 'advanced-auth' requires 'authentication' which requires 'http-basics':
+   * ```typescript
+   * const tag = tags.get('advanced-auth');
+   * console.log(tag.prerequisiteChain);
+   * // ['http-basics', 'authentication']
+   * ```
+   */
   prerequisiteChain?: string[];
-  /** Suggested next topics based on this tag's prerequisites */
+
+  /**
+   * Suggested next topics to learn after this tag.
+   * These are tags that list the current tag as a prerequisite.
+   *
+   * @example
+   * ```typescript
+   * const tag = tags.get('authentication');
+   * console.log(tag.nextSteps);
+   * // ['oauth', 'jwt', 'session-management']
+   * ```
+   */
   nextSteps?: string[];
 
-  /** Custom fields from extended schemas are preserved */
+  /**
+   * Index signature for custom fields from extended schemas.
+   * When extending the tag schema, custom fields are preserved here.
+   * Cast to your extended type to access custom fields with type safety.
+   *
+   * @example
+   * ```typescript
+   * // Extended tag type with custom 'product' field
+   * type ExtendedTag = ProcessedTag & { product?: string };
+   * const tag = tags.get('api') as ExtendedTag;
+   * console.log(tag.product); // 'enterprise'
+   * ```
+   */
   [key: string]: unknown;
 };

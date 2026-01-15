@@ -1,7 +1,7 @@
 ---
 import StarlightPage from '@astrojs/starlight/components/StarlightPage.astro';
 import TagsList from '../components/TagsList.astro';
-import { initTags, getAllTagsSorted } from 'virtual:starlight-tagging/tags';
+import { getTagsData } from '../libs/data.js';
 import { buildUrl } from '../libs/url.js';
 import { createTierCalculator } from '../libs/popularity.js';
 // @ts-expect-error - virtual module provided by Starlight
@@ -21,9 +21,15 @@ export function getStaticPaths() {
   ];
 }
 
-await initTags();
+// Get tags from middleware-injected data, with fallback for static generation
+// Plugin-injected routes may not always have middleware run before rendering
+let tagsData = Astro.locals.starlightTags;
+if (!tagsData) {
+  tagsData = await getTagsData();
+}
+const { allTagsSorted } = tagsData;
 
-const allTags = getAllTagsSorted().filter(tag => !tag.hidden);
+const allTags = allTagsSorted.filter(tag => !tag.hidden);
 const uniquePages = new Set(allTags.flatMap(tag => tag.pages.map(p => p.id)));
 const totalPagesTagged = uniquePages.size;
 const t = Astro.locals.t;

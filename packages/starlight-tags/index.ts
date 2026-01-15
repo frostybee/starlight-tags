@@ -35,8 +35,19 @@ export default function starlightTagsPlugin(
       'i18n:setup': ({ injectTranslations }: HookParameters<'i18n:setup'>) => {
         injectTranslations(translations);
       },
-      'config:setup': async ({ addIntegration, logger }: HookParameters<'config:setup'>) => {
+      'config:setup': async ({
+        addIntegration,
+        addRouteMiddleware,
+        logger
+      }: HookParameters<'config:setup'>) => {
         logger.info('Setting up Starlight Tags plugin...');
+
+        // Register route middleware to inject tags data into Astro.locals
+        addRouteMiddleware({
+          entrypoint: 'starlight-tags/middleware',
+          order: 'pre'
+        });
+
         addIntegration(createTagsIntegration(validatedConfig, logger));
       }
     }

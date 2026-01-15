@@ -46,7 +46,7 @@ export default defineConfig({
         },
         {
           label: 'Guides',
-          items: ['guides/configuration', 'guides/tags-definition', 'guides/frontmatter', 'guides/routes', 'guides/plugin-compatibility', 'guides/page-title-override', 'guides/extending-schema', 'guides/virtual-tags-module', 'guides/i18n', 'guides/architecture'],
+          items: ['guides/configuration', 'guides/tags-definition', 'guides/frontmatter', 'guides/routes', 'guides/plugin-compatibility', 'guides/page-title-override', 'guides/extending-schema', 'guides/accessing-tag-data', 'guides/i18n', 'guides/architecture'],
         },
         {
           label: 'Plugin Components',

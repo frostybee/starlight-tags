@@ -7,6 +7,10 @@
   "type": "module",
   "exports": {
     ".": "./index.ts",
+    "./middleware": "./middleware.ts",
+    "./locals.d.ts": "./locals.d.ts",
+    "./data": "./src/libs/data.ts",
+    "./utils": "./src/utils.ts",
     "./schema": "./src/schemas/frontmatter.ts",
     "./schemas/tags": "./src/schemas/tags.ts",
     "./components": "./src/components/index.ts",
@@ -18,8 +22,9 @@
   },
   "files": [
     "index.ts",
-    "src/",
-    "virtual.d.ts"
+    "middleware.ts",
+    "locals.d.ts",
+    "src/"
   ],
   "scripts": {
     "test": "vitest",

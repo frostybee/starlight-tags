@@ -118,10 +118,9 @@ For advanced use cases where you already have tag data:
 ```astro
 ---
 import { TagBadge } from 'starlight-tags/components';
-import { initTags, getTag } from 'virtual:starlight-tagging/tags';
 
-await initTags();
-const authTag = getTag('authentication');
+const { tags } = Astro.locals.starlightTags;
+const authTag = tags.get('authentication');
 ---
 
 <TagBadge tag={authTag} variant="outline" showCount />

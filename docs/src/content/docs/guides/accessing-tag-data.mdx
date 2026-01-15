@@ -1,0 +1,243 @@
+---
+title: Accessing Tag Data
+description: Access processed tag data via Astro.locals.starlightTags
+---
+
+The `starlight-tags` plugin injects tag data into every Starlight page via middleware. This gives you instant access to all processed tags without any initialization.
+
+## How It Works
+
+The plugin registers route middleware that runs before each page renders. This middleware populates `Astro.locals.starlightTags` with all processed tag data, making it immediately available in your components.
+
+```astro
+---
+// Access tag data directly - no initialization required
+const { tags, allTagsSorted, tagsByPage, config } = Astro.locals.starlightTags;
+---
+```
+
+## The StarlightTagsData Interface
+
+`Astro.locals.starlightTags` provides the following data:
+
+| Property | Type | Description |
+|----------|------|-------------|
+| `tags` | `Map<string, ProcessedTag>` | All tags keyed by ID for O(1) lookup |
+| `allTagsSorted` | `ProcessedTag[]` | Tags sorted by priority (desc), count (desc), then label (asc) |
+| `tagsByPage` | `Map<string, ProcessedTag[]>` | O(1) lookup of tags by page slug |
+| `config` | `PluginConfig` | Plugin configuration with defaults applied |
+
+## The ProcessedTag Type
+
+Each tag in the data structures above is a `ProcessedTag` with these properties:
+
+| Property | Type | Description |
+|----------|------|-------------|
+| `id` | `string` | Unique identifier as defined in `tags.yml` |
+| `slug` | `string` | URL-safe slug for routing |
+| `url` | `string` | Full URL path to the tag's page |
+| `label` | `string` | Display name for the tag |
+| `description` | `string?` | Optional description shown on tag pages |
+| `color` | `string?` | CSS color value for the tag badge |
+| `icon` | `string?` | Emoji or text displayed before the label |
+| `count` | `number` | Number of pages using this tag |
+| `pages` | `PageReference[]` | List of pages with this tag |
+| `priority` | `number` | Sort priority (higher = first, default: 0) |
+| `hidden` | `boolean?` | If true, hidden from tag index page |
+| `difficulty` | `'beginner' \| 'intermediate' \| 'advanced'?` | Difficulty level |
+| `contentType` | `'lecture' \| 'lab' \| 'tutorial' \| ...?` | Content type |
+| `prerequisites` | `string[]?` | Tag IDs that should be learned first |
+| `relatedTags` | `string[]?` | Computed: related tag IDs |
+| `prerequisiteChain` | `string[]?` | Computed: full prerequisite chain |
+| `nextSteps` | `string[]?` | Computed: suggested next topics |
+
+## Basic Usage
+
+### Get a Specific Tag
+
+```astro
+---
+const { tags } = Astro.locals.starlightTags;
+const authTag = tags.get('authentication');
+---
+
+{authTag && (
+  <a href={authTag.url}>{authTag.label}</a>
+)}
+```
+
+### Display All Tags
+
+```astro
+---
+const { allTagsSorted } = Astro.locals.starlightTags;
+---
+
+<ul>
+  {allTagsSorted.map(tag => (
+    <li>
+      <a href={tag.url}>{tag.label}</a>
+      <span>({tag.count} pages)</span>
+    </li>
+  ))}
+</ul>
+```
+
+### Get Tags for Current Page
+
+```astro
+---
+const { tagsByPage } = Astro.locals.starlightTags;
+const pageSlug = Astro.props.slug || Astro.params.slug;
+const pageTags = tagsByPage.get(pageSlug) ?? [];
+---
+
+{pageTags.length > 0 && (
+  <div class="page-tags">
+    {pageTags.map(tag => (
+      <span class="tag">{tag.label}</span>
+    ))}
+  </div>
+)}
+```
+
+## Utility Functions
+
+For common filtering and querying operations, import from `starlight-tags/utils`:
+
+```astro
+---
+import {
+  filterByDifficulty,
+  filterByContentType,
+  getLearningPath,
+  validatePrerequisites,
+  groupTagsByLetter,
+  getPopularityTier,
+  getTagsForPage
+} from 'starlight-tags/utils';
+
+const { tags, allTagsSorted } = Astro.locals.starlightTags;
+
+// Filter by difficulty
+const beginnerTags = filterByDifficulty(allTagsSorted, 'beginner');
+
+// Filter by content type
+const tutorials = filterByContentType(allTagsSorted, 'tutorial');
+
+// Get learning path between tags
+const path = getLearningPath(tags, 'js-basics', 'js-async');
+
+// Validate prerequisite references
+const { isValid, errors } = validatePrerequisites(tags);
+
+// Group tags alphabetically
+const grouped = groupTagsByLetter(allTagsSorted);
+
+// Calculate popularity tier for tag cloud sizing
+const maxCount = Math.max(...allTagsSorted.map(t => t.count));
+const tier = getPopularityTier(someTag.count, maxCount);
+---
+```
+
+## TypeScript Setup
+
+For full TypeScript support, add the type declarations to your `tsconfig.json`:
+
+```json
+{
+  "include": [
+    "src/**/*",
+    "node_modules/starlight-tags/locals.d.ts"
+  ]
+}
+```
+
+Or reference it in a `.d.ts` file:
+
+```typescript
+/// <reference types="starlight-tags/locals.d.ts" />
+```
+
+## Using in getStaticPaths
+
+The middleware runs during page rendering, but `getStaticPaths()` runs at build time before middleware. For pages that need tag data in `getStaticPaths()`, import `getTagsData` directly:
+
+```astro
+---
+import { getTagsData } from 'starlight-tags/data';
+
+export async function getStaticPaths() {
+  const { allTagsSorted, config } = await getTagsData();
+
+  return allTagsSorted.map(tag => ({
+    params: { slug: tag.slug },
+    props: { tag }
+  }));
+}
+
+// During rendering, use Astro.locals for consistency
+const { tags } = Astro.locals.starlightTags;
+const { tag } = Astro.props;
+---
+```
+
+## Custom Components Example
+
+Here's a complete example of a custom tag cloud component:
+
+```astro
+---
+import { getPopularityTier } from 'starlight-tags/utils';
+
+const { allTagsSorted } = Astro.locals.starlightTags;
+
+// Filter to visible tags only
+const visibleTags = allTagsSorted.filter(t => !t.hidden);
+const maxCount = Math.max(...visibleTags.map(t => t.count));
+---
+
+<div class="tag-cloud">
+  {visibleTags.map(tag => {
+    const tier = getPopularityTier(tag.count, maxCount);
+    return (
+      <a
+        href={tag.url}
+        class:list={['tag', `tier-${tier}`]}
+        style={tag.color ? `--tag-color: ${tag.color}` : ''}
+      >
+        {tag.icon && <span class="icon">{tag.icon}</span>}
+        {tag.label}
+      </a>
+    );
+  })}
+</div>
+
+<style>
+  .tag-cloud {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  .tag {
+    padding: 0.25rem 0.5rem;
+    border-radius: 0.25rem;
+    text-decoration: none;
+    background: var(--tag-color, var(--sl-color-accent));
+    color: white;
+  }
+
+  .tier-1 { font-size: 0.75rem; }
+  .tier-2 { font-size: 0.875rem; }
+  .tier-3 { font-size: 1rem; }
+  .tier-4 { font-size: 1.125rem; }
+  .tier-5 { font-size: 1.25rem; font-weight: 600; }
+</style>
+```
+
+## Next Steps
+
+- See the [Component Reference](/starlight-tags/components/) for built-in components
+- Learn about [extending the schema](/starlight-tags/guides/extending-schema/) with custom fields
+- Understand the [architecture](/starlight-tags/guides/architecture/) for debugging

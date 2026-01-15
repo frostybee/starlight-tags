@@ -113,14 +113,13 @@ tags:
 ```astro
 ---
 // DifficultyTagBadge.astro
-import { initTags, getTag } from 'virtual:starlight-tagging/tags';
 import type { ProcessedTag } from 'starlight-tags/schemas/tags';
 import type { ExtendedTag } from '../config/extended-tag-schema';
 
 const { tagId } = Astro.props;
 
-await initTags();
-const tag = getTag(tagId) as ProcessedTag & ExtendedTag;
+const { tags } = Astro.locals.starlightTags;
+const tag = tags.get(tagId) as (ProcessedTag & ExtendedTag) | undefined;
 
 const difficultyColors = {
   beginner: '#22c55e',
@@ -129,14 +128,16 @@ const difficultyColors = {
 };
 ---
 
-<span class="tag">
-  {tag.label}
-  {tag.difficulty && (
-    <span style={`background: ${difficultyColors[tag.difficulty]}`}>
-      {tag.difficulty}
-    </span>
-  )}
-</span>
+{tag && (
+  <span class="tag">
+    {tag.label}
+    {tag.difficulty && (
+      <span style={`background: ${difficultyColors[tag.difficulty]}`}>
+        {tag.difficulty}
+      </span>
+    )}
+  </span>
+)}
 ```
 
 ### Product Component
@@ -144,14 +145,13 @@ const difficultyColors = {
 ```astro
 ---
 // ProductTagBadge.astro
-import { initTags, getTag } from 'virtual:starlight-tagging/tags';
 import type { ProcessedTag } from 'starlight-tags/schemas/tags';
 import type { ExtendedTag } from '../config/extended-tag-schema';
 
 const { tagId } = Astro.props;
 
-await initTags();
-const tag = getTag(tagId) as ProcessedTag & ExtendedTag;
+const { tags } = Astro.locals.starlightTags;
+const tag = tags.get(tagId) as (ProcessedTag & ExtendedTag) | undefined;
 
 const tierColors = {
   free: '#22c55e',

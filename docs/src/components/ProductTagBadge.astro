@@ -11,7 +11,6 @@
  * <ProductTagBadge tagId="webhooks" showProduct />
  * ```
  */
-import { initTags, getTag } from 'virtual:starlight-tagging/tags';
 import { buildUrlFromCurrentPage } from 'starlight-tags/libs/url';
 import type { ProcessedTag } from 'starlight-tags/schemas/tags';
 import type { ProductTag, PlanTier } from '../config/product-tag-schema';
@@ -34,9 +33,9 @@ const {
   clickable = true
 } = Astro.props;
 
-// Fetch the tag data
-await initTags();
-const baseTag = getTag(tagId);
+// Get tag data from middleware - no initialization needed
+const { tags } = Astro.locals.starlightTags;
+const baseTag = tags.get(tagId);
 
 if (!baseTag) {
   if (import.meta.env.DEV) {

@@ -143,15 +143,13 @@ For advanced use cases where you already have tag data:
 ```astro
 ---
 import { PrerequisiteChain } from 'starlight-tags/components';
-import { initTags, getTag, getTags } from 'virtual:starlight-tagging/tags';
 
-await initTags();
-const currentTag = getTag('oauth2');
-const tagsMap = getTags();
+const { tags } = Astro.locals.starlightTags;
+const currentTag = tags.get('oauth2');
 ---
 
 {currentTag?.prerequisiteChain?.length > 0 && (
-  <PrerequisiteChain tag={currentTag} tagsMap={tagsMap} />
+  <PrerequisiteChain tag={currentTag} tagsMap={tags} />
 )}
 ```
 

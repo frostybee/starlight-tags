@@ -209,7 +209,7 @@ The `PageTags` component:
 
 1. Reads the `tags` array from the current page's frontmatter
 2. Checks the `hideTags` frontmatter property
-3. Fetches tag data from the [virtual tags module](/starlight-tags/guides/virtual-tags-module/) (memoized for efficiency)
+3. Fetches tag data from middleware (`Astro.locals.starlightTags`)
 4. Renders each tag using the `TagBadge` component
 
 The component renders nothing if:

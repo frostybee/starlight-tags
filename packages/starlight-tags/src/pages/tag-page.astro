@@ -2,9 +2,7 @@
 import StarlightPage from '@astrojs/starlight/components/StarlightPage.astro';
 import TagBadge from '../components/TagBadge.astro';
 import TagPagination from '../components/TagPagination.astro';
-import { initTags, getAllTagsSorted, getTag } from 'virtual:starlight-tagging/tags';
-// @ts-expect-error - virtual module provided by plugin
-import { config } from 'virtual:starlight-tagging/config';
+import { getTagsData } from '../libs/data.js';
 import { buildUrl } from '../libs/url.js';
 import { calculatePagination, paginateArray, type PaginationInfo } from '../libs/pagination.js';
 import type { ProcessedTag, PageReference } from '../schemas/tags.js';
@@ -19,10 +17,10 @@ interface Props {
 }
 
 export async function getStaticPaths() {
-  // Initialize tags store (memoized - only runs once)
-  await initTags();
+  // Get tags data directly (getStaticPaths runs before middleware)
+  const { allTagsSorted, config } = await getTagsData();
 
-  const tags = getAllTagsSorted();
+  const tags = allTagsSorted;
   const itemsPerPage = config.itemsPerPage;
 
   // Get configured locales from Starlight config (not plugin translations)
@@ -97,6 +95,14 @@ if (!tag || !pages || !pagination) {
   throw new Error('[starlight-tags] Invalid props: missing tag, pages, or pagination data');
 }
 
+// Get tags and config from middleware-injected data, with fallback for static generation
+// Plugin-injected routes may not always have middleware run before rendering
+let tagsData = Astro.locals.starlightTags;
+if (!tagsData) {
+  tagsData = await getTagsData();
+}
+const { tags, config } = tagsData;
+
 // Access translations via Astro.locals.t
 const t = Astro.locals.t;
 
@@ -104,13 +110,10 @@ const t = Astro.locals.t;
 // In Astro's [...param] rest routes, the param is string | undefined (not an array)
 const { locale } = Astro.params as { locale?: string };
 
-// Initialize tags store (memoized - already initialized in getStaticPaths, this is a no-op)
-await initTags();
-
 // Use pre-computed related tags from the processor
 // (based on shared pages and prerequisite relationships, limited to top 5)
 const relatedTagsData = (tag.relatedTags || [])
-  .map(tagId => getTag(tagId))
+  .map(tagId => tags.get(tagId))
   .filter((relTag): relTag is NonNullable<typeof relTag> => relTag !== undefined && !relTag.hidden)
   .sort((a, b) => b.count - a.count);
 

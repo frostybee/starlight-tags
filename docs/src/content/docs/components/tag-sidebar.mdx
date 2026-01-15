@@ -125,7 +125,7 @@ The component automatically adapts to light and dark themes.
 
 The `TagSidebar` component:
 
-1. Fetches all tags using the [virtual tags module](/starlight-tags/guides/virtual-tags-module/)
+1. Fetches all tags from middleware (`Astro.locals.starlightTags`)
 2. Sorts tags based on the `sortBy` prop (default: by page count, descending)
 3. Limits to the specified number of tags
 4. Renders a vertical list with optional count badges

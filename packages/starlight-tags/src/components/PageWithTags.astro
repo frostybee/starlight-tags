@@ -17,7 +17,6 @@
  * ```
  */
 import TagsList from './TagsList.astro';
-import { initTags, getTag, getAllTagsSorted } from 'virtual:starlight-tagging/tags';
 import type { ProcessedTag } from '../schemas/tags.js';
 
 interface Props {
@@ -36,16 +35,17 @@ const {
   showTitle = true
 } = Astro.props;
 
+// Get tags from middleware-injected data
+const { tags: tagsMap } = Astro.locals.starlightTags;
+
 // Resolve tags: use provided tags, fetch by IDs, or get from frontmatter
-let tags: ProcessedTag[] = tagsProp || [];
+let resolvedTags: ProcessedTag[] = tagsProp || [];
 
 if (!tagsProp) {
-  await initTags();
-
   if (tagIds && tagIds.length > 0) {
     // Fetch specific tags by ID
-    tags = tagIds
-      .map(id => getTag(id))
+    resolvedTags = tagIds
+      .map(id => tagsMap.get(id))
       .filter((t): t is ProcessedTag => t !== undefined);
   } else {
     // Try to get tags from current page's frontmatter
@@ -54,8 +54,8 @@ if (!tagsProp) {
       [];
 
     if (frontmatterTags.length > 0) {
-      tags = frontmatterTags
-        .map(id => getTag(id))
+      resolvedTags = frontmatterTags
+        .map(id => tagsMap.get(id))
         .filter((t): t is ProcessedTag => t !== undefined);
     }
   }
@@ -68,10 +68,10 @@ const shouldShowTop = position === 'top' || position === 'both';
 const shouldShowBottom = position === 'bottom' || position === 'both';
 ---
 
-{!hideTags && shouldShowTop && tags.length > 0 && (
+{!hideTags && shouldShowTop && resolvedTags.length > 0 && (
   <nav class="fb-page-tags fb-page-tags--top" aria-label="Page tags">
     <TagsList
-      tags={tags}
+      tags={resolvedTags}
       layout="inline"
       variant="outline"
     />
@@ -80,10 +80,10 @@ const shouldShowBottom = position === 'bottom' || position === 'both';
 
 <slot />
 
-{!hideTags && shouldShowBottom && tags.length > 0 && (
+{!hideTags && shouldShowBottom && resolvedTags.length > 0 && (
   <nav class="fb-page-tags fb-page-tags--bottom" aria-label="Related tags">
     <TagsList
-      tags={tags}
+      tags={resolvedTags}
       title={showTitle ? "Tags" : undefined}
       layout="inline"
     />

@@ -10,16 +10,15 @@
  * <FilterableByDifficulty />
  * ```
  */
-import { initTags, getTags } from 'virtual:starlight-tagging/tags';
 import type { ProcessedTag } from 'starlight-tags/schemas/tags';
 import type { EducationalTag, DifficultyLevel } from '../config/educational-tag-schema';
 import DifficultyTagBadge from './DifficultyTagBadge.astro';
 
 type ExtendedTag = ProcessedTag & EducationalTag;
 
-// Fetch all tags
-await initTags();
-const allTags = Array.from(getTags().values()) as ExtendedTag[];
+// Get tags from middleware - no initialization needed
+const { allTagsSorted } = Astro.locals.starlightTags;
+const allTags = allTagsSorted as ExtendedTag[];
 
 // Filter to only tags that have difficulty defined
 const tagsWithDifficulty = allTags.filter(tag => tag.difficulty);

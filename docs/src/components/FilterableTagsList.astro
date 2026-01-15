@@ -10,16 +10,15 @@
  * <FilterableTagsList filterField="planTier" />
  * ```
  */
-import { initTags, getTags } from 'virtual:starlight-tagging/tags';
 import type { ProcessedTag } from 'starlight-tags/schemas/tags';
 import type { ProductTag, PlanTier } from '../config/product-tag-schema';
 import ProductTagBadge from './ProductTagBadge.astro';
 
 type ExtendedTag = ProcessedTag & ProductTag;
 
-// Fetch all tags
-await initTags();
-const allTags = Array.from(getTags().values()) as ExtendedTag[];
+// Get tags from middleware - no initialization needed
+const { allTagsSorted } = Astro.locals.starlightTags;
+const allTags = allTagsSorted as ExtendedTag[];
 
 // Filter to only tags that have planTier defined
 const tagsWithPlanTier = allTags.filter(tag => tag.planTier);
