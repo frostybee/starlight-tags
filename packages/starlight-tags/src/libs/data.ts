@@ -225,35 +225,47 @@ const buildLogger: MinimalLogger = {
 /**
  * Initialize the processor if not already done.
  * Separated from getTagsData to handle the async initialization properly.
+ * Includes proper cleanup on error to prevent memory leaks.
  */
 async function ensureProcessor(): Promise<TagsProcessor> {
   if (cachedProcessor) {
     return cachedProcessor;
   }
 
-  // Import config from virtual module
-  // @ts-expect-error - virtual module only available at runtime
-  const { config } = await import('virtual:starlight-tagging/config');
-  cachedConfig = config;
+  let processor: TagsProcessor | null = null;
 
-  const logger = import.meta.env.DEV ? buildLogger : silentLogger;
+  try {
+    // Import config from virtual module
+    // @ts-expect-error - virtual module only available at runtime
+    const { config } = await import('virtual:starlight-tagging/config');
+    cachedConfig = config;
 
-  // Import astro:content to get docs collection
-  // @ts-expect-error - astro:content is a virtual module only available at runtime
-  const { getCollection } = await import('astro:content');
-  const docsEntries = await getCollection('docs');
+    const logger = import.meta.env.DEV ? buildLogger : silentLogger;
 
-  // Create and initialize the processor
-  const processor = new TagsProcessor(config, logger, docsEntries);
-  await processor.initialize();
+    // Import astro:content to get docs collection
+    // @ts-expect-error - astro:content is a virtual module only available at runtime
+    const { getCollection } = await import('astro:content');
+    const docsEntries = await getCollection('docs');
 
-  cachedProcessor = processor;
+    // Create and initialize the processor
+    processor = new TagsProcessor(config, logger, docsEntries);
+    await processor.initialize();
 
-  if (import.meta.env.DEV) {
-    logger.info(`Tags processor initialized with ${processor.getTags().size} tags`);
+    cachedProcessor = processor;
+
+    if (import.meta.env.DEV) {
+      logger.info(`Tags processor initialized with ${processor.getTags().size} tags`);
+    }
+
+    return processor;
+  } catch (error) {
+    // Clean up partially initialized state to prevent memory leaks
+    if (processor) {
+      processor.cleanup();
+    }
+    cachedConfig = null;
+    throw error;
   }
-
-  return processor;
 }
 
 /**
@@ -307,7 +319,8 @@ export async function getTagsData(locale?: string): Promise<StarlightTagsData> {
     return initPromises.get(cacheKey)!;
   }
 
-  // Start initialization
+  // Create the initialization promise
+  // IMPORTANT: Set in map BEFORE any async work to prevent race conditions
   const initPromise = (async (): Promise<StarlightTagsData> => {
     try {
       const processor = await ensureProcessor();
@@ -330,7 +343,8 @@ export async function getTagsData(locale?: string): Promise<StarlightTagsData> {
     }
   })();
 
-  // Store the promise to prevent concurrent initialization
+  // Store the promise IMMEDIATELY to prevent concurrent initialization
+  // This must happen synchronously before returning to prevent race conditions
   initPromises.set(cacheKey, initPromise);
 
   return initPromise;

@@ -25,9 +25,18 @@ export function createTagsIntegration(
           : path.resolve(astroRoot, config.configPath);
 
         // Validate that config path is within project root (defense-in-depth)
-        // Use path.relative() to detect path traversal attempts including UNC paths
         const normalizedConfigPath = path.normalize(absoluteConfigPath);
         const normalizedRoot = path.normalize(astroRoot);
+
+        // Reject Windows UNC paths (\\server\share) for security
+        if (normalizedConfigPath.startsWith('\\\\')) {
+          throw new Error(
+            `[starlight-tags] UNC paths are not allowed for security reasons.\n` +
+            `  Attempted path: ${normalizedConfigPath}`
+          );
+        }
+
+        // Use path.relative() to detect path traversal attempts
         const relativePath = path.relative(normalizedRoot, normalizedConfigPath);
 
         // Check if path escapes project root (starts with '..' or is absolute)

@@ -36,7 +36,14 @@ const {
 } = Astro.props;
 
 // Get tags from middleware-injected data
-const { tags: tagsMap } = Astro.locals.starlightTags;
+const tagsData = Astro.locals.starlightTags;
+if (!tagsData) {
+  throw new Error(
+    '[starlight-tags] Tag data not available. ' +
+    'Ensure the starlight-tags plugin is configured correctly in astro.config.mjs.'
+  );
+}
+const { tags: tagsMap } = tagsData;
 
 // Resolve tags: use provided tags, fetch by IDs, or get from frontmatter
 let resolvedTags: ProcessedTag[] = tagsProp || [];
