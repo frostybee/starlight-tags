@@ -32,11 +32,14 @@ interface Props {
   collapsed?: boolean;
 }
 
+// Get translation function from Starlight's i18n system
+const t = Astro.locals.t;
+
 const {
   limit = 10,
   sortBy = 'count',
   showCount = true,
-  title = 'Popular Tags',
+  title = t('starlightTags.popularTags'),
   collapsible = true,
   collapsed = false
 } = Astro.props;
@@ -113,7 +116,7 @@ const tagsIndexUrl = buildUrlFromCurrentPage('/tags/', Astro.url);
         ))}
       </ul>
       <a href={tagsIndexUrl} class="sl-tag-sidebar__all">
-        View all tags<span aria-hidden="true"> &rarr;</span>
+        {t('starlightTags.viewAllTags')}<span aria-hidden="true"> &rarr;</span>
       </a>
     </div>
   </nav>

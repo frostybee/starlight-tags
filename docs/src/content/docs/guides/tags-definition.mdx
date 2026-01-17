@@ -107,6 +107,37 @@ tags:
     description: "Extending functionality with plugins and integrations"
 ```
 
+### Localized Labels and Descriptions (i18n)
+
+For multilingual sites, both `label` and `description` can be localized by providing an object with locale keys instead of a simple string:
+
+```yaml
+tags:
+  # Simple format (single language)
+  api:
+    label: "API"
+    description: "API reference documentation"
+
+  # Localized format (multiple languages)
+  components:
+    label:
+      en: "Components"
+      fr: "Composants"
+      es: "Componentes"
+    description:
+      en: "UI components and their usage patterns"
+      fr: "Composants d'interface utilisateur"
+      es: "Componentes de interfaz de usuario"
+    color: "#3b82f6"
+    icon: "🧩"
+```
+
+You can mix both formats in the same file. Tags with simple string values display the same text for all locales, while localized tags show the appropriate translation based on the current page language.
+
+:::tip[Full i18n Details]
+See the [Internationalization guide](/starlight-tags/guides/i18n/) for complete details on localization, including fallback behavior and customizing UI translations.
+:::
+
 ### `color`
 
 The badge color. Supports multiple formats:

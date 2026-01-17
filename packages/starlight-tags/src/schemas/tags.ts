@@ -34,12 +34,37 @@ const colorRegex = /^(#[0-9A-Fa-f]{3}|#[0-9A-Fa-f]{4}|#[0-9A-Fa-f]{6}|#[0-9A-Fa-
 const permalinkRegex = /^[a-z0-9][a-z0-9-/]*[a-z0-9]$|^[a-z0-9]$/;
 
 /**
+ * Schema for localizable strings that support i18n.
+ * Accepts either a simple string or a record of locale codes to strings.
+ *
+ * @example
+ * ```yaml
+ * # Simple string
+ * label: "Authentication"
+ *
+ * # Localized object
+ * label:
+ *   en: "Authentication"
+ *   fr: "Authentification"
+ *   de: "Authentifizierung"
+ * ```
+ */
+export const localizableStringSchema = z.union([
+  z.string(),
+  z.record(z.string(), z.string())
+]);
+
+/** Type for localizable string values */
+export type LocalizableString = z.infer<typeof localizableStringSchema>;
+
+/**
  * Schema for a single tag definition in tags.yml.
  *
  * @example
  * ```yaml
  * # tags.yml
  * tags:
+ *   # Simple string labels (backwards compatible)
  *   authentication:
  *     label: "Authentication"
  *     description: "User authentication and authorization"
@@ -49,17 +74,23 @@ const permalinkRegex = /^[a-z0-9][a-z0-9-/]*[a-z0-9]$|^[a-z0-9]$/;
  *     prerequisites:
  *       - rest-api
  *
- *   rest-api:
- *     label: "REST API"
- *     description: "RESTful API endpoints"
+ *   # Localized labels for multilingual sites
+ *   components:
+ *     label:
+ *       en: "Components"
+ *       fr: "Composants"
+ *       es: "Componentes"
+ *     description:
+ *       en: "UI components and usage patterns"
+ *       fr: "Composants d'interface utilisateur"
  *     color: "#10b981"
  * ```
  */
 export const tagDefinitionSchema = z.object({
-  /** Display name for the tag */
-  label: z.string(),
-  /** Short description shown in tooltips and tag pages */
-  description: z.string().optional(),
+  /** Display name for the tag (string or locale record for i18n) */
+  label: localizableStringSchema,
+  /** Short description shown in tooltips and tag pages (string or locale record for i18n) */
+  description: localizableStringSchema.optional(),
   /** CSS color value for the tag badge (hex, named, rgb, hsl) */
   color: z.string().regex(colorRegex, 'Invalid color format. Use hex (#fff), named color (blue), or rgb/hsl').optional(),
   /** Emoji or short text displayed before the label */
@@ -170,6 +201,10 @@ export interface PageReference {
  * the raw `TagDefinition` from `tags.yml` with runtime-computed data like
  * page counts, URLs, and educational relationships.
  *
+ * Note: The `label` and `description` fields are resolved to plain strings
+ * based on the current locale. The raw localizable values from tags.yml
+ * are not exposed in the processed tag.
+ *
  * Custom fields from extended schemas are preserved via the index signature.
  * Cast to your extended type to access custom fields with type safety.
  *
@@ -179,7 +214,7 @@ export interface PageReference {
  * const tag = tags.get('authentication');
  *
  * if (tag) {
- *   console.log(tag.label);          // "Authentication"
+ *   console.log(tag.label);          // "Authentication" (resolved for current locale)
  *   console.log(tag.count);          // 5
  *   console.log(tag.url);            // "/tags/authentication"
  *   console.log(tag.pages.length);   // 5
@@ -189,7 +224,20 @@ export interface PageReference {
  * @see TagDefinition for the base properties from tags.yml
  * @see PageReference for the structure of pages array items
  */
-export type ProcessedTag = TagDefinition & {
+export type ProcessedTag = Omit<TagDefinition, 'label' | 'description'> & {
+  /**
+   * Display name for the tag, resolved for the current locale.
+   * If the tag definition uses a locale record, this will be the
+   * value for the current locale (or fallback to default locale).
+   */
+  label: string;
+
+  /**
+   * Short description for the tag, resolved for the current locale.
+   * If the tag definition uses a locale record, this will be the
+   * value for the current locale (or fallback to default locale).
+   */
+  description?: string;
   /**
    * The unique identifier for the tag as defined in `tags.yml`.
    * This is the key used in the tags configuration file.

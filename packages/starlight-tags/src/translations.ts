@@ -25,6 +25,8 @@ export const translations = {
     'starlightTags.pagination.next': 'Next page',
     'starlightTags.pagination.item': 'tagged item',
     'starlightTags.pagination.items': 'tagged items',
+    'starlightTags.popularTags': 'Popular Tags',
+    'starlightTags.viewAllTags': 'View all tags',
   },
   fr: {
     'starlightTags.totalTags': 'Total des tags',
@@ -47,6 +49,8 @@ export const translations = {
     'starlightTags.pagination.next': 'Page suivante',
     'starlightTags.pagination.item': 'élément tagué',
     'starlightTags.pagination.items': 'éléments tagués',
+    'starlightTags.popularTags': 'Tags populaires',
+    'starlightTags.viewAllTags': 'Voir tous les tags',
   },
   es: {
     'starlightTags.totalTags': 'Total de etiquetas',
@@ -69,6 +73,8 @@ export const translations = {
     'starlightTags.pagination.next': 'Página siguiente',
     'starlightTags.pagination.item': 'elemento etiquetado',
     'starlightTags.pagination.items': 'elementos etiquetados',
+    'starlightTags.popularTags': 'Etiquetas populares',
+    'starlightTags.viewAllTags': 'Ver todas las etiquetas',
   },
   de: {
     'starlightTags.totalTags': 'Gesamte Tags',
@@ -91,6 +97,8 @@ export const translations = {
     'starlightTags.pagination.next': 'Nächste Seite',
     'starlightTags.pagination.item': 'getaggtes Element',
     'starlightTags.pagination.items': 'getaggte Elemente',
+    'starlightTags.popularTags': 'Beliebte Tags',
+    'starlightTags.viewAllTags': 'Alle Tags anzeigen',
   },
 } as const;
 

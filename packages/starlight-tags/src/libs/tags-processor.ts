@@ -1,8 +1,9 @@
 import fs from 'fs/promises';
 import yaml from 'js-yaml';
 import type { AstroIntegrationLogger } from 'astro';
-import { tagsConfigSchema, type TagsConfig, type ProcessedTag, type ContentType, type Difficulty } from '../schemas/tags.js';
+import { tagsConfigSchema, type TagsConfig, type ProcessedTag, type ContentType, type Difficulty, type LocalizableString } from '../schemas/tags.js';
 import type { PluginConfig } from '../schemas/config.js';
+import { resolveLocalizedString, getDefaultLocale } from './i18n.js';
 
 // Constants
 const MAX_RELATED_TAGS = 5;
@@ -34,11 +35,20 @@ export class TagsProcessor {
   private tagsData?: TagsConfig;
   private processedTags?: Map<string, ProcessedTag>;
   private providedDocsEntries?: DocsEntry[];
+  private locale?: string;
+  private defaultLocale?: string;
 
-  constructor(config: PluginConfig, logger: AstroIntegrationLogger | MinimalLogger, docsEntries?: DocsEntry[]) {
+  constructor(
+    config: PluginConfig,
+    logger: AstroIntegrationLogger | MinimalLogger,
+    docsEntries?: DocsEntry[],
+    locale?: string
+  ) {
     this.config = config;
     this.logger = logger;
     this.providedDocsEntries = docsEntries;
+    this.locale = locale;
+    this.defaultLocale = getDefaultLocale();
   }
 
   async initialize(): Promise<void> {
@@ -134,11 +144,27 @@ export class TagsProcessor {
     for (const [tagId, tagDef] of Object.entries(this.tagsData.tags)) {
       const pages = tagUsage.get(tagId) || [];
 
+      // Resolve localized label and description for current locale
+      const resolvedLabel = resolveLocalizedString(
+        tagDef.label as LocalizableString,
+        this.locale,
+        this.defaultLocale
+      ) ?? tagId; // Fallback to tag ID if no label found
+
+      const resolvedDescription = resolveLocalizedString(
+        tagDef.description as LocalizableString | undefined,
+        this.locale,
+        this.defaultLocale
+      );
+
       const processedTag: ProcessedTag = {
         // Spread all original fields first (including custom fields from extended schemas)
         ...tagDef,
         // Then add/override with computed properties
         id: tagId,
+        // Override label and description with resolved values
+        label: resolvedLabel,
+        description: resolvedDescription,
         slug: this.generateTagSlug(tagId, tagDef.permalink),
         url: this.generateTagUrl(tagId, tagDef.permalink),
         color: tagDef.color || this.tagsData.defaults?.color,

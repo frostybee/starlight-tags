@@ -204,8 +204,8 @@ const dataCache = new Map<string, StarlightTagsData>();
 // Initialization promise per locale (prevents concurrent initialization)
 const initPromises = new Map<string, Promise<StarlightTagsData>>();
 
-// Cached processor and config (shared across locales for now)
-let cachedProcessor: TagsProcessor | null = null;
+// Per-locale processor cache (labels are resolved per locale)
+const processorCache = new Map<string, TagsProcessor>();
 let cachedConfig: PluginConfig | null = null;
 
 // Silent logger for production use
@@ -223,38 +223,43 @@ const buildLogger: MinimalLogger = {
 };
 
 /**
- * Initialize the processor if not already done.
- * Separated from getTagsData to handle the async initialization properly.
+ * Initialize the processor for a specific locale if not already done.
+ * Creates locale-specific processors to resolve localized tag labels.
  * Includes proper cleanup on error to prevent memory leaks.
+ *
+ * @param locale - Optional locale code for i18n label resolution
  */
-async function ensureProcessor(): Promise<TagsProcessor> {
-  if (cachedProcessor) {
-    return cachedProcessor;
+async function ensureProcessor(locale?: string): Promise<TagsProcessor> {
+  const cacheKey = locale ?? 'root';
+
+  if (processorCache.has(cacheKey)) {
+    return processorCache.get(cacheKey)!;
   }
 
   let processor: TagsProcessor | null = null;
 
   try {
-    // Import config from virtual module
-    // @ts-expect-error - virtual module only available at runtime
-    const { config } = await import('virtual:starlight-tagging/config');
-    cachedConfig = config;
+    // Import config from virtual module (shared across locales)
+    if (!cachedConfig) {
+      // @ts-expect-error - virtual module only available at runtime
+      const { config } = await import('virtual:starlight-tagging/config');
+      cachedConfig = config;
+    }
 
     const logger = import.meta.env.DEV ? buildLogger : silentLogger;
 
     // Import astro:content to get docs collection
-    // @ts-expect-error - astro:content is a virtual module only available at runtime
     const { getCollection } = await import('astro:content');
     const docsEntries = await getCollection('docs');
 
-    // Create and initialize the processor
-    processor = new TagsProcessor(config, logger, docsEntries);
+    // Create and initialize the processor with locale for i18n label resolution
+    processor = new TagsProcessor(cachedConfig!, logger, docsEntries, locale);
     await processor.initialize();
 
-    cachedProcessor = processor;
+    processorCache.set(cacheKey, processor);
 
     if (import.meta.env.DEV) {
-      logger.info(`Tags processor initialized with ${processor.getTags().size} tags`);
+      logger.info(`Tags processor initialized for locale "${cacheKey}" with ${processor.getTags().size} tags`);
     }
 
     return processor;
@@ -263,7 +268,6 @@ async function ensureProcessor(): Promise<TagsProcessor> {
     if (processor) {
       processor.cleanup();
     }
-    cachedConfig = null;
     throw error;
   }
 }
@@ -323,7 +327,7 @@ export async function getTagsData(locale?: string): Promise<StarlightTagsData> {
   // IMPORTANT: Set in map BEFORE any async work to prevent race conditions
   const initPromise = (async (): Promise<StarlightTagsData> => {
     try {
-      const processor = await ensureProcessor();
+      const processor = await ensureProcessor(locale);
 
       // Build the data structure
       const data: StarlightTagsData = {
@@ -357,8 +361,11 @@ export async function getTagsData(locale?: string): Promise<StarlightTagsData> {
 export function resetDataCache(): void {
   dataCache.clear();
   initPromises.clear();
-  cachedProcessor?.cleanup();
-  cachedProcessor = null;
+  // Cleanup all locale-specific processors
+  for (const processor of processorCache.values()) {
+    processor.cleanup();
+  }
+  processorCache.clear();
   cachedConfig = null;
 }
 

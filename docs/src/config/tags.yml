@@ -4,13 +4,23 @@ defaults:
 
 tags:
   # ===== Core (Feature Area) =====
+  # Example of localized labels and descriptions (i18n support)
   components:
-    label: "Components"
-    description: "UI components and their usage patterns"
+    label:
+      en: "Components"
+      fr: "Composants"
+      es: "Componentes"
+      de: "Komponenten"
+    description:
+      en: "UI components and their usage patterns"
+      fr: "Composants d'interface utilisateur et leurs modèles d'utilisation"
+      es: "Componentes de interfaz de usuario y sus patrones de uso"
+      de: "UI-Komponenten und ihre Verwendungsmuster"
     color: "#14b8a6"
     icon: "🧩"
     planTier: free
 
+  # Simple string labels still work (backwards compatible)
   configuration:
     label: "Configuration"
     description: "Setup options and config files"
@@ -32,9 +42,18 @@ tags:
     icon: "🔀"
     planTier: pro
 
+  # Another example with localized content
   i18n:
-    label: "i18n"
-    description: "Internationalization and localization"
+    label:
+      en: "i18n"
+      fr: "i18n"
+      es: "i18n"
+      de: "i18n"
+    description:
+      en: "Internationalization and localization"
+      fr: "Internationalisation et localisation"
+      es: "Internacionalización y localización"
+      de: "Internationalisierung und Lokalisierung"
     color: "#14b8a6"
     icon: "🌐"
     planTier: enterprise

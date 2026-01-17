@@ -187,7 +187,9 @@ tags.yml                    TagProcessor                 Your Components
 
 2. The plugin's built-in components (`TagBadge`, `TagsList`, etc.) only render core fields. Create your own components to display custom fields.
 
-3. When accessing tags with custom fields, cast to your custom type:
+3. **Localization:** Custom fields can also support multiple languages using the same object format as `label` and `description`. See the [Internationalization guide](/starlight-tags/guides/i18n/) for the localized format pattern.
+
+4. When accessing tags with custom fields, cast to your custom type:
    ```typescript
    // Using middleware (recommended)
    const { tags } = Astro.locals.starlightTags;
@@ -198,9 +200,9 @@ tags.yml                    TagProcessor                 Your Components
    const customTags = allTagsSorted as (ProcessedTag & CustomTag)[];
    ```
 
-4. Zod validates your `tags.yml` against the schema at build time. Invalid custom field values will cause build errors.
+5. Zod validates your `tags.yml` against the schema at build time. Invalid custom field values will cause build errors.
 
-5. Custom fields are optional, so handle cases where they might be `undefined` in your components.
+6. Custom fields are optional, so handle cases where they might be `undefined` in your components.
 
 ## Next Steps
 
