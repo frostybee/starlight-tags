@@ -1,19 +1,45 @@
 import type { StarlightPlugin, HookParameters } from '@astrojs/starlight/types';
-import { pluginConfigSchema, type PluginConfig } from './src/schemas/config.js';
+import { pluginConfigSchema, type PluginConfig, type SidebarConfig } from './src/schemas/config.js';
 import { createTagsIntegration } from './src/libs/integration.js';
 import { translations } from './src/translations.js';
 
+/**
+ * Sidebar injection configuration.
+ */
+export interface StarlightTagsSidebarConfig {
+  /** Enable/disable automatic sidebar injection. @default true */
+  enabled?: boolean;
+  /** Where to inject the tags group: 'top' or 'bottom' of the sidebar. @default 'top' */
+  position?: 'top' | 'bottom';
+  /** Number of tags to show (0 = all tags). @default 10 */
+  limit?: number;
+  /** Sort order for displayed tags. @default 'count' */
+  sortBy?: 'count' | 'alphabetical' | 'priority';
+  /** Whether to show the page count badge next to each tag. @default true */
+  showCount?: boolean;
+  /** Whether the tags group is collapsed by default. @default false */
+  collapsed?: boolean;
+  /** Include a "View all tags" link at the bottom of the group. @default true */
+  showViewAllLink?: boolean;
+}
+
 export interface StarlightTagsConfig {
-  // Path to tags.yml configuration file.
+  /** Path to tags.yml configuration file. @default 'tags.yml' */
   configPath?: string;
-  // Base path for tag pages.
+  /** Base path for tag pages. @default 'tags' */
   tagsPagesPrefix?: string;
-  // Name of the tags index page.
+  /** Name of the tags index page. @default 'tags' */
   tagsIndexSlug?: string;
-  // Validation behavior for inline tags.
+  /** Validation behavior for inline tags. @default 'warn' */
   onInlineTagsNotFound?: 'ignore' | 'warn' | 'error';
-  // Number of items per page on tag pages.
+  /** Number of items per page on tag pages. @default 12 */
   itemsPerPage?: number;
+  /**
+   * Sidebar injection configuration.
+   * Set to false to disable, or provide options to customize.
+   * @default false
+   */
+  sidebar?: false | StarlightTagsSidebarConfig;
 }
 
 export default function starlightTagsPlugin(
@@ -55,7 +81,7 @@ export default function starlightTagsPlugin(
 }
 
 // Export types and schemas for user convenience.
-export type { PluginConfig };
+export type { PluginConfig, SidebarConfig };
 export { pluginConfigSchema } from './src/schemas/config.js';
 export { tagsConfigSchema, tagDefinitionSchema, type ProcessedTag, type TagDefinition, type TagsConfig } from './src/schemas/tags.js';
 export { frontmatterSchema, starlightTagsExtension } from './src/schemas/frontmatter.js';

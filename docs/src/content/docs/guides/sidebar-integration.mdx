@@ -1,0 +1,159 @@
+---
+title: Sidebar Integration
+description: Add tags to your Starlight sidebar using automatic injection or custom components
+---
+
+The `starlight-tags` plugin provides two ways to display tags in your sidebar:
+
+1. Configure the plugin to inject tags directly into Starlight's navigation sidebar;
+2. Use the `TagSidebar` component for full customization.
+
+## Option 1: Automatic Injection (Recommended)
+
+The simplest approach is to enable automatic sidebar injection via plugin configuration. This adds a "Popular Tags" group to your sidebar without requiring any component overrides.
+
+### Setup
+
+```js
+// astro.config.mjs
+import starlightTags from 'starlight-tags'
+
+export default defineConfig({
+  integrations: [
+    starlight({
+      plugins: [
+        starlightTags({
+          sidebar: {
+            enabled: true,
+            position: 'top',
+            limit: 8,
+            sortBy: 'count',
+          }
+        }),
+      ],
+    }),
+  ],
+})
+```
+
+For the full list of sidebar configuration options (`position`, `limit`, `sortBy`, `showCount`, `collapsed`, `showViewAllLink`), see the [`sidebar` option in the Configuration guide](/starlight-tags/guides/configuration/#sidebar).
+
+### Localization
+
+The sidebar group automatically uses translated labels:
+- **Group title**: Uses `starlightTags.popularTags` translation
+- **View all link**: Uses `starlightTags.viewAllTags` translation
+
+You can customize these via Starlight's i18n system. See the [Internationalization guide](/starlight-tags/guides/i18n/) for details.
+
+## Option 2: TagSidebar Component
+
+For more control over styling and placement, use the `TagSidebar` component with a Sidebar override. This approach gives you full customization but requires creating a component file.
+
+### Step 1: Create the Sidebar Override
+
+Create a file at `src/components/Sidebar.astro`:
+
+```astro
+---
+import Default from '@astrojs/starlight/components/Sidebar.astro';
+import { TagSidebar } from 'starlight-tags/components';
+---
+
+<Default {...Astro.props} />
+<TagSidebar limit={8} sortBy="count" collapsed={false} />
+```
+
+The component automatically uses translated labels (`starlightTags.popularTags` for the title). To override with a custom title, pass the `title` prop.
+
+### Step 2: Register the Override
+
+Update your `astro.config.mjs` to use the custom Sidebar:
+
+```js
+export default defineConfig({
+  integrations: [
+    starlight({
+      components: {
+        Sidebar: './src/components/Sidebar.astro',
+      },
+      plugins: [
+        starlightTags({
+          // No sidebar config needed - using component instead
+        }),
+      ],
+    }),
+  ],
+})
+```
+
+For the full list of available props (`limit`, `sortBy`, `title`, `showCount`, `collapsible`, `collapsed`), see the [TagSidebar component reference](/starlight-tags/components/tag-sidebar/).
+
+### Custom Placement
+
+With the component approach, you can place the TagSidebar anywhere in your layout:
+
+```astro
+---
+import Default from '@astrojs/starlight/components/Sidebar.astro';
+import { TagSidebar } from 'starlight-tags/components';
+---
+
+<!-- Tags above navigation -->
+<TagSidebar limit={5} sortBy="priority" />
+
+<!-- Default navigation -->
+<Default {...Astro.props} />
+
+<!-- More tags below navigation -->
+<TagSidebar limit={10} sortBy="alphabetical" title="All Tags" />
+```
+
+## Comparison
+
+| Feature | Automatic Injection | TagSidebar Component |
+|---------|---------------------|----------------------|
+| Setup complexity | Simple (config only) | Requires component file |
+| Component override | Not required | Required |
+| Custom styling | Limited | Full control |
+| Multiple instances | No | Yes |
+| Custom placement | Top or bottom only | Anywhere |
+| Works with other sidebar overrides | Yes | Manual integration |
+
+## Styling
+
+### Tag Count Badge
+
+When `showCount` is enabled, each tag displays a count badge. The badge uses the CSS class `sl-tag-count` which you can customize in your site's CSS:
+
+```css
+/* src/styles/custom.css */
+.sl-tag-count.sl-badge {
+  --sl-color-bg-badge: var(--sl-color-accent-low);
+  --sl-color-border-badge: var(--sl-color-accent);
+  --sl-color-text-badge: var(--sl-color-accent-high);
+}
+```
+
+## Using Both Together
+
+You can use automatic injection alongside the TagSidebar component if needed. For example, inject a minimal tag list into the navigation while displaying a more detailed widget elsewhere:
+
+```js
+// astro.config.mjs
+starlightTags({
+  sidebar: {
+    enabled: true,
+    limit: 5,           // Just top 5 in navigation
+    showCount: false,   // Clean look
+  }
+})
+```
+
+Then use `TagSidebar` in a custom component for a richer display with counts and more tags.
+
+## Next Steps
+
+- See [Configuration](/starlight-tags/guides/configuration/) for all plugin options
+- Learn about [TagSidebar](/starlight-tags/components/tag-sidebar/) component details
+- Explore [Internationalization](/starlight-tags/guides/i18n/) for translating labels

@@ -109,6 +109,43 @@ starlightTags({
 - Page 2: `/tags/javascript/2`
 - Page 3: `/tags/javascript/3`
 
+### `sidebar`
+
+- **Type:** `false | SidebarConfig`
+- **Default:** `false` (disabled)
+
+Automatically inject a "Popular Tags" group into Starlight's navigation sidebar. This feature works without requiring any component overrides.
+
+By default, sidebar injection is disabled. To enable it, provide a configuration object:
+
+```js
+starlightTags({
+  sidebar: {
+    enabled: true,        // Enable sidebar injection
+    position: 'top',      // 'top' or 'bottom' of sidebar
+    limit: 10,            // Number of tags to show (0 = all)
+    sortBy: 'count',      // 'count', 'alphabetical', or 'priority'
+    showCount: true,      // Show page count badges
+    collapsed: false,     // Start collapsed
+    showViewAllLink: true // Include "View all tags" link
+  }
+})
+```
+
+**Sidebar configuration options** (when `sidebar` is provided):
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `enabled` | `boolean` | `true` | Enable/disable sidebar injection (useful for toggling without removing config) |
+| `position` | `'top' \| 'bottom'` | `'top'` | Where to inject the tags group |
+| `limit` | `number` | `10` | Max tags to show (0 = unlimited) |
+| `sortBy` | `'count' \| 'alphabetical' \| 'priority'` | `'count'` | Sort order for tags |
+| `showCount` | `boolean` | `true` | Show page count badge |
+| `collapsed` | `boolean` | `false` | Start with group collapsed |
+| `showViewAllLink` | `boolean` | `true` | Include link to tags index |
+
+The sidebar group uses localized labels from the plugin's translation system (`starlightTags.popularTags` and `starlightTags.viewAllTags`).
+
 ## Example Configuration
 
 Here's a complete example with all options:
@@ -135,7 +172,15 @@ export default defineConfig({
           onInlineTagsNotFound: 'warn',
 
           // Pagination
-          itemsPerPage: 12
+          itemsPerPage: 12,
+
+          // Sidebar injection (optional)
+          sidebar: {
+            enabled: true,
+            position: 'top',
+            limit: 8,
+            sortBy: 'count',
+          }
         }),
       ],
       title: 'My Documentation',

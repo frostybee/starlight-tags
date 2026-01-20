@@ -34,8 +34,17 @@ export default defineConfig({
           tagsPagesPrefix: 'tags',
           tagsIndexSlug: 'tags',
           onInlineTagsNotFound: 'warn',
-          enableFrontmatterTags: true,
           itemsPerPage: 4,
+          // Enable automatic sidebar tag injection
+          sidebar: {
+            enabled: true,
+            position: 'top',
+            limit: 8,
+            sortBy: 'count',
+            showCount: true,
+            collapsed: false,
+            showViewAllLink: true,
+          },
         }),
         // starlightThemeGalaxy()
       ],
@@ -46,7 +55,7 @@ export default defineConfig({
         },
         {
           label: 'Guides',
-          items: ['guides/configuration', 'guides/tags-definition', 'guides/frontmatter', 'guides/routes', 'guides/plugin-compatibility', 'guides/page-title-override', 'guides/extending-schema', 'guides/accessing-tag-data', 'guides/i18n', 'guides/architecture'],
+          items: ['guides/configuration', 'guides/tags-definition', 'guides/frontmatter', 'guides/routes', 'guides/sidebar-integration', 'guides/plugin-compatibility', 'guides/page-title-override', 'guides/extending-schema', 'guides/accessing-tag-data', 'guides/i18n', 'guides/architecture'],
         },
         {
           label: 'Plugin Components',

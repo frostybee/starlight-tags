@@ -1,5 +1,12 @@
 /* Starlight Tags Plugin Styles */
 
+/* Sidebar tag count badge - override Starlight's default badge colors */
+.sl-tag-count.sl-badge {
+  --sl-color-bg-badge: var(--sl-color-gray-5);
+  --sl-color-border-badge: var(--sl-color-gray-5);
+  --sl-color-text-badge: var(--sl-color-white);
+}
+
 /* Base tag styles */
 .fb-tag {
   --tag-border-radius: var(--sl-border-radius, 0.5rem);

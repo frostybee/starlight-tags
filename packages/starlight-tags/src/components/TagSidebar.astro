@@ -1,17 +1,39 @@
 ---
 /**
- * TagSidebar: A sidebar widget showing popular tags for navigation
+ * TagSidebar: A widget showing popular tags for navigation
  *
- * Usage in a Starlight sidebar override:
+ * This component can be placed anywhere in your site - not just the sidebar.
+ * Common placements include:
+ * - Sidebar overrides
+ * - Table of Contents (TOC) overrides
+ * - MDX content pages
+ * - Custom layouts
+ *
+ * @example Sidebar override (src/components/Sidebar.astro)
  * ```astro
  * ---
- * // src/components/Sidebar.astro
  * import Default from '@astrojs/starlight/components/Sidebar.astro';
  * import { TagSidebar } from 'starlight-tags/components';
  * ---
- *
  * <Default {...Astro.props} />
  * <TagSidebar />
+ * ```
+ *
+ * @example TOC override (src/components/TableOfContents.astro)
+ * ```astro
+ * ---
+ * import Default from '@astrojs/starlight/components/TableOfContents.astro';
+ * import { TagSidebar } from 'starlight-tags/components';
+ * ---
+ * <Default {...Astro.props} />
+ * <TagSidebar title="Browse Tags" />
+ * ```
+ *
+ * @example MDX page
+ * ```mdx
+ * import { TagSidebar } from 'starlight-tags/components';
+ *
+ * <TagSidebar limit={5} showCount={false} />
  * ```
  */
 import { buildUrlFromCurrentPage } from '../libs/url.js';
@@ -39,10 +61,13 @@ const {
   limit = 10,
   sortBy = 'count',
   showCount = true,
-  title = t('starlightTags.popularTags'),
+  title: titleProp,
   collapsible = true,
   collapsed = false
 } = Astro.props;
+
+// Apply translation as default after destructuring to ensure proper locale context
+const title = titleProp ?? t('starlightTags.popularTags');
 
 // Get tags from middleware-injected data
 const tagsData = Astro.locals.starlightTags;
@@ -64,7 +89,7 @@ if (sortBy === 'count') {
 // 'priority' uses default from getAllTagsSorted()
 
 const popularTags = tags.slice(0, limit);
-const tagsIndexUrl = buildUrlFromCurrentPage('/tags/', Astro.url);
+const tagsIndexUrl = buildUrlFromCurrentPage(`/${tagsData.config.tagsIndexSlug}/`, Astro.url);
 ---
 
 {popularTags.length > 0 && (

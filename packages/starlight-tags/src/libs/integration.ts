@@ -17,7 +17,11 @@ export function createTagsIntegration(
   return {
     name: 'starlight-tags-routes',
     hooks: {
-      'astro:config:setup': ({ injectRoute, addWatchFile, updateConfig, config: astroConfig }) => {
+      'astro:config:setup': ({ injectRoute, injectScript, addWatchFile, updateConfig, config: astroConfig }) => {
+        // Inject sidebar badge CSS when sidebar is enabled
+        if (config.sidebar !== false) {
+          injectScript('page-ssr', `import 'starlight-tags/styles';`);
+        }
         // Resolve configPath relative to Astro root directory
         const astroRoot = fileURLToPath(astroConfig.root);
         const absoluteConfigPath = path.isAbsolute(config.configPath)
