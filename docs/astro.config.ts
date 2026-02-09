@@ -30,10 +30,10 @@ export default defineConfig({
           exclude: ['/starlight-tags/tags/', '/starlight-tags/tags/**'],
         }),
         starlightTags({
-          configPath: 'src/config/tags.yml',
+          // configPath: 'src/config/tags.yml',
           tagsPagesPrefix: 'tags',
           tagsIndexSlug: 'tags',
-          onInlineTagsNotFound: 'warn',
+          onInlineTagsNotFound: 'create',
           itemsPerPage: 4,
           // Enable automatic sidebar tag injection
           sidebar: {

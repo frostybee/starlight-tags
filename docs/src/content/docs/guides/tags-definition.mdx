@@ -3,7 +3,11 @@ title: Defining Tags Schema
 description: Define tags in your tags.yml configuration file
 ---
 
-To use starlight-tags, you must create a `tags.yml` file that defines all available tags for your documentation site. This file serves as the schema for your tags, specifying their metadata, styling, and optional advanced properties.
+To use starlight-tags, you can create a `tags.yml` file that defines all available tags for your documentation site. This file serves as the schema for your tags, specifying their metadata, styling, and optional advanced properties.
+
+:::note
+The `tags.yml` file is optional when using [`onInlineTagsNotFound: 'create'`](/starlight-tags/guides/configuration/#auto-creating-tags-with-create). In that mode, tags are created on the fly from frontmatter with minimal metadata. Use `tags.yml` when you need full control over tag appearance and properties.
+:::
 
 By default, the plugin looks for `tags.yml` in your project root, but you can place it elsewhere (e.g., `src/config/tags.yml`) by setting the `configPath` option in your plugin configuration.
 
@@ -25,7 +29,7 @@ When a page references a tag that isn't defined in your schema, the plugin can r
 ```js
 // astro.config.mjs
 starlightTagsPlugin({
-  onInlineTagsNotFound: 'warn', // 'ignore' | 'warn' | 'error'
+  onInlineTagsNotFound: 'warn', // 'ignore' | 'warn' | 'error' | 'create'
 })
 ```
 
@@ -34,8 +38,9 @@ starlightTagsPlugin({
 | `'ignore'` | Silently skip undefined tags |
 | `'warn'` | Log a warning but continue the build |
 | `'error'` | Fail the build with an error |
+| `'create'` | Auto-create tags from frontmatter (no `tags.yml` required) |
 
-Using `'warn'` or `'error'` helps catch typos early and enforces your predefined taxonomy, preventing tag sprawl across your documentation.
+Using `'warn'` or `'error'` helps catch typos early and keeps your taxonomy consistent. Use `'create'` for a more flexible workflow where tags are defined directly in frontmatter. See the [configuration guide](/starlight-tags/guides/configuration/#auto-creating-tags-with-create) for details.
 
 ## Basic Structure
 

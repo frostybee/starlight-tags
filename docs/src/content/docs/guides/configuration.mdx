@@ -74,7 +74,7 @@ starlightTags({
 
 ### `onInlineTagsNotFound`
 
-- **Type:** `'ignore' | 'warn' | 'error'`
+- **Type:** `'ignore' | 'warn' | 'error' | 'create'`
 - **Default:** `'warn'`
 
 How to handle tags used in page frontmatter that are not defined in your tags configuration file.
@@ -84,12 +84,38 @@ How to handle tags used in page frontmatter that are not defined in your tags co
 | `'ignore'` | Silently ignore undefined tags |
 | `'warn'` | Log a warning during build |
 | `'error'` | Fail the build with an error |
+| `'create'` | Auto-create tags from frontmatter values |
 
 ```js
 starlightTags({
   onInlineTagsNotFound: 'error', // Strict mode - fail on undefined tags
 })
 ```
+
+#### Auto-creating tags with `'create'`
+
+Setting this to `'create'` tells the plugin to generate tag entries on the fly for any frontmatter tags that don't exist in `tags.yml`:
+
+```js
+starlightTags({
+  onInlineTagsNotFound: 'create',
+})
+```
+
+Auto-created tags only get a **minimal** set of properties:
+- **Label:** derived from the frontmatter string (hyphens and underscores become spaces)
+- **Slug and URL:** generated from the normalized tag ID
+- **Color:** inherited from `defaults.color` in `tags.yml`, if present
+
+Properties like `icon`, `description`, `difficulty`, and `contentType` won't be set. If you need those, define the tag explicitly in `tags.yml`.
+
+:::tip[Spaces in tag names]
+In `'create'` mode, spaces and underscores in frontmatter tags get normalized to hyphens for the tag ID, but the original string is kept as the label. For example, `"Web Development"` produces tag ID `web-development` with label "Web Development".
+:::
+
+:::note[No `tags.yml` required]
+With `'create'` mode, the `tags.yml` file becomes entirely optional. If it doesn't exist, all tags are created from frontmatter. You can still provide a `tags.yml` to customize specific tags while letting the rest be auto-created.
+:::
 
 ### `itemsPerPage`
 
@@ -168,7 +194,7 @@ export default defineConfig({
           tagsPagesPrefix: 'tags',    // /tags/javascript
           tagsIndexSlug: 'tags',      // /tags
 
-          // Validation
+          // Validation: 'ignore' | 'warn' | 'error' | 'create'
           onInlineTagsNotFound: 'warn',
 
           // Pagination

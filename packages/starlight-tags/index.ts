@@ -31,7 +31,7 @@ export interface StarlightTagsConfig {
   /** Name of the tags index page. @default 'tags' */
   tagsIndexSlug?: string;
   /** Validation behavior for inline tags. @default 'warn' */
-  onInlineTagsNotFound?: 'ignore' | 'warn' | 'error';
+  onInlineTagsNotFound?: 'ignore' | 'warn' | 'error' | 'create';
   /** Number of items per page on tag pages. @default 12 */
   itemsPerPage?: number;
   /**

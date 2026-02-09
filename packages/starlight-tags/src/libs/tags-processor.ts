@@ -72,6 +72,11 @@ export class TagsProcessor {
     } catch (error) {
       const errnoError = error as { code?: string; path?: string };
       if (error instanceof Error && errnoError.code === 'ENOENT') {
+        if (this.config.onInlineTagsNotFound === 'create') {
+          this.logger.info('No tags.yml found. Tags will be auto-created from frontmatter.');
+          this.tagsData = { tags: {} };
+          return;
+        }
         throw new Error(`[starlight-tags] Tags configuration file not found: ${this.config.configPath}\nCreate a tags.yml file or update the configPath option.`);
       }
       const message = error instanceof Error ? error.message : String(error);
@@ -117,13 +122,20 @@ export class TagsProcessor {
     }
 
     const tagUsage = new Map<string, PageReference[]>();
+    // Track original frontmatter strings for label generation in 'create' mode
+    const originalTagNames = new Map<string, string>();
+    const isCreateMode = this.config.onInlineTagsNotFound === 'create';
 
     // Process frontmatter tags from all pages
     let totalTagsFound = 0;
     for (const entry of docsEntries) {
       const entryTags = entry.data.tags || [];
       totalTagsFound += entryTags.length;
-      for (const tagId of entryTags) {
+      for (const rawTag of entryTags) {
+        const tagId = isCreateMode ? this.normalizeTagId(rawTag) : rawTag;
+        if (isCreateMode && !originalTagNames.has(tagId)) {
+          originalTagNames.set(tagId, rawTag);
+        }
         if (!tagUsage.has(tagId)) {
           tagUsage.set(tagId, []);
         }
@@ -185,16 +197,18 @@ export class TagsProcessor {
       this.processedTags.set(tagId, processedTag);
     }
 
+    // Auto-create or validate inline tags (before slug/relationship checks so auto-created tags are included)
+    if (this.config.onInlineTagsNotFound === 'create') {
+      this.autoCreateUndefinedTags(tagUsage, entriesById, originalTagNames);
+    } else if (this.config.onInlineTagsNotFound !== 'ignore') {
+      await this.validateInlineTags(tagUsage);
+    }
+
     // Validate slug uniqueness to prevent URL collisions
     this.validateSlugUniqueness();
 
     // Calculate educational relationships
     this.calculateEducationalRelationships();
-
-    // Validate inline tags if configured
-    if (this.config.onInlineTagsNotFound !== 'ignore') {
-      await this.validateInlineTags(tagUsage);
-    }
 
   }
 
@@ -239,6 +253,66 @@ export class TagsProcessor {
       } else {
         this.logger.warn(message);
       }
+    }
+  }
+
+  /**
+   * Normalizes a raw frontmatter tag string into a valid tag ID.
+   * Lowercases, replaces spaces/underscores with hyphens, strips non-alphanumeric characters.
+   */
+  private normalizeTagId(raw: string): string {
+    return raw
+      .toLowerCase()
+      .replace(/[\s_]+/g, '-')
+      .replace(/[^a-z0-9-]+/g, '-')
+      .replace(/-+/g, '-')
+      .replace(/^-+|-+$/g, '');
+  }
+
+  /**
+   * Generates a human-readable label from a raw frontmatter tag string.
+   * Replaces hyphens and underscores with spaces, preserving original case.
+   */
+  private generateLabelFromRaw(raw: string): string {
+    return raw.replace(/[-_]+/g, ' ');
+  }
+
+  /**
+   * Auto-creates ProcessedTag entries for frontmatter tags not defined in tags.yml.
+   */
+  private autoCreateUndefinedTags(
+    tagUsage: Map<string, { id: string; slug: string; title: string; description?: string }[]>,
+    entriesById: Map<string, DocsEntry>,
+    originalTagNames: Map<string, string>
+  ): void {
+    for (const [tagId, pages] of tagUsage) {
+      if (this.processedTags?.has(tagId)) continue;
+
+      const originalName = originalTagNames.get(tagId) || tagId;
+      const label = this.generateLabelFromRaw(originalName);
+
+      const processedTag: ProcessedTag = {
+        id: tagId,
+        label,
+        slug: this.generateTagSlug(tagId),
+        url: this.generateTagUrl(tagId),
+        color: this.tagsData?.defaults?.color,
+        priority: 0,
+        prerequisites: [],
+        count: pages.length,
+        pages: pages.map(page => {
+          const entry = entriesById.get(page.id);
+          return {
+            ...page,
+            slug: page.slug || page.id,
+            tags: entry?.data.tags || [],
+            frontmatter: entry?.data
+          };
+        })
+      };
+
+      this.processedTags!.set(tagId, processedTag);
+      this.logger.info(`Auto-created tag: "${tagId}" with label "${label}" (${pages.length} pages)`);
     }
   }
 

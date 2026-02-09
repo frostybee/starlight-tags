@@ -99,6 +99,10 @@ import { Steps, Tabs, TabItem } from '@astrojs/starlight/components'
    This example showcases `priority` for tag ordering, `difficulty` and `prerequisites` for learning paths, and icons for visual distinction. See [Defining Tags Schema](/starlight-tags/guides/tags-definition/) for all available properties.
    :::
 
+   :::note[Optional with `'create'` mode]
+   This file is optional if you set `onInlineTagsNotFound: 'create'` in your plugin config. Tags will be created on the fly from frontmatter values. See the [configuration guide](/starlight-tags/guides/configuration/#auto-creating-tags-with-create) for details.
+   :::
+
 4. Add tags to your pages using frontmatter:
 
    ```mdx

@@ -50,7 +50,7 @@ You can also use inline array syntax: `tags: [configuration, guide, getting-star
 - **Type:** `string[]`
 - **Default:** `undefined`
 
-An array of tag IDs to associate with the page. Tag IDs must match those defined in your `tags.yml` configuration file.
+An array of tag IDs to associate with the page. By default, tag IDs must match those defined in your `tags.yml` configuration file. With [`onInlineTagsNotFound: 'create'`](/starlight-tags/guides/configuration/#auto-creating-tags-with-create), tags are auto-created if not already defined.
 
 ```mdx
 ---
@@ -127,11 +127,16 @@ tagsPosition: top
 
 ## Validation
 
-When you use a tag that isn't defined in your `tags.yml`, the plugin's behavior depends on your [configuration](/starlight-tags/guides/configuration/):
+When you use a tag that isn't defined in your `tags.yml`, the plugin's behavior depends on your [`onInlineTagsNotFound`](/starlight-tags/guides/configuration/#oninlinetagsnotfound) configuration:
 
 - **`'warn'`** (default): Logs a warning during build
 - **`'error'`**: Fails the build
 - **`'ignore'`**: Silently ignores undefined tags
+- **`'create'`**: Auto-creates the tag from the frontmatter value
+
+:::tip[Spaces in tag names]
+With `'create'` mode, you can use natural names like `"Web Development"` in frontmatter. The plugin normalizes them to valid tag IDs (e.g., `web-development`) while keeping the original string as the display label.
+:::
 
 ## Examples
 
