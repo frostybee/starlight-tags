@@ -1,5 +1,14 @@
 # starlight-tags
 
+## 0.4.0
+
+### Minor Changes
+
+- fd972f8: feat: add 'create' mode for onInlineTagsNotFound (#5)
+  - Auto-create tags from frontmatter without requiring tags.yml.
+    Spaces in tag names are normalized to hyphens for the ID while
+    preserving the original string as the display label.
+
 ## 0.3.0
 
 ### Minor Changes
@@ -25,8 +34,7 @@
 
   See the [sidebar integration](https://frostybee.github.io/starlight-tags/guides/sidebar-integration/) for details.
 
-  i18n Support for Tag Labels
-  2. Tags now support localized labels and descriptions in tags.yml:
+  i18n Support for Tag Labels 2. Tags now support localized labels and descriptions in tags.yml:
 
   ```
     tags:
