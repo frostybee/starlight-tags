@@ -5,6 +5,9 @@
   "author": "frostybee",
   "license": "MIT",
   "packageManager": "pnpm@10.26.0",
+  "engines": {
+    "node": ">=22.12.0"
+  },
   "devDependencies": {
     "@typescript-eslint/eslint-plugin": "^8.52.0",
     "@typescript-eslint/parser": "^8.52.0",
