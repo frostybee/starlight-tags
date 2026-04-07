@@ -1,5 +1,11 @@
 # starlight-tags
 
+## 1.0.0
+
+### Major Changes
+
+- e2d8501: Upgrade to Astro 6
+
 ## 0.4.0
 
 ### Minor Changes
