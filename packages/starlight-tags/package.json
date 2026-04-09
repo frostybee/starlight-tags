@@ -1,6 +1,6 @@
 {
   "name": "starlight-tags",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "license": "MIT",
   "description": "A Starlight plugin for organizing docs with tags and auto-generated tag pages.",
   "author": "frostybee",

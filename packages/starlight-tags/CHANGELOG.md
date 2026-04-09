@@ -1,5 +1,11 @@
 # starlight-tags
 
+## 1.0.1
+
+### Patch Changes
+
+- ce1500b: Add Russian translation
+
 ## 1.0.0
 
 ### Major Changes
