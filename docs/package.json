@@ -13,8 +13,8 @@
     "astro": "astro"
   },
   "dependencies": {
-    "@astrojs/starlight": "^0.38.3",
-    "astro": "^6.1.4",
+    "@astrojs/starlight": "^0.41.7",
+    "astro": "^7.2.4",
     "sharp": "^0.34.5",
     "starlight-tags": "workspace:*",
     "starlight-theme-galaxy": "^0.8.0"
@@ -31,6 +31,6 @@
   },
   "bugs": "https://github.com/frostybee/starlight-tags/issues",
   "devDependencies": {
-    "starlight-links-validator": "^0.22.0"
+    "starlight-links-validator": "^0.25.3"
   }
 }

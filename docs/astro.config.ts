@@ -60,16 +60,12 @@ export default defineConfig({
         {
           label: 'Plugin Components',
           collapsed:true,
-          autogenerate: {
-            directory: 'components/',
-          },
+          items: [{ autogenerate: { directory: 'components/' } }],
         },
         {
           label: 'Demos: Plugin Components',
           collapsed:true,
-          autogenerate: {
-            directory: 'demos/',
-          },
+          items: [{ autogenerate: { directory: 'demos/' } }],
         },
         {
           label: 'Examples: Tagged Pages',
@@ -77,15 +73,11 @@ export default defineConfig({
           items: [
             {
               label: 'API Documentation',
-              autogenerate: {
-                directory: 'examples/',
-              },
+              items: [{ autogenerate: { directory: 'examples/' } }],
             },
             {
               label: 'Educational Content',
-              autogenerate: {
-                directory: 'educational/',
-              },
+              items: [{ autogenerate: { directory: 'educational/' } }],
             },
           ],
         },

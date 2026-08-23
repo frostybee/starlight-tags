@@ -1,10 +1,17 @@
-<div align="center">
-  <h1>Starlight Tags</h1>
-  <p>A plugin for Starlight that adds tagging capabilities to your documentation pages, enabling content organization and discovery through tags.</p>
+<h1 align="center">Starlight Tags</h1>
 
-  [![npm version](https://badge.fury.io/js/starlight-tags.svg)](https://badge.fury.io/js/starlight-tags)
-  [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-</div>
+<p align="center">
+  <a href="https://www.npmjs.com/package/starlight-tags"><img src="https://img.shields.io/npm/v/starlight-tags.svg" alt="npm version"></a>
+  <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-blue.svg" alt="License: MIT"></a>
+</p>
+
+<p align="center">
+  <a href="https://frostybee.github.io/starlight-tags/"><strong>Documentation</strong></a> ·
+  <a href="https://frostybee.github.io/starlight-tags/configuration/">Configuration</a> ·
+  <a href="https://github.com/frostybee/starlight-tags/releases">Releases</a>
+</p>
+
+A plugin for Starlight that adds tagging capabilities to your documentation pages, enabling content organization and discovery through tags.
 
 ## Features
 
