@@ -1,5 +1,11 @@
 # starlight-tags
 
+## 2.0.0
+
+### Major Changes
+
+- 8dff5f4: Upgrade to Astro v7 and Starlight 0.41. Drops support for Astro v6 and Starlight versions below 0.41.
+
 ## 1.0.1
 
 ### Patch Changes
