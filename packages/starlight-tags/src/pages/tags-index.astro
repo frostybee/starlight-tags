@@ -21,11 +21,14 @@ export function getStaticPaths() {
   ];
 }
 
+// Locale key from the [...locale] route param (undefined for root)
+const { locale } = Astro.params as { locale?: string };
+
 // Get tags from middleware-injected data, with fallback for static generation
 // Plugin-injected routes may not always have middleware run before rendering
 let tagsData = Astro.locals.starlightTags;
 if (!tagsData) {
-  tagsData = await getTagsData();
+  tagsData = await getTagsData(locale);
 }
 const { allTagsSorted } = tagsData;
 
@@ -33,7 +36,6 @@ const allTags = allTagsSorted.filter(tag => !tag.hidden);
 const uniquePages = new Set(allTags.flatMap(tag => tag.pages.map(p => p.id)));
 const totalPagesTagged = uniquePages.size;
 const t = Astro.locals.t;
-const { locale } = Astro.params;
 
 const maxCount = Math.max(...allTags.map(tag => tag.count), 1);
 const minCount = Math.min(...allTags.map(tag => tag.count), 1);

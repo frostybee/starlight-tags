@@ -88,27 +88,30 @@ export async function getStaticPaths() {
   return paths;
 }
 
-const { tag, pages, pagination } = Astro.props;
+const { tag: staticTag, pages, pagination } = Astro.props;
 
 // Guard against missing props data (shouldn't happen, but ensures type safety)
-if (!tag || !pages || !pagination) {
+if (!staticTag || !pages || !pagination) {
   throw new Error('[starlight-tags] Invalid props: missing tag, pages, or pagination data');
 }
+
+// Get locale from params for building URLs
+// In Astro's [...param] rest routes, the param is string | undefined (not an array)
+const { locale } = Astro.params as { locale?: string };
 
 // Get tags and config from middleware-injected data, with fallback for static generation
 // Plugin-injected routes may not always have middleware run before rendering
 let tagsData = Astro.locals.starlightTags;
 if (!tagsData) {
-  tagsData = await getTagsData();
+  tagsData = await getTagsData(locale);
 }
 const { tags, config } = tagsData;
 
+// getStaticPaths resolves tags for the root locale only; use this locale's label and description
+const tag = tagsData.allTagsSorted.find(t => t.slug === staticTag.slug) ?? staticTag;
+
 // Access translations via Astro.locals.t
 const t = Astro.locals.t;
-
-// Get locale from params for building URLs
-// In Astro's [...param] rest routes, the param is string | undefined (not an array)
-const { locale } = Astro.params as { locale?: string };
 
 // Use pre-computed related tags from the processor
 // (based on shared pages and prerequisite relationships, limited to top 5)

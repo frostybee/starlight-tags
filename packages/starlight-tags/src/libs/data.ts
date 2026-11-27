@@ -55,6 +55,7 @@
 import { TagsProcessor, type MinimalLogger } from './tags-processor.js';
 import type { PluginConfig } from '../schemas/config.js';
 import type { ProcessedTag } from '../schemas/tags.js';
+import { buildLocaleKeys, type StarlightLocaleConfig } from './i18n.js';
 
 /**
  * Data structure injected into `Astro.locals.starlightTags` by the middleware.
@@ -207,6 +208,7 @@ const initPromises = new Map<string, Promise<StarlightTagsData>>();
 // Per-locale processor cache (labels are resolved per locale)
 const processorCache = new Map<string, TagsProcessor>();
 let cachedConfig: PluginConfig | null = null;
+let cachedStarlightConfig: StarlightLocaleConfig | null = null;
 
 // Silent logger for production use
 const silentLogger: MinimalLogger = {
@@ -246,6 +248,12 @@ async function ensureProcessor(locale?: string): Promise<TagsProcessor> {
       cachedConfig = config;
     }
 
+    // Starlight's resolved config provides locale keys, langs and the default locale
+    if (!cachedStarlightConfig) {
+      const { default: starlightConfig } = await import('virtual:starlight/user-config');
+      cachedStarlightConfig = starlightConfig as StarlightLocaleConfig;
+    }
+
     const logger = import.meta.env.DEV ? buildLogger : silentLogger;
 
     // Import astro:content to get docs collection
@@ -253,7 +261,8 @@ async function ensureProcessor(locale?: string): Promise<TagsProcessor> {
     const docsEntries = await getCollection('docs');
 
     // Create and initialize the processor with locale for i18n label resolution
-    processor = new TagsProcessor(cachedConfig!, logger, docsEntries, locale);
+    const localeKeys = buildLocaleKeys(locale, cachedStarlightConfig!);
+    processor = new TagsProcessor(cachedConfig!, logger, docsEntries, localeKeys);
     await processor.initialize();
 
     processorCache.set(cacheKey, processor);
@@ -367,6 +376,7 @@ export function resetDataCache(): void {
   }
   processorCache.clear();
   cachedConfig = null;
+  cachedStarlightConfig = null;
 }
 
 // Handle Vite HMR to prevent memory leaks during development

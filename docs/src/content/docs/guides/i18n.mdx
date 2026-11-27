@@ -99,12 +99,40 @@ tags:
 
 ### Fallback Behavior
 
-When a locale is not found in the translation record, the plugin follows this fallback chain:
+The plugin picks a value from the translation record by trying these keys in order. Keys match case-insensitively, so `zh-tw` and `zh-TW` are the same key.
 
-1. **Requested locale** - e.g., `fr` for French pages
-2. **Default locale** - typically `en`
-3. **First available value** - if neither locale exists
-4. **Tag ID** - as a last resort for labels
+1. **Locale key:** the locale's URL prefix from your Starlight `locales` config, for example `fr` on `/fr/` pages
+2. **Locale `lang`:** the `lang` set for that locale, for example `zh-TW`
+3. **`root`:** only on pages of the root locale
+4. **Default locale:** the key and `lang` of Starlight's `defaultLocale`
+5. **`en`**
+6. **First value** in the record
+
+If the record has no values, the tag ID is used as the label.
+
+### Root locale
+
+When your default language is served without a URL prefix (`defaultLocale: 'root'`), key its labels with either `root` or the root locale's `lang`. For example, with this Starlight config:
+
+```js title="astro.config.mjs"
+starlight({
+  defaultLocale: 'root',
+  locales: {
+    root: { label: '繁體中文', lang: 'zh-TW' },
+    en: { label: 'English' },
+  },
+});
+```
+
+This label shows 標籤 on root pages and `Tags` on `/en/` pages. Using `root` instead of `zh-TW` gives the same result:
+
+```yaml title="tags.yml"
+tags:
+  tagging:
+    label:
+      zh-TW: "標籤"  # or: root: "標籤"
+      en: "Tags"
+```
 
 ## Customizing Translations
 

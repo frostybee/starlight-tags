@@ -3,7 +3,7 @@ import yaml from 'js-yaml';
 import type { AstroIntegrationLogger } from 'astro';
 import { tagsConfigSchema, type TagsConfig, type ProcessedTag, type ContentType, type Difficulty, type LocalizableString } from '../schemas/tags.js';
 import type { PluginConfig } from '../schemas/config.js';
-import { resolveLocalizedString, getDefaultLocale } from './i18n.js';
+import { resolveLocalizedString } from './i18n.js';
 
 // Constants
 const MAX_RELATED_TAGS = 5;
@@ -35,20 +35,18 @@ export class TagsProcessor {
   private tagsData?: TagsConfig;
   private processedTags?: Map<string, ProcessedTag>;
   private providedDocsEntries?: DocsEntry[];
-  private locale?: string;
-  private defaultLocale?: string;
+  private localeKeys: string[];
 
   constructor(
     config: PluginConfig,
     logger: AstroIntegrationLogger | MinimalLogger,
     docsEntries?: DocsEntry[],
-    locale?: string
+    localeKeys: string[] = ['en']
   ) {
     this.config = config;
     this.logger = logger;
     this.providedDocsEntries = docsEntries;
-    this.locale = locale;
-    this.defaultLocale = getDefaultLocale();
+    this.localeKeys = localeKeys;
   }
 
   async initialize(): Promise<void> {
@@ -159,14 +157,12 @@ export class TagsProcessor {
       // Resolve localized label and description for current locale
       const resolvedLabel = resolveLocalizedString(
         tagDef.label as LocalizableString,
-        this.locale,
-        this.defaultLocale
+        this.localeKeys
       ) ?? tagId; // Fallback to tag ID if no label found
 
       const resolvedDescription = resolveLocalizedString(
         tagDef.description as LocalizableString | undefined,
-        this.locale,
-        this.defaultLocale
+        this.localeKeys
       );
 
       const processedTag: ProcessedTag = {
